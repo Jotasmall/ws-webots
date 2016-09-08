@@ -1,0 +1,2371 @@
+#VRML_SIM V7.4.3 utf8
+WorldInfo {
+}
+Viewpoint {
+  orientation 0.556036 0.616576 0.557367 4.2445
+  position -0.947883 6.24368 0.73465
+}
+Background {
+  skyColor [
+    0 0.66 0
+    0 0 0
+    0 0 0
+  ]
+}
+DirectionalLight {
+  direction 0.3 -0.5 0.35
+}
+DirectionalLight {
+  direction -0.33 -1 -0.5
+}
+RectangleArena {
+  translation -0.3 0 0.5
+  floorSize 2.7 3
+  floorTextureUrl [
+    "textures/metal.png"
+  ]
+}
+DEF Big-box Solid {
+  translation 0.141 0.05 0
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.278 0.278 0.278
+        }
+      }
+      geometry DEF BigBox Box {
+        size 1.19 0.1 1.45
+      }
+    }
+  ]
+  boundingObject USE BigBox
+}
+DEF Big-boxWall Solid {
+  translation 0.295 0.05 1.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.278 0.278 0.278
+        }
+      }
+      geometry DEF BigBoxWall Box {
+        size 1.5 0.1 1
+      }
+    }
+  ]
+  boundingObject USE BigBoxWall
+}
+DEF Big-boxWall Solid {
+  translation -1.85798 0.05 0.496553
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.278 0.278 0.278
+        }
+      }
+      geometry DEF BigBoxWall Box {
+        size 1.5 0.1 3
+      }
+    }
+  ]
+  boundingObject USE BigBoxWall
+}
+DEF LandmarkS_shadow Transform {
+  translation -0.49 0.00038 0.75
+  rotation 0 1 0 1.57
+  children [
+    Shape {
+      appearance DEF greyGround Appearance {
+        material Material {
+          diffuseColor 0.15 0.15 0.15
+        }
+      }
+      geometry Plane {
+        size 0.5 0.12
+      }
+    }
+  ]
+}
+DEF LandmarkN_shadow Transform {
+  translation -0.51 0.00038 -0.93
+  rotation 0 1 0 1.57
+  children [
+    Shape {
+      appearance DEF greyGround Appearance {
+        material Material {
+          diffuseColor 0.15 0.15 0.15
+        }
+      }
+      geometry Plane {
+        size 0.15 0.12
+      }
+    }
+  ]
+}
+DEF redLine1S Transform {
+  translation -0.495 0.0004 0.71
+  rotation 0 1 0 1.57
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Plane {
+        size 0.3 0.01
+      }
+    }
+  ]
+}
+DEF redLine1N Transform {
+  translation -0.4 0.0004 -0.96
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Plane {
+        size 0.3 0.01
+      }
+    }
+  ]
+}
+DEF Red-line Transform {
+  translation 0.28 0.0001 0
+  children [
+    Shape {
+      appearance DEF RedLine Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Plane {
+        size 1.47 1.93
+      }
+    }
+  ]
+}
+DEF Red-line-shadow Transform {
+  translation 0.275 0.0002 0
+  children [
+    Shape {
+      appearance DEF greyGround Appearance {
+        material Material {
+          diffuseColor 0.15 0.15 0.15
+        }
+      }
+      geometry Plane {
+        size 1.46 1.91
+      }
+    }
+  ]
+}
+DEF redCornerDark0 Transform {
+  translation 0.97 0.00035 0.955
+  rotation 0 1 0 0.81
+  children [
+    Shape {
+      appearance USE greyGround
+      geometry Plane {
+        size 0.8 0.09
+      }
+    }
+  ]
+}
+DEF redCornerLine0 Transform {
+  translation 0.955 0.00035 0.9
+  rotation 0 1 0 -0.75
+  children [
+    Shape {
+      appearance USE RedLine
+      geometry Plane {
+        size 0.015 0.155
+      }
+    }
+  ]
+}
+DEF redCornerLine1 Transform {
+  translation 0.955 0.00035 -0.9
+  rotation 0 1 0 0.75
+  children [
+    Shape {
+      appearance USE RedLine
+      geometry Plane {
+        size 0.015 0.155
+      }
+    }
+  ]
+}
+DEF redCornerDark1 Transform {
+  translation 0.97 0.00035 -0.955
+  rotation 0 1 0 -0.81
+  children [
+    Shape {
+      appearance USE greyGround
+      geometry Plane {
+        size 0.8 0.09
+      }
+    }
+  ]
+}
+DEF Blue-line Transform {
+  translation 0.165 0.00025 0
+  children [
+    Shape {
+      appearance DEF blueLine Appearance {
+        material Material {
+          diffuseColor 0 0 1
+        }
+      }
+      geometry Plane {
+        size 1.24 1.55
+      }
+    }
+  ]
+}
+DEF Blue-line-shadow Transform {
+  translation 0.16 0.0003 0
+  children [
+    Shape {
+      appearance USE greyGround
+      geometry Plane {
+        size 1.23 1.53
+      }
+    }
+  ]
+}
+DEF blueCornerLine0 Transform {
+  translation 0.79 0.00037 0.77
+  children [
+    Shape {
+      appearance USE blueLine
+      geometry Plane {
+        size 0.155 0.01
+      }
+    }
+  ]
+}
+DEF blueCornerDark0 Transform {
+  translation 0.75 0.0035 0.73
+  children [
+    Shape {
+      appearance USE greyGround
+      geometry Plane {
+        size 0.07 0.07
+      }
+    }
+  ]
+}
+DEF blueCornerLine1 Transform {
+  translation 0.78 0.00037 -0.78
+  children [
+    Shape {
+      appearance USE blueLine
+      geometry Plane {
+        size 0.01 0.155
+      }
+    }
+  ]
+}
+DEF blueCornerDark1 Transform {
+  translation 0.74 0.00035 -0.75
+  children [
+    Shape {
+      appearance USE greyGround
+      geometry Plane {
+        size 0.07 0.08
+      }
+    }
+  ]
+}
+DEF Grey-Area Transform {
+  translation 0.3 5e-05 0
+  children [
+    Shape {
+      appearance USE greyGround
+      geometry Plane {
+        size 1.5 2
+      }
+    }
+  ]
+}
+DEF Red-Area Transform {
+  translation -1.05 0.00035 -0.26
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Plane {
+        size 1.2 1.5
+      }
+    }
+  ]
+}
+DEF Blue-Area Transform {
+  translation -1.05 0.00035 1.25
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 0 1
+        }
+      }
+      geometry Plane {
+        size 1.2 1.5
+      }
+    }
+  ]
+}
+DifferentialWheels {
+  children [
+    DEF leftSolid Solid {
+      translation -1.577 0.05 0.5
+      children [
+        Shape {
+          appearance DEF cacheAppearance Appearance {
+            material Material {
+              diffuseColor 0.301 0.301 0.301
+            }
+          }
+          geometry DEF leftCacheWall Box {
+            size 0.15 0.1 0.1
+          }
+        }
+      ]
+      boundingObject USE leftCacheWall
+    }
+    DEF rightSolid Solid {
+      translation -0.525 0.05 0.5
+      children [
+        Shape {
+          appearance DEF cacheAppearance Appearance {
+            material Material {
+              diffuseColor 0.301 0.301 0.301
+            }
+          }
+          geometry DEF rightCacheWall Box {
+            size 0.15 0.1 0.1
+          }
+        }
+      ]
+      boundingObject USE rightCacheWall
+    }
+    DEF Interface Solid {
+      translation -1.05 0.05 0.498
+      children [
+        Shape {
+          appearance DEF cacheAppearance Appearance {
+            material Material {
+              diffuseColor 0.301 0.301 0.301
+            }
+          }
+          geometry DEF interfaceWall Box {
+            size 0.91 0.1 0.03
+          }
+        }
+      ]
+      boundingObject USE interfaceWall
+    }
+    DEF BlockMiddle-0 Solid {
+      translation -0.6 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry DEF blockMiddle Box {
+            size 0.003 0.1 0.18
+          }
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-1 Solid {
+      translation -0.7 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-2 Solid {
+      translation -0.8 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-3 Solid {
+      translation -0.9 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-4 Solid {
+      translation -1.006 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-5 Solid {
+      translation -1.1 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-6 Solid {
+      translation -1.2 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-7 Solid {
+      translation -1.3 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-8 Solid {
+      translation -1.4 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockMiddle-9 Solid {
+      translation -1.5 0.05 0.5
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockMiddle
+        }
+      ]
+      boundingObject USE blockMiddle
+    }
+    DEF BlockTam-source0 Solid {
+      translation -0.65 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry DEF blockSource Box {
+            size 0.003 0.1 0.1
+          }
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source1 Solid {
+      translation -0.75 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source2 Solid {
+      translation -0.85 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source3 Solid {
+      translation -0.95 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source4 Solid {
+      translation -1.05 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source5 Solid {
+      translation -1.15 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source6 Solid {
+      translation -1.25 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source7 Solid {
+      translation -1.35 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source8 Solid {
+      translation -1.45 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-source9 Solid {
+      translation -1.55 0.05 1.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest0 Solid {
+      translation -0.65 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest1 Solid {
+      translation -0.75 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest2 Solid {
+      translation -0.85 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest3 Solid {
+      translation -0.95 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest4 Solid {
+      translation -1.05 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest5 Solid {
+      translation -1.15 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest6 Solid {
+      translation -1.25 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest7 Solid {
+      translation -1.35 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest8 Solid {
+      translation -1.45 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF BlockTam-nest9 Solid {
+      translation -1.55 0.05 -0.96
+      children [
+        Shape {
+          appearance USE cacheAppearance
+          geometry USE blockSource
+        }
+      ]
+      boundingObject USE blockSource
+    }
+    DEF DisplayLed0 LED {
+      translation -0.7 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry DEF LedBox Box {
+            size 0.05 0.05 0.015
+          }
+        }
+      ]
+      name "Wled0"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor0 DistanceSensor {
+      translation -0.675 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds0"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor0 DistanceSensor {
+      translation -0.725 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads0"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed1 LED {
+      translation -0.8 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled1"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor1 DistanceSensor {
+      translation -0.775 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads1"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor1 DistanceSensor {
+      translation -0.825 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds1"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed2 LED {
+      translation -0.9 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled2"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor2 DistanceSensor {
+      translation -0.875 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads2"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor2 DistanceSensor {
+      translation -0.925 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds2"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed3 LED {
+      translation -1 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled3"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor3 DistanceSensor {
+      translation -0.975 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads3"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor3 DistanceSensor {
+      translation -1.025 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds3"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed4 LED {
+      translation -1.1 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry DEF LedBox Box {
+            size 0.05 0.05 0.015
+          }
+        }
+      ]
+      name "Wled4"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor4 DistanceSensor {
+      translation -1.075 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds4"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor4 DistanceSensor {
+      translation -1.125 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads4"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed5 LED {
+      translation -1.2 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled5"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor5 DistanceSensor {
+      translation -1.175 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads5"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor5 DistanceSensor {
+      translation -1.225 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds5"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed6 LED {
+      translation -1.3 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled6"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor6 DistanceSensor {
+      translation -1.275 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads6"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor6 DistanceSensor {
+      translation -1.325 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds6"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed7 LED {
+      translation -1.4 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled7"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor7 DistanceSensor {
+      translation -1.375 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads7"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor7 DistanceSensor {
+      translation -1.425 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds7"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed8 LED {
+      translation -1.5 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled8"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor8 DistanceSensor {
+      translation -1.475 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads8"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor8 DistanceSensor {
+      translation -1.525 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds8"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed9 LED {
+      translation -1.6 0.035 2.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled9"
+      color [
+        1 0 0
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor9 DistanceSensor {
+      translation -1.575 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wads9"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor9 DistanceSensor {
+      translation -1.625 0.035 1.99
+      rotation 0 1 0 1.57
+      name "Wbds9"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed10 LED {
+      translation -0.65 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled10"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor10 DistanceSensor {
+      translation -0.675 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads10"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor10 DistanceSensor {
+      translation -0.625 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds10"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed11 LED {
+      translation -0.75 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled11"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor11 DistanceSensor {
+      translation -0.775 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads11"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor11 DistanceSensor {
+      translation -0.725 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds11"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed12 LED {
+      translation -0.85 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled12"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor12 DistanceSensor {
+      translation -0.875 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads12"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor12 DistanceSensor {
+      translation -0.825 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds12"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed13 LED {
+      translation -0.95 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled13"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor13 DistanceSensor {
+      translation -0.975 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads13"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor13 DistanceSensor {
+      translation -0.925 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds13"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed14 LED {
+      translation -1.05 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled14"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor14 DistanceSensor {
+      translation -1.075 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads14"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor14 DistanceSensor {
+      translation -1.025 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds14"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed15 LED {
+      translation -1.15 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled15"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor15 DistanceSensor {
+      translation -1.175 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads15"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor15 DistanceSensor {
+      translation -1.125 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds15"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed16 LED {
+      translation -1.25 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled16"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor16 DistanceSensor {
+      translation -1.275 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads16"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor16 DistanceSensor {
+      translation -1.225 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds16"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed17 LED {
+      translation -1.35 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled17"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor17 DistanceSensor {
+      translation -1.375 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads17"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor17 DistanceSensor {
+      translation -1.325 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds17"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed18 LED {
+      translation -1.45 0.04 0.515
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled18"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor18 DistanceSensor {
+      translation -1.475 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wads18"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor18 DistanceSensor {
+      translation -1.425 0.035 0.52
+      rotation 0 -1 0 1.57
+      name "Wbds18"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed19 LED {
+      translation -0.65 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled19"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor19 DistanceSensor {
+      translation -0.675 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads19"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor19 DistanceSensor {
+      translation -0.625 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds19"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed20 LED {
+      translation -0.75 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled20"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor20 DistanceSensor {
+      translation -0.775 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads20"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor20 DistanceSensor {
+      translation -0.725 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds20"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed21 LED {
+      translation -0.85 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled21"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor21 DistanceSensor {
+      translation -0.875 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads21"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor21 DistanceSensor {
+      translation -0.825 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds21"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed22 LED {
+      translation -0.95 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled22"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor22 DistanceSensor {
+      translation -0.975 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads22"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor22 DistanceSensor {
+      translation -0.925 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds22"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed23 LED {
+      translation -1.05 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled23"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor23 DistanceSensor {
+      translation -1.075 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads23"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor23 DistanceSensor {
+      translation -1.025 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds23"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed24 LED {
+      translation -1.15 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled24"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor24 DistanceSensor {
+      translation -1.175 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads24"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor24 DistanceSensor {
+      translation -1.125 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds24"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed25 LED {
+      translation -1.25 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled25"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor25 DistanceSensor {
+      translation -1.275 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads25"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor25 DistanceSensor {
+      translation -1.225 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds25"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed26 LED {
+      translation -1.35 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled26"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor26 DistanceSensor {
+      translation -1.375 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads26"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor26 DistanceSensor {
+      translation -1.325 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds26"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed27 LED {
+      translation -1.45 0.04 0.48
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled27"
+      color [
+        1 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor27 DistanceSensor {
+      translation -1.475 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wads27"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DistanceSensor27 DistanceSensor {
+      translation -1.425 0.035 0.48
+      rotation 0 1 0 1.57
+      name "Wbds27"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.45
+    }
+    DEF DisplayLed28 LED {
+      translation -0.7 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled28"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor28 DistanceSensor {
+      translation -0.675 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads28"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor28 DistanceSensor {
+      translation -0.725 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds28"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed29 LED {
+      translation -0.8 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled29"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor29 DistanceSensor {
+      translation -0.775 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads29"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor29 DistanceSensor {
+      translation -0.8255 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds29"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed30 LED {
+      translation -0.9 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled30"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor30 DistanceSensor {
+      translation -0.875 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads30"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor30 DistanceSensor {
+      translation -0.9255 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds30"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed31 LED {
+      translation -1 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled31"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor31 DistanceSensor {
+      translation -0.975 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads31"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor31 DistanceSensor {
+      translation -1.0255 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds31"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed32 LED {
+      translation -1.1 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled32"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor32 DistanceSensor {
+      translation -1.075 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads32"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor32 DistanceSensor {
+      translation -1.125 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds32"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed33 LED {
+      translation -1.2 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled33"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor33 DistanceSensor {
+      translation -1.175 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads33"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor33 DistanceSensor {
+      translation -1.225 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds33"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed34 LED {
+      translation -1.3 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled34"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor34 DistanceSensor {
+      translation -1.275 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads34"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor34 DistanceSensor {
+      translation -1.325 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds34"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed35 LED {
+      translation -1.4 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled35"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor35 DistanceSensor {
+      translation -1.375 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads35"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor35 DistanceSensor {
+      translation -1.425 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds35"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed36 LED {
+      translation -1.5 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled36"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor36 DistanceSensor {
+      translation -1.475 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads36"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor36 DistanceSensor {
+      translation -1.525 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds36"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DisplayLed37 LED {
+      translation -1.6 0.035 -1.005
+      children [
+        Shape {
+          appearance Appearance {
+            material Material {
+              diffuseColor 0 0 0
+            }
+          }
+          geometry USE LedBox
+        }
+      ]
+      name "Wled37"
+      color [
+        0 0 1
+        1 1 1
+      ]
+    }
+    DEF DistanceSensor37 DistanceSensor {
+      translation -1.575 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wads37"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+    DEF DistanceSensor37 DistanceSensor {
+      translation -1.625 0.035 -0.99
+      rotation 0 -1 0 1.57
+      name "Wbds37"
+      lookupTable [
+        0 1024 0.1
+        0.05 1024 0.1
+        0.06 0 0.1
+      ]
+      aperture 0.5
+    }
+  ]
+  controller "TAM10x9_Fedora"
+}
+DEF NestLandMark Solid {
+  translation -0.49 0.03 -0.999
+  rotation 1 0 0 1.57
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 1
+          specularColor 0 1 1
+        }
+      }
+      geometry Plane {
+        size 0.06 0.06
+      }
+    }
+  ]
+}
+DEF SourceLandMark Solid {
+  translation -0.4541 0.03 0.62
+  rotation 0 0 1 1.5707
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0 1 1
+          specularColor 0 1 1
+        }
+      }
+      geometry Plane {
+        size 0.06 0.06
+      }
+    }
+  ]
+}
+EPuck {
+  translation -0.721518 0 1.27676
+  rotation 0 1 0 3.14159
+  controller "Agent2013v3Fedora"
+  name "e-puck2801"
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.136834 0.0572687
+      pixelSize 2
+    }
+  ]
+}
+EPuck {
+  translation -0.869195 0 1.65642
+  controller "Agent2013v3Fedora"
+  name "e-puck2802"
+  camera_windowPosition 0.0413683 0.459618
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.136834 0.45815
+      pixelSize 2
+    }
+  ]
+}
+EPuck {
+  translation -0.700037 0 1.64797
+  rotation 0 1 0 3.14159
+  controller "Agent2013v3Fedora"
+  name "e-puck2803"
+  camera_windowPosition 0.0421639 0.318649
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.136038 0.317181
+      pixelSize 2
+    }
+  ]
+}
+EPuck {
+  translation -0.935994 0 1.46827
+  controller "Agent2013v3Fedora"
+  name "e-puck2804"
+  camera_windowPosition 0.0421639 0.18649
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.136834 0.187959
+      pixelSize 2
+    }
+  ]
+}
+EPuck {
+  translation -0.67 0 -0.57
+  controller "Agent2013v3Fedora"
+  name "e-puck2901"
+  camera_windowPosition 0.841687 0.061674
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.937947 0.0572687
+      pixelSize 2
+    }
+  ]
+}
+EPuck {
+  translation -0.93 0 -0.47
+  controller "Agent2013v3Fedora"
+  name "e-puck2902"
+  camera_windowPosition 0.848051 0.446402
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.939539 0.441997
+      pixelSize 2
+    }
+  ]
+}
+EPuck {
+  translation -0.83 0 -0.37
+  controller "Agent2013v3Fedora"
+  name "e-puck2903"
+  camera_windowPosition 0.84646 0.321586
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.937947 0.317181
+      pixelSize 2
+    }
+  ]
+}
+EPuck {
+  translation -0.73 0 -0.27
+  controller "Agent2013v3Fedora"
+  name "e-puck2904"
+  camera_windowPosition 0.844073 0.192364
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.93397 0.192364
+      pixelSize 2
+    }
+  ]
+}
