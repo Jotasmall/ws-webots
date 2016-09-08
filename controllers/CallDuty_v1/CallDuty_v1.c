@@ -89,6 +89,7 @@ const unsigned char *image;
 #define GREEN 7
 #define WHITE 8
 #define TAM_WALL 9
+#define ROBOT_COLOR 10
 #define HEXRED 0xFF0000
 #define HEXWHITE 0xFFFFFF
 #define HEXBLACK 0x000000
@@ -131,6 +132,7 @@ int nRobots = 10;
 #define LIFE 2
 #define DECISIONS 3
 #define PERFORMANCE 4 
+int flagFiles = 1;
 char robotName[11];
 int botNumber;
 char fileRobot[] = "dd-hh-mm\\e-puck0000-OPTION.txt";
@@ -243,7 +245,7 @@ int main(int argc, char **argv) {
   time (&rawtime);
   timeinfo = localtime(&rawtime);
   sprintf(dirPath,"./%d-%d-%d",timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
-  
+  if (modelTest == ESSAY) {flagFiles = 0;} 
   reset(); 
   wb_robot_step(TIME_STEP);
   
@@ -474,10 +476,11 @@ int moduleFSM(){
           waiting(1);
           if ((stateUML == TRAVEL2BLUE) || (stateUML == TRAVEL2RED) || (stateUML == TRAVEL2GREY)) {
             flagInside = hitLandmark();
+            printf("\n %s successful hit landmarks with flag %d", robotName, flagInside);
           } else {
             flagInside = enterTam();
           }
-          if (flagInside) { //sucessful enter TAM or hit wall
+          if (flagInside == 1) { //sucessful enter TAM or hit wall
             stateFSM = STOP;
           } else {
             forward(-50);
@@ -577,7 +580,7 @@ void reset(){ //ok-
   wb_receiver_enable(receiver,TIME_STEP);
   // Getting data
   floorColor = whereIam(0);
-  createFiles();
+  if (flagFiles) { createFiles();}  
   initEstimations();
   strcpy(robotName, wb_robot_get_name());
   // Random seed by the number of the robot
@@ -767,18 +770,23 @@ int whereIam(int avoiding){
 } 
 
 int find_middle(){ //ok 
-  int i, aux, index1 = -1, index2 = -1;
+  int i, auxW;
+  int aux, index1 = -1, index2 = -1;
   int foreground = RED;
+  int wrongForeground = BLUE;
   if (stateUML == TRAVEL2BLUE) {
     foreground = BLUE;
+    wrongForeground = RED;
   } else if (stateUML == TRAVEL2GREY) {
     if (floorColor == RED) { 
       foreground = BLUE;
+      wrongForeground = RED;
     }
   }
   // new world
   for (i = 0; i<width; i++){
     aux = compareColorPixel(i, height-1, foreground);
+    auxW = compareColorPixel(i, height-1, wrongForeground); 
     if (aux == 1) {
       if (index1 == -1) { // the 1st time see the color
         index1 = i;
@@ -786,14 +794,30 @@ int find_middle(){ //ok
         index2 = i;
       }  
     }
+    if (auxW == 1) {
+      if (index1 == -1) { // the 1st time see the color
+        index1 = i;
+      } else { // the final index where the color is seen
+        index2 = i;
+      }  
+    }
+
   }  
   if (index1 == -1) { return -1;} // followLine
-  return (index2-index1)/2+index1;
+  if (auxW == 1) {
+    auxW = 100+(index2-index1)/2+index1;
+    printf("\n %s had found a wrong line color %d", robotName, auxW);
+    return auxW;  
+  } else {
+    auxW = (index2-index1)/2+index1;
+    printf("\n %s had found a correct line color %d", robotName, auxW);
+    return auxW;
+  }    
 }
 
 int check4Robot(){//ok-
   int nComp, sizeRobot = 0;
-  sizeRobot = detectImage(GREY, ROBOT, 0, &nComp);
+  sizeRobot = detectImage(ROBOT_COLOR, ROBOT, 0, &nComp);
   //printf("\n I %s looking a robot in the image of height %d components %d", robotName, sizeRobot, nComp);
   if ((sizeRobot > 4) && (nComp >= 1)) {//3
     printf("\n I %s am seeing a robot of height %d components %d", robotName, sizeRobot, nComp);
@@ -898,9 +922,13 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
     case BLACK:
       auxColor = (pixelR < BLACK_THRES) && (pixelG < BLACK_THRES) && (pixelB < BLACK_THRES);
       break;
-    case GREY:
+    case ROBOT_COLOR:
       auxColor = (pixelR > ROBOT_THRES) && (pixelG > ROBOT_THRES) && (pixelB > ROBOT_THRES); 
       break;
+	case GREY:
+	  auxColor = (pixelR < COMP_COLOR) && (pixelG < COMP_COLOR) && (pixelB < COMP_COLOR);
+      auxColor = auxColor && ((pixelR > BLACK_THRES) && (pixelG > BLACK_THRES) && (pixelB > BLACK_THRES));	  
+      break;	
     case WHITE:
       auxColor = (pixelR > COLOR_THRES) || (pixelB > COLOR_THRES);  
       break;
@@ -1219,7 +1247,8 @@ int followingLine(int colorLine){//ok-
     } else {
       image = wb_camera_get_image(cam);
       // cronometer(IMAGE, 0); // Disable because it is only one row
-      if (delta > -1) {
+      delta = find_middle();
+      if ((delta > -1) && (delta < 100)) {
         delta = delta - width/2;
         speed[LEFT] = 220 - K_TURN*abs(delta);
         speed[RIGHT] = 220 - K_TURN*abs(delta);
@@ -1232,9 +1261,11 @@ int followingLine(int colorLine){//ok-
         if (flagRobot) {
           waiting(20);
           //printf("\n Robot is out by line");
+        } else if (delta > 100){
+          return -2;// Wrong line
         } else {
           printf("\n %s is lost from the line", robotName);
-          return 1;//-1
+          return -1;// End of travel
         }  
       }
     }  
@@ -1525,7 +1556,12 @@ int hitLandmark(){
     readSensors(0);
     counter++;
     if (ps_value[5]> 250) {
-      notReady = find_middle(1) < 0;
+      notReady = find_middle();
+      if (notReady > 100) {
+        printf("\n %s found another line color", robotName);
+        return -1;
+      }
+      notReady = notReady < 0;
     } else {
       flagRobot = check4Robot();
       if (flagRobot) {
@@ -1621,29 +1657,31 @@ int doorEntrance(int steps){
   turnSteps(TURN_M90);
   forward(steps);
   waiting(1);
-  if (find_middle(0) >= 1) {
-    return 0; 
-  } else {
-    return 1;
-  }  
+  return 1;
 }
 
 int going2Region(int colorLine, int colorDestination){ //ok
   int endTask = 0;
   resetDisplay();
   printf("\n %s getting in position destination Source", robotName);
-  while(endTask == 0) {
-    endTask = followingLine(colorLine);
-  }
-  printf("\n Robot %s going on 1st wall", robotName);
-  endTask = doorEntrance(60);
 
-  whereArrive();
-  if (floorColor == colorDestination) {
-    return 1;
-  } else {
-    return 0;
-  } 
+  endTask = followingLine(colorLine);
+  if (endTask == -2) { // Wrong line 
+    turnSteps(TURN_90);
+    forward(60); 
+    return 0; 
+  } else if (endTask == -1) { //End of travel
+    printf("\n Robot %s going on 1st wall", robotName);
+    endTask = doorEntrance(60);
+  
+    whereArrive();
+    if (floorColor == colorDestination) {
+      return 1;
+    } else {
+      return 0;
+    } 
+  }
+  return 1000;  
 }
 
 int going2it(int index){//ok
@@ -1687,18 +1725,23 @@ int going2it(int index){//ok
 }
 
 void cronometer(int task, int cache){//ok-
-  createDir(LIFE, 0);
-  FILE *flife = fopen(fileRobot,"a+");
   
   if (task == IMAGE) { 
     timeImage++;
-    fprintf(flife, "image, %d \n", timeImage);
   } else {  
     timeMeasured++;
-    fprintf(flife, "state %d, %d\n", stateUML, timeMeasured);
   }
-  fclose(flife);  
-  listening();
+  if (flagFiles) {
+    createDir(LIFE, 0);
+    FILE *flife = fopen(fileRobot,"a+");
+    if (task == IMAGE) { 
+      fprintf(flife, "image, %d \n", timeImage);
+    } else {  
+     fprintf(flife, "state %d, %d\n", stateUML, timeMeasured);
+    }
+    fclose(flife);  
+    listening();
+  }  
 }
 
 void countObjects(){
@@ -1708,14 +1751,16 @@ void countObjects(){
     case PICK_SOURCE:
       nPick[floorColor]++; break;
   }
-  createDir(PERFORMANCE, 0);
-  FILE *fper = fopen(fileRobot, "a+");
-  int i;
-  for (i=0; i<NB_REGIONS; i++){ 
-    fprintf(fper, "%d, %d, ", nPick[i], nDrop[i]);
+  if (flagFiles) {
+    createDir(PERFORMANCE, 0);
+    FILE *fper = fopen(fileRobot, "a+");
+    int i;
+    for (i=0; i<NB_REGIONS; i++){ 
+      fprintf(fper, "%d, %d, ", nPick[i], nDrop[i]);
+    }  
+    printf("\n Updated UCB");
+    fclose(fper);
   }  
-  printf("\n Updated UCB");
-  fclose(fper);
 }
 
 void updateEstimations(int task, int value, int cache){ //ok-
@@ -1764,74 +1809,77 @@ void updateEstimations(int task, int value, int cache){ //ok-
 }
 
 void updateBitacora(int codeTask, int estimations, int cache){ //ok-
-  if (estimations == ESTIMATIONS) { 
-    createDir(ESTIMATIONS, 0); 
-    FILE *fbot = fopen(fileRobot, "a+");
-    if (fbot==NULL) {
+  if (flagFiles) { 
+    if (estimations == ESTIMATIONS) { 
+      createDir(ESTIMATIONS, 0); 
+      FILE *fbot = fopen(fileRobot, "a+");
+      if (fbot==NULL) {
+        printf("Error opening file of estimations bot\n");
+        exit(1);
+      }
+      
+      if (flagListened == 1) {
+        fprintf(fbot, "Update after heard for cache %d, %d, %d, %d, %d, %d \n", 
+                   estPickS, estDropN, estTravelGrey, estTravelBlue, estTravelRed, lastImage);
+      } else {
+        fprintf(fbot, "Update after finish for cache %d, %d, %d, %d, %d, %d \n", 
+                   estPickS, estDropN, estTravelGrey, estTravelBlue, estTravelRed, lastImage);
+      }             
+      fclose(fbot);
+    } else {    
+      createDir(FSM, 0); 
+      FILE *fbot = fopen(fileRobot, "a+");    
+      if (fbot==NULL) {
+        printf("Error opening file bot\n");
+        exit(1);
+      }
+      
+      char stringState[] = "SEARCHING SOMETHING";
+      int innerState = stateUML;
+      if (flagListened) { innerState = codeTask;}
+      
+    switch(innerState){
+      case PICK_SOURCE:
+        sprintf(stringState, "PICK SOURCE"); break;
+      case DROP_NEST:
+        sprintf(stringState, "DROP NEST"); break;
+      case TRAVEL2GREY:
+        sprintf(stringState, "TRAVEL2GREY"); break;
+      case TRAVEL2BLUE:
+        sprintf(stringState, "TRAVEL2BLUE"); break;    
+      case TRAVEL2RED:
+        sprintf(stringState, "TRAVEL2RED"); break;
+      }
+      if (flagListened) {
+        fprintf(fbot,"Listened %s, 0, %d\n", stringState, timeListened);
+      } else {
+        fprintf(fbot,"Executed %s, %d, %d\n", stringState, codeTask, timeMeasured);
+      }
+      fclose(fbot);             
+    }               
+  } 
+}
+
+void writeDecision(float boundP, float realP, int mechanism){ //ok-
+  if (flagFiles) {
+    // File for decisions
+    createDir(DECISIONS, 0); 
+    FILE *file = fopen(fileRobot, "a+");
+    if (file==NULL) {
       printf("Error opening file of estimations bot\n");
       exit(1);
     }
-    
-    if (flagListened == 1) {
-      fprintf(fbot, "Update after heard for cache %d, %d, %d, %d, %d, %d \n", 
-                 estPickS, estDropN, estTravelGrey, estTravelBlue, estTravelRed, lastImage);
-    } else {
-      fprintf(fbot, "Update after finish for cache %d, %d, %d, %d, %d, %d \n", 
-                 estPickS, estDropN, estTravelGrey, estTravelBlue, estTravelRed, lastImage);
-    }             
-    fclose(fbot);
-  } else {    
-    createDir(FSM, 0); 
-    FILE *fbot = fopen(fileRobot, "a+");    
-    if (fbot==NULL) {
-      printf("Error opening file bot\n");
-      exit(1);
+  
+    if (mechanism == TRAVELING_AGREE) {
+      fprintf(file, "\n Partitioning %d, %.2f, %.2f", boundP>realP, boundP, realP);
+    } else if (mechanism == TRAVELING_LEVY){
+      fprintf(file, "\n Partitioning-Levy %d, %.2f, %.2f", boundP>realP, boundP, realP);
+    } else if (mechanism == TRAVELING_CALL){
+      fprintf(file, "\n Partitioning by hearing %d, 99, 99", flagTravel);
     }
-    
-    char stringState[] = "SEARCHING SOMETHING";
-    int innerState = stateUML;
-    if (flagListened) { innerState = codeTask;}
-    
-  switch(innerState){
-    case PICK_SOURCE:
-      sprintf(stringState, "PICK SOURCE"); break;
-    case DROP_NEST:
-      sprintf(stringState, "DROP NEST"); break;
-    case TRAVEL2GREY:
-      sprintf(stringState, "TRAVEL2GREY"); break;
-    case TRAVEL2BLUE:
-      sprintf(stringState, "TRAVEL2BLUE"); break;    
-    case TRAVEL2RED:
-      sprintf(stringState, "TRAVEL2RED"); break;
-    }
-    if (flagListened) {
-      fprintf(fbot,"Listened %s, 0, %d\n", stringState, timeListened);
-    } else {
-      fprintf(fbot,"Executed %s, %d, %d\n", stringState, codeTask, timeMeasured);
-    }
-    fclose(fbot);             
-  }               
-} 
-
-void writeDecision(float boundP, float realP, int mechanism){ //ok-
-  // File for decisions
-  createDir(DECISIONS, 0); 
-  FILE *file = fopen(fileRobot, "a+");
-  if (file==NULL) {
-    printf("Error opening file of estimations bot\n");
-    exit(1);
+    fclose(file);
   }
-
-  if (mechanism == TRAVELING_AGREE) {
-    fprintf(file, "\n Partitioning %d, %.2f, %.2f", boundP>realP, boundP, realP);
-  } else if (mechanism == TRAVELING_LEVY){
-    fprintf(file, "\n Partitioning-Levy %d, %.2f, %.2f", boundP>realP, boundP, realP);
-  } else if (mechanism == TRAVELING_CALL){
-    fprintf(file, "\n Partitioning by hearing %d, 99, 99", flagTravel);
-  }
-  fclose(file);
 }
-
 int speaking(int codeTask, int time, int cache){ //ok-
   if (flagCom == 0) { return 0;}
 
