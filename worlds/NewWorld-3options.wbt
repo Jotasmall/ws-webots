@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.000465217 -0.890016 -0.455928 3.13979
-  position 0.00684357 2.30549 -1.71045
+  orientation -0.00303467 -0.863603 -0.504163 3.13121
+  position 0.015129 1.99295 -1.45398
 }
 Background {
   skyColor [
@@ -14,6 +14,11 @@ Background {
 }
 DirectionalLight {
   direction 0.3 -0.5 0.35
+  intensity 0.7
+}
+DirectionalLight {
+  direction -0.3 -0.5 0.35
+  intensity 0.7
 }
 DirectionalLight {
   direction -0.33 -1 -0.5
@@ -197,24 +202,38 @@ DEF ShortWall-RedGrey Solid {
   ]
   boundingObject USE wallSeparatorShort
 }
-DEF redLine1S Transform {
-  translation 0.21 0.0004 -0.6
-  rotation 0 1 0 1.57
+DEF shadowEntranceBlueGrey Transform {
+  translation -0.29 0.0004 -0.5
   children [
     Shape {
       appearance Appearance {
         material Material {
-          diffuseColor 1 0 0
+          diffuseColor 0.15 0.15 0.15
         }
       }
       geometry Plane {
-        size 0.2 0.01
+        size 0.13 0.2
       }
     }
   ]
 }
-DEF blueLine1N Transform {
-  translation -0.21 0.0004 -0.4
+DEF shadowEntranceRedGrey Transform {
+  translation 0.29 0.0004 -0.5
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 0.15 0.15 0.15
+        }
+      }
+      geometry Plane {
+        size 0.13 0.2
+      }
+    }
+  ]
+}
+DEF blueLine1Grey Transform {
+  translation 0.21 0.0004 -0.6
   rotation 0 1 0 1.57
   children [
     Shape {
@@ -229,8 +248,24 @@ DEF blueLine1N Transform {
     }
   ]
 }
+DEF redLine1Grey Transform {
+  translation -0.21 0.0004 -0.4
+  rotation 0 1 0 1.57
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor 1 0 0
+        }
+      }
+      geometry Plane {
+        size 0.2 0.01
+      }
+    }
+  ]
+}
 DEF greyLine1N-Red Transform {
-  translation -0.3 0.0004 -0.6
+  translation -0.3 0.0005 -0.6
   rotation 0 1 0 1.57
   children [
     Shape {
@@ -246,7 +281,7 @@ DEF greyLine1N-Red Transform {
   ]
 }
 DEF greyLine2N-Blue Transform {
-  translation 0.3 0.0004 -0.4
+  translation 0.3 0.0005 -0.4
   rotation 0 1 0 1.57
   children [
     Shape {
@@ -1918,6 +1953,7 @@ DEF Blue DifferentialWheels {
 }
 E-puck {
   translation 0 0 -0.39
+  rotation 0 1 0 2.0944
   controller "CallDuty_v1"
   name "e-puck2801"
   camera_pixelSize 2

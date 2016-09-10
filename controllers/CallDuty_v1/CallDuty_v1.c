@@ -198,7 +198,7 @@ int waiting(int n);
 double angle(double x, double z);
 // Image-depending functions
 int whereIam(int avoiding);
-int find_middle();
+int find_middle(int wrongLine, int colorLine);
 int check4Robot();
 int waiting_color(int foreground);
 int cont_height_figure(int indexP);
@@ -219,6 +219,7 @@ int hitLandmark();
 int whereArrive();
 int enterTam(); 
 int detectTam();
+int setRobotPosition(int colorLine);
 int doorEntrance(int steps);
 // Reaching targets
 int going2Region(int colorLine, int colorDestination);
@@ -382,24 +383,41 @@ int moduleTravel(){
         flagReady = going2Region(BLUE, GREY);
       }  
     } else if (stateUML == TRAVEL2BLUE)  {
-      flagReady = going2Region(BLUE, BLUE);
+      if (floorColor == GREY){
+        flagReady = going2Region(RED, BLUE);
+      } else {
+        flagReady = going2Region(BLUE, BLUE);
+      }
     } else if (stateUML == TRAVEL2RED) {
-      flagReady = going2Region(RED, RED);
+      if (floorColor == GREY){
+        flagReady = going2Region(BLUE, RED);
+      } else {
+        flagReady = going2Region(RED, RED); 
+      }
     } 
     if (flagReady) {  
       auxUML = PICK_SOURCE;
       updateEstimations(stateUML, timeMeasured, 0);
     } else {
-      auxUML = stateUML;
+      printf("\n %s is checking ground color %d", robotName, whereIam(0));
+      printf("\n");
     }    
   } else {
     flagTravel = computeTraveling(1);
     if (flagTravel) { // Change of mind
-      auxUML = stateUML;
+      switch(floorColor) {
+        case BLUE:
+          auxUML = TRAVEL2GREY; break;
+        case RED:
+          auxUML = TRAVEL2GREY; break;
+        case GREY:
+          auxUML = TRAVEL2BLUE; break;
+      }
     } else {
       auxUML = PICK_SOURCE;
     }    
   }
+  wb_robot_step(32);
   return auxUML;
 }
 
@@ -475,8 +493,7 @@ int moduleFSM(){
           flagSureSeen = 0;
           waiting(1);
           if ((stateUML == TRAVEL2BLUE) || (stateUML == TRAVEL2RED) || (stateUML == TRAVEL2GREY)) {
-            flagInside = hitLandmark();
-            printf("\n %s successful hit landmarks with flag %d", robotName, flagInside);
+            flagInside = hitWall(0);
           } else {
             flagInside = enterTam();
           }
@@ -580,6 +597,7 @@ void reset(){ //ok-
   wb_receiver_enable(receiver,TIME_STEP);
   // Getting data
   floorColor = whereIam(0);
+  printf("\n %s was born in region %d", robotName, floorColor);
   if (flagFiles) { createFiles();}  
   initEstimations();
   strcpy(robotName, wb_robot_get_name());
@@ -769,51 +787,35 @@ int whereIam(int avoiding){
   return groundDetected;
 } 
 
-int find_middle(){ //ok 
-  int i, auxW;
-  int aux, index1 = -1, index2 = -1;
-  int foreground = RED;
-  int wrongForeground = BLUE;
-  if (stateUML == TRAVEL2BLUE) {
-    foreground = BLUE;
-    wrongForeground = RED;
-  } else if (stateUML == TRAVEL2GREY) {
-    if (floorColor == RED) { 
-      foreground = BLUE;
-      wrongForeground = RED;
-    }
-  }
-  // new world
-  for (i = 0; i<width; i++){
-    aux = compareColorPixel(i, height-1, foreground);
-    auxW = compareColorPixel(i, height-1, wrongForeground); 
-    if (aux == 1) {
-      if (index1 == -1) { // the 1st time see the color
-        index1 = i;
-      } else { // the final index where the color is seen
-        index2 = i;
-      }  
-    }
-    if (auxW == 1) {
-      if (index1 == -1) { // the 1st time see the color
-        index1 = i;
-      } else { // the final index where the color is seen
-        index2 = i;
-      }  
-    }
-
-  }  
-  if (index1 == -1) { return -1;} // followLine
-  if (auxW == 1) {
-    auxW = 100+(index2-index1)/2+index1;
-    printf("\n %s had found a wrong line color %d", robotName, auxW);
-    return auxW;  
-  } else {
-    auxW = (index2-index1)/2+index1;
-    printf("\n %s had found a correct line color %d", robotName, auxW);
-    return auxW;
-  }    
-}
+//int find_middle(int wrongLine, int colorLine){ //ok 
+  //int i;
+  //int aux, index1 = -1, index2 = -1;
+  //int foreground = colorLine;
+  //if (wrongLine) { 
+    //if (foreground == BLUE) {
+      //foreground = RED;
+    //} else {
+      //foreground = BLUE;
+    //}
+  //}
+  //for (i = 0; i<width; i++){
+    //aux = compareColorPixel(i, height-1, foreground);
+    //if (aux == 1) {
+      //if (index1 == -1) { // the 1st time see the color
+        //index1 = i;
+      //} else { // the final index where the color is seen
+        //index2 = i;
+      //}  
+    //}
+  //}  
+  //if (index1 == -1) { return -1;} // followLine
+  //aux = (index2-index1)/2+index1;
+  //if (wrongLine) {
+    //aux = 100;
+    //printf("\n %s had found a wrong line color", robotName);
+  //}
+  //return aux;    
+//}
 
 int check4Robot(){//ok-
   int nComp, sizeRobot = 0;
@@ -868,9 +870,8 @@ int cont_height_figure(int indexP){ //ok
       foreground = MAGENTA; // nest TAM
       break; 
     case -10: // On levy avoid colors 18 
-      if (stateUML == PICK_SOURCE) {
-        foreground = MAGENTA; // nest TAM
-      } else if (stateUML == DROP_NEST) { 
+      foreground = MAGENTA;
+      if (stateUML == DROP_NEST) { 
         foreground = RED; // source TAM
         if (floorColor == RED) { foreground = BLUE;} // source TAM
       } break; 
@@ -925,8 +926,8 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
     case ROBOT_COLOR:
       auxColor = (pixelR > ROBOT_THRES) && (pixelG > ROBOT_THRES) && (pixelB > ROBOT_THRES); 
       break;
-	case GREY:
-	  auxColor = (pixelR < COMP_COLOR) && (pixelG < COMP_COLOR) && (pixelB < COMP_COLOR);
+    case GREY:
+      auxColor = (pixelR < COMP_COLOR) && (pixelG < COMP_COLOR) && (pixelB < COMP_COLOR);
       auxColor = auxColor && ((pixelR > BLACK_THRES) && (pixelG > BLACK_THRES) && (pixelB > BLACK_THRES));	  
       break;	
     case WHITE:
@@ -1247,7 +1248,7 @@ int followingLine(int colorLine){//ok-
     } else {
       image = wb_camera_get_image(cam);
       // cronometer(IMAGE, 0); // Disable because it is only one row
-      delta = find_middle();
+      delta = find_middle(0, colorLine);
       if ((delta > -1) && (delta < 100)) {
         delta = delta - width/2;
         speed[LEFT] = 220 - K_TURN*abs(delta);
@@ -1261,8 +1262,6 @@ int followingLine(int colorLine){//ok-
         if (flagRobot) {
           waiting(20);
           //printf("\n Robot is out by line");
-        } else if (delta > 100){
-          return -2;// Wrong line
         } else {
           printf("\n %s is lost from the line", robotName);
           return -1;// End of travel
@@ -1507,7 +1506,7 @@ int hitWall(int front){ //ok
   } else if (front == -5) {
     speed[RIGHT] = 300 + 50;//6*(pointB - pointA);
   }
-  while(flag){
+  while (flag) {
     readSensors(0);
 //    printf("\n sensors 0 %d, 1 %d, 6 %d, 7 %d", ps_value[0], ps_value[1], ps_value[6], ps_value[7]);
     if ((front == 0) || (abs(front) == 5)) {
@@ -1533,60 +1532,13 @@ int hitWall(int front){ //ok
   return 1;
 }
 
-int hitLandmark(){
-  hitWall(0);
-  int flagRobot = check4Robot();
-  // She saw a robot or not Cyan color in front
-  if (flagRobot) {
-    printf("\n False Cyan landmark, %s", robotName);
-    forward(-20);
-    return 0;
-  } 
-  
-  forward(2);
-  readSensors(0);
-  // hit by sensor 1, turn almost 20 degrees
-  if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[1] > THRESHOLD_DIST)) { turnSteps(10);} 
-  speed[LEFT] = 100;
-  speed[RIGHT] = -100;
-  int notReady = 1;
-  int counter = 0;
-  while(notReady) { 
-    wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);      
-    readSensors(0);
-    counter++;
-    if (ps_value[5]> 250) {
-      notReady = find_middle();
-      if (notReady > 100) {
-        printf("\n %s found another line color", robotName);
-        return -1;
-      }
-      notReady = notReady < 0;
-    } else {
-      flagRobot = check4Robot();
-      if (flagRobot) {
-        printf("\n %s find another robot here",robotName);
-        return 0;
-      }
-      if (counter > 60) {
-        printf("\n %s gave a entire turn and no line", robotName);
-        return -1;
-      }
-    }
-    cronometer(-1, 0); 
-  }
-  printf("\n Ending hitLandmark");
-  //waiting(1);
-  return 1;
-}
-
 int whereArrive(){
-    run(60);
     // To add randomness in the entrance 
     waiting(2);
     // Verify if not robot is close
     if ((readSensors(0) == 0) && (check4Robot() == 0)) {
       floorColor = whereIam(0);
+      printf("\n %s arrived into a land of color %d", robotName, floorColor);
     } else {
       waiting(10);
       printf("\n Waiting to have a clear ground");
@@ -1652,32 +1604,113 @@ int enterTam(){ //ok
   return -1;    
 }
 
+int find_middle(int wrongLine, int colorLine){ //ok 
+  int i;
+  int aux, index1 = -1, index2 = -1;
+  int foreground = colorLine;
+  if (wrongLine) { 
+    if (foreground == BLUE) {
+      foreground = RED;
+    } else {
+      foreground = BLUE;
+    }
+  }
+  // new world
+  for (i = 0; i<width; i++){
+    aux = compareColorPixel(i, height-1, foreground);
+    if (aux == 1) {
+      if (index1 == -1) { // the 1st time see the color
+        index1 = i;
+      } else { // the final index where the color is seen
+        index2 = i;
+      }  
+    }
+  }  
+  if (index1 == -1) { return -1;} // followLine
+  aux = (index2-index1)/2+index1;
+  if (wrongLine) {
+    aux = 100;
+    printf("\n %s had found a wrong line color", robotName);
+  }
+  return aux;    
+}
+
 int doorEntrance(int steps){
-  forward(10);
+  printf("\n %s is entering a new region", robotName);
+  forward(20);
   turnSteps(TURN_M90);
   forward(steps);
   waiting(1);
   return 1;
 }
 
+int setRobotPosition(int colorLine){
+  int flagRobot = check4Robot();
+  // She saw a robot or not Cyan color in front
+  if (flagRobot) {
+    printf("\n False Cyan landmark, %s", robotName);
+    forward(-20);
+    return 0;
+  }
+  forward(2);
+  readSensors(0);
+  // hit by sensor 1, turn almost 20 degrees
+  if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[1] > THRESHOLD_DIST)) { turnSteps(10);} 
+  speed[LEFT] = 100;
+  speed[RIGHT] = -100;
+  int notReady = 1;
+  int wrongDoor = 0;
+  int counter = 0;
+  printf("\n %s is looking for line of color %d", robotName, colorLine);
+  while(notReady) { 
+    wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);      
+    readSensors(0);
+    counter++;
+    if (ps_value[5]> 250) {
+      notReady = find_middle(0, colorLine) < 0; // returns the index -1 if not
+      wrongDoor = find_middle(1, colorLine) > 0; // return 100 if it found it
+      if (wrongDoor) {
+        return -2;
+      }
+    } else {
+      flagRobot = check4Robot();
+      if (flagRobot) {
+        printf("\n %s find another robot here",robotName);
+        return 0;
+      }
+      if (counter > 60) {
+        printf("\n %s gave a entire turn and no line", robotName);
+        return -1;
+      }
+    }
+    cronometer(-1, 0); 
+  } 
+  return 0;
+}
+
 int going2Region(int colorLine, int colorDestination){ //ok
   int endTask = 0;
   resetDisplay();
-  printf("\n %s getting in position destination Source", robotName);
-
-  endTask = followingLine(colorLine);
-  if (endTask == -2) { // Wrong line 
+  printf("\n %s getting in position destination %d by line of color %d", robotName, colorDestination, colorLine);
+  endTask = setRobotPosition(colorLine);
+  if (endTask == -1) { // found no line
+    while(!run(60));
+    return 0;
+  } else if (endTask == -2) { //found another color
     turnSteps(TURN_90);
-    forward(60); 
-    return 0; 
-  } else if (endTask == -1) { //End of travel
-    printf("\n Robot %s going on 1st wall", robotName);
-    endTask = doorEntrance(60);
-  
+    while(!run(60));
+    return 0;
+  }
+  endTask = followingLine(colorLine);
+  if (endTask == -1) { //End of travel
+    printf("\n Robot %s going inside", robotName);
+    endTask = doorEntrance(60);  
     whereArrive();
     if (floorColor == colorDestination) {
+      printf("\n Excellent entrance, %s is on desired region", robotName);
       return 1;
     } else {
+      printf("\n Something went wrong, please %s recheck", robotName);
       return 0;
     } 
   }
