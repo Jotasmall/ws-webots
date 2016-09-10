@@ -1697,7 +1697,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
     while(!run(60));
     return 0;
   } else if (endTask == -2) { //found another color
-    turnSteps(TURN_90);
+    turnSteps(15);
     while(!run(60));
     return 0;
   }
