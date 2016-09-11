@@ -261,9 +261,9 @@ int main(int argc, char **argv) {
 void init_variables(){
   switch(modelTest){
     case ESSAY:
-      stateUML = TRAVEL2BLUE;
+      stateUML = TRAVEL2GREY;
       color = CYAN;
-      figura = ALL;
+      figura = BOX;
     break;
     case NEVER:
       flagMasterRecruiting = -1;
@@ -787,36 +787,6 @@ int whereIam(int avoiding){
   return groundDetected;
 } 
 
-//int find_middle(int wrongLine, int colorLine){ //ok 
-  //int i;
-  //int aux, index1 = -1, index2 = -1;
-  //int foreground = colorLine;
-  //if (wrongLine) { 
-    //if (foreground == BLUE) {
-      //foreground = RED;
-    //} else {
-      //foreground = BLUE;
-    //}
-  //}
-  //for (i = 0; i<width; i++){
-    //aux = compareColorPixel(i, height-1, foreground);
-    //if (aux == 1) {
-      //if (index1 == -1) { // the 1st time see the color
-        //index1 = i;
-      //} else { // the final index where the color is seen
-        //index2 = i;
-      //}  
-    //}
-  //}  
-  //if (index1 == -1) { return -1;} // followLine
-  //aux = (index2-index1)/2+index1;
-  //if (wrongLine) {
-    //aux = 100;
-    //printf("\n %s had found a wrong line color", robotName);
-  //}
-  //return aux;    
-//}
-
 int check4Robot(){//ok-
   int nComp, sizeRobot = 0;
   sizeRobot = detectImage(ROBOT_COLOR, ROBOT, 0, &nComp);
@@ -915,7 +885,7 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
       auxColor = (pixelB > COLOR_THRES) && (pixelR < LOW_THRES) && (pixelG < LOW_THRES); //only blue  
       break;
     case CYAN:     // green+blue
-      auxColor = (pixelG > COMP_COLOR) && (pixelB > COMP_COLOR) && (pixelR < LOW_THRES);
+      auxColor = (pixelG > LOW_THRES) && (pixelB > LOW_THRES) && (pixelR < 20);
       break;
     case MAGENTA:  // red+blue
       auxColor = (pixelR > COMP_COLOR) && (pixelB > COMP_COLOR) && (pixelG < LOW_THRES);
@@ -1637,7 +1607,7 @@ int find_middle(int wrongLine, int colorLine){ //ok
 
 int doorEntrance(int steps){
   printf("\n %s is entering a new region", robotName);
-  forward(20);
+  forward(10);
   turnSteps(TURN_M90);
   forward(steps);
   waiting(1);
@@ -1676,7 +1646,7 @@ int setRobotPosition(int colorLine){
       flagRobot = check4Robot();
       if (flagRobot) {
         printf("\n %s find another robot here",robotName);
-        return 0;
+        //return 0;
       }
       if (counter > 60) {
         printf("\n %s gave a entire turn and no line", robotName);

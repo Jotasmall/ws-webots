@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.00202421 -0.861074 -0.508476 3.14846
-  position 0.0289237 1.99849 -1.4385
+  orientation -0.00167874 0.712027 0.70215 3.13818
+  position -0.00605035 1.91615 -0.365717
 }
 Background {
   skyColor [
@@ -13,15 +13,19 @@ Background {
   ]
 }
 DirectionalLight {
-  direction 0.3 -0.5 0.35
+  direction 0.33 -1 0
   intensity 0.7
+  castShadows TRUE
 }
 DirectionalLight {
-  direction -0.3 -0.5 0.35
+  direction 0 -1 0
   intensity 0.7
+  castShadows TRUE
 }
 DirectionalLight {
-  direction -0.33 -1 -0.5
+  direction -0.33 -1 0
+  intensity 0.7
+  castShadows TRUE
 }
 RectangleArena {
   floorSize 1.52 1.8
@@ -75,7 +79,7 @@ DEF Blue-Area Transform {
   ]
 }
 DEF GreyBlue-LandMark Solid {
-  translation -0.249 0.0299961 -0.33
+  translation -0.249 0.0299961 -0.32
   rotation 0 0 -1 1.5707
   children [
     Shape {
@@ -92,7 +96,7 @@ DEF GreyBlue-LandMark Solid {
   ]
 }
 DEF BlueGrey-LandMark Solid {
-  translation -0.261 0.0299961 -0.67
+  translation -0.261 0.0299961 -0.68
   rotation 0 0 1 1.5707
   children [
     Shape {
@@ -141,7 +145,7 @@ DEF ShortWall-BlueGrey Solid {
   boundingObject USE wallSeparatorShort
 }
 DEF RedGrey-LandMark Solid {
-  translation 0.261 0.0299961 -0.33
+  translation 0.261 0.0299961 -0.32
   rotation 0 0 -1 1.5707
   children [
     Shape {
@@ -158,7 +162,7 @@ DEF RedGrey-LandMark Solid {
   ]
 }
 DEF GreyRed-LandMark Solid {
-  translation 0.249 0.0299961 -0.67
+  translation 0.249 0.0299961 -0.68
   rotation 0 0 1 1.5707
   children [
     Shape {
@@ -203,7 +207,7 @@ DEF ShortWall-RedGrey Solid {
   boundingObject USE wallSeparatorShort
 }
 DEF shadowEntranceBlueGrey Transform {
-  translation -0.29 0.0004 -0.5
+  translation -0.29 0.0004 -0.55
   children [
     Shape {
       appearance Appearance {
@@ -212,13 +216,13 @@ DEF shadowEntranceBlueGrey Transform {
         }
       }
       geometry Plane {
-        size 0.13 0.2
+        size 0.13 0.3
       }
     }
   ]
 }
 DEF shadowEntranceRedGrey Transform {
-  translation 0.29 0.0004 -0.5
+  translation 0.29 0.0004 -0.45
   children [
     Shape {
       appearance Appearance {
@@ -227,13 +231,13 @@ DEF shadowEntranceRedGrey Transform {
         }
       }
       geometry Plane {
-        size 0.13 0.2
+        size 0.13 0.3
       }
     }
   ]
 }
 DEF blueLine1Grey Transform {
-  translation 0.21 0.0004 -0.6
+  translation 0.21 0.0004 -0.58
   rotation 0 1 0 1.57
   children [
     Shape {
@@ -243,13 +247,13 @@ DEF blueLine1Grey Transform {
         }
       }
       geometry Plane {
-        size 0.2 0.01
+        size 0.23 0.01
       }
     }
   ]
 }
 DEF redLine1Grey Transform {
-  translation -0.21 0.0004 -0.4
+  translation -0.21 0.0004 -0.42
   rotation 0 1 0 1.57
   children [
     Shape {
@@ -259,13 +263,13 @@ DEF redLine1Grey Transform {
         }
       }
       geometry Plane {
-        size 0.2 0.01
+        size 0.23 0.01
       }
     }
   ]
 }
 DEF greyLine1N-Red Transform {
-  translation -0.3 0.0005 -0.6
+  translation -0.3 0.0005 -0.58
   rotation 0 1 0 1.57
   children [
     Shape {
@@ -275,13 +279,13 @@ DEF greyLine1N-Red Transform {
         }
       }
       geometry Plane {
-        size 0.2 0.01
+        size 0.23 0.01
       }
     }
   ]
 }
 DEF greyLine2N-Blue Transform {
-  translation 0.3 0.0005 -0.4
+  translation 0.3 0.0005 -0.42
   rotation 0 1 0 1.57
   children [
     Shape {
@@ -291,7 +295,7 @@ DEF greyLine2N-Blue Transform {
         }
       }
       geometry Plane {
-        size 0.2 0.01
+        size 0.23 0.01
       }
     }
   ]
@@ -1952,7 +1956,7 @@ DEF Blue DifferentialWheels {
   name "tamBlue"
 }
 E-puck {
-  translation 0 0 -0.39
+  translation -0.485898 1.88304e-15 -0.289769
   rotation 0 -1 0 6.28318
   controller "CallDuty_v1"
   name "e-puck2801"
@@ -1963,6 +1967,40 @@ E-puck {
       width 52
       height 39
       windowPosition 0.183766 0.0584046
+      pixelSize 2
+    }
+  ]
+}
+E-puck {
+  translation 0.103114 2.50841e-15 -0.748171
+  rotation 0 -1 0 6.28318
+  controller "void"
+  name "e-puck2801"
+  camera_windowPosition 0.0586907 0.31994
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.182637 0.320309
+      pixelSize 2
+    }
+  ]
+}
+E-puck {
+  translation 0.49727 2.36855e-15 -0.302403
+  rotation 0 -1 0 4.71238
+  controller "CallDuty_v1"
+  name "e-puck2801"
+  camera_windowPosition 0.0586907 0.193452
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.183766 0.190845
       pixelSize 2
     }
   ]
