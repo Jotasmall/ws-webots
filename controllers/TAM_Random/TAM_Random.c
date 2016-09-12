@@ -34,19 +34,28 @@ float pDisableNestRed = 0.00;
 float pDisableNestGrey = 0.33;
 float pDisableNestBlue = 0.66;
 float pDisable = 0.0;
-int nRobots = 5;
-int listFriends[] = {2801,2802,2803,2804,2805};
+#define nRobots 4
+int listWorkers[] = {0,0,0,0}; // number of robots
+int flagFiles = 0;
 
 // Communication flags
 int flagCom = 1;                //to enable or disable communications 
 WbDeviceTag receiver;
 WbDeviceTag emitter;
+#define M2ROBOT 1
+#define LEAVE 11
+#define COME 12
+#define ROBOT_LEAVING 31
+#define ROBOT_ARRIVING 32
+#define ROBOT_UPDATING 33
+#define M2NEST 2
 
 char robotName[8];
 int codeTam = 0;
+#define NEIGHBORS 3
+int utility[] = {nRobots,nRobots,nRobots};
  
 #define NB_TAM 10
-
 #define noS 5
 int sensorSource[] = {5,6,7,8,9};
 #define noN 5
@@ -84,6 +93,7 @@ int contUnload[noN];
 long int timeCounter = 0;
 int timeMinute = 0;
 int date = 0;
+int resources[] = {0, 0, 0};
 
 char dir[] = "dd-hh-mm";//"/home/sim/dd-hh-mm/";
 char file[] = "dd-hh-mm/visit_vector.txt";
@@ -104,9 +114,10 @@ void updateFiles();
 void writeFile(int idPlace);
 void W_updateNests();
 void W_updateSources();
-int speaking(int codeTask, int time, int who);
+int speaking(int toWhom);
 int listening();
 void printStates();
+void updateUtility(int amount);
 
 int main(int argc, char **argv)
 {
@@ -140,7 +151,7 @@ int main(int argc, char **argv)
   */
   printf("\n Leds ready");
   
-  createFile();
+  if (flagFiles) { createFile();}
   
   while (wb_robot_step(TIME_STEP) != -1) {
     timeCounter++;
@@ -152,7 +163,7 @@ int main(int argc, char **argv)
       timeMinute++;
       if (timeMinute > MINUTES_EMPTY) {
         timeMinute = 0;
-        speaking(0, -1, 0); // Call of Duty
+        speaking(M2NEST); // Call of Duty
       }
     }  
   }  
@@ -393,17 +404,17 @@ void W_reset(){
   if (strcmp("tamRed", robotName) == 0) {
     printf("\n I am TAM with ground color RED");
     pDisable = pDisableNestRed;
-    codeTam = 1;
+    codeTam = 0;
   }
   if (strcmp("tamGrey", robotName) == 0) {
     printf("\n I am TAM with ground color GREY");
     pDisable = pDisableNestGrey;
-    codeTam = 2;
+    codeTam = 1;
   }
   if (strcmp("tamBlue", robotName) == 0) {
     printf("\n I am TAM with ground color BLUE");  
     pDisable = pDisableNestBlue;
-    codeTam = 3;
+    codeTam = 2;
   }  
   strcpy(robotName, wb_robot_get_name());
   srand(codeTam*100+date);
@@ -466,6 +477,7 @@ void createFile(){
 }
 
 void updateFiles(){
+  if (flagFiles) {
   FILE *fw=fopen(fileAux,"w");
   if (fw == NULL){
       printf("Error opening auxiliar file\n");
@@ -489,9 +501,11 @@ void updateFiles(){
   fclose(fw);
   fclose(fr);
   //printf("\n Final update");
+  }
 }
 
 void writeFile(int idPlace){
+  if (flagFiles) {
   FILE *fw=fopen(file,"w");
   if (fw == NULL){
       printf("Error opening file 1\n");
@@ -521,71 +535,103 @@ void writeFile(int idPlace){
   fclose(fw);
   fclose(fr);
   updateFiles();
+  }
 }
 
-int speaking(int codeTask, int time, int who){ //ok-
+void updateUtility(int amount) {
+  int i;
+  utility[codeTam]-=amount;
+  for (i = 0; i < NEIGHBORS; i++) {
+    if ((i != codeTam) && (utility[codeTam]<utility[i])) {  
+      speaking(M2ROBOT);
+      break;
+    }
+  }
+}
+
+int speaking(int toWhom){ //ok-
   if (flagCom == 0) { return 0;}
 
   char message[30];
+  int i, place2Go = codeTam, dif, maxDif = -1;
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
-  if (time == -1) { // reporting just to have the same number of lines
-    sprintf(message, "C%d", codeTam);
-    printf("\n %s is calling for service", robotName);
+  if (toWhom == M2NEST) { // reporting just to have the same number of lines
+    sprintf(message, "T2T%dX%d", codeTam, utility[codeTam]);
+    printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], resources[0], resources[1], resources[2]);
     printf("\n");
     wb_emitter_send(emitter, message, strlen(message)+1);
-  } else {
-    sprintf(message, "R.%dC%dT%dX%d", who, codeTask, time, codeTam);
-    wb_emitter_send(emitter, message, strlen(message)+1);
+  } else if (toWhom == M2ROBOT) {
+    for (i=0; i<NEIGHBORS; i++) {
+      if ((i != codeTam) && (utility[i] > utility[codeTam])) {
+        dif = utility[i]-utility[codeTam];
+        if (dif > maxDif) {
+          maxDif = dif;
+          place2Go = i;
+        }
+      }  
+    }
+    if (place2Go != codeTam) {
+      sprintf(message, "T2R%dT%dX%d", codeTam, LEAVE, place2Go);
+      printf("\n %s communicates to its robots", robotName);
+      printf("\n");
+      wb_emitter_send(emitter, message, strlen(message)+1);
+    } else {
+      //sprintf(message, "T2R%dT%dX%d", codeTam, COME, codeTam);
+      printf("\n %s has no neighbors needing", robotName);
+      printf("\n");
+    }  
   }
   wb_robot_step(32);
   return 1;
 }
 
-int listening() { //ok-
+int listening() { 
+  int i;
   while(wb_receiver_get_queue_length(receiver)>0){  
     const char *data = wb_receiver_get_data(receiver);
-   
-    /*  
-       A standard message Me0000C777T9999X3
-       Me0000 = number of robot
-       C777 = code of task
-       T9999 = time of task
-       X3 = type of cache found //still not used
-    */
-    int name = atoi(&data[2]);
-    int i;
-    for (i = 0; i < nRobots; i++){
-      if (name == listFriends[i]){
-        // proceed to listen the information
+    if (data[0] == 'T') {
+      if (data[2] == 'T') {
+        printf("\n %s received a message from a Nest", robotName);
+        int sender = atoi(&data[3]); //Maximum 9 senders (NEST)
+        int value = atoi(&data[5]); //utility value
+        printf("\n %s update neighbor %d utility %d", robotName, sender, value);
+        utility[sender] = value; 
       }
-    }
-    int codeReceived = atoi(&data[7]);
-    int timeListened = atoi(&data[11]);
-    char *p = (char*) data;
-    p+=11;
-    while(*p) {
-      if (*p == 'X') { 
-        p++;	  
-        break; 
-      } else {
-        p++;
+    } else if (data[0] == 'R') {
+      if (data[2] == 'T') {
+        printf("\n %s receive a message from a robot", robotName);
+        //R2T0000T##X999
+        int robot = atoi(&data[3]); 
+        int action = atoi(&data[8]);
+        int value = atoi(&data[11]);
+        if (value == codeTam) {
+          // The message is for this TAM
+          if (action == ROBOT_LEAVING) {
+            for (i = 0; i < nRobots; i++){
+              if (robot == listWorkers[i]){
+                // proceed to listen the information
+                listWorkers[i] = 0;
+                printf("\n %s removed from its list %d", robotName, robot);
+                updateUtility(-1);
+              }
+            } 
+          } else if (action == ROBOT_ARRIVING) {
+            for (i = 0; i < nRobots; i++) {
+              if (listWorkers[i] == 0) {
+                listWorkers[i] = robot;
+                printf("\n %s add to its list %d", robotName, robot);
+                updateUtility(1);
+                break;
+              }
+            }
+          } else {          
+            printf("\n %s has received %d from %d", robotName, value, robot);
+            printf("\n");
+          }  
+        }  
       }
-    }
-    int cacheReceived = atoi(p);
-    /* Robot codes 
-    301 TRIANGLE     100 timePickSource *     106 timeStore
-    302 BOX          101 timepickCache        107 timeHarvest
-    303 CIRCLE       102 timeDropCache        201 timeImage
-    304 ALL          103 timeDropNest *       202 timeCache
-    305 NOTHING      104 timeTravel2Nest      777 waiting
-    306 ROBOT        105 timeTravel2Source    999 time4All
-    */
-   if ((codeReceived >= 100) && (codeReceived <= 107)){	
-      printf("\n %d buddy, %s will spread your information time %d for task %d on ", name, robotName, timeListened, codeReceived);
-      speaking(codeReceived, timeListened, name);
-      wb_robot_step(32); // to update global values
-    }
+    }   
     wb_receiver_next_packet(receiver);
-  }  
+  }
   return 1;
 }
