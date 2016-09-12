@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.00167874 0.712027 0.70215 3.13818
-  position -0.00605035 1.91615 -0.365717
+  orientation -0.00152782 0.769067 0.639166 3.13791
+  position 0.0153906 2.12557 -0.666404
 }
 Background {
   skyColor [
@@ -28,7 +28,7 @@ DirectionalLight {
   castShadows TRUE
 }
 RectangleArena {
-  floorSize 1.52 1.8
+  floorSize 1.52 1.9
   floorTextureUrl [
     "textures/metal2.png"
   ]
@@ -43,7 +43,7 @@ DEF Grey-Area Transform {
         }
       }
       geometry Plane {
-        size 0.5 1.8
+        size 0.5 1.9
       }
     }
   ]
@@ -58,7 +58,7 @@ DEF Red-Area Transform {
         }
       }
       geometry Plane {
-        size 0.5 1.8
+        size 0.5 1.9
       }
     }
   ]
@@ -73,7 +73,7 @@ DEF Blue-Area Transform {
         }
       }
       geometry Plane {
-        size 0.5 1.8
+        size 0.5 1.9
       }
     }
   ]
@@ -301,6 +301,7 @@ DEF greyLine2N-Blue Transform {
   ]
 }
 DEF Red DifferentialWheels {
+  translation 0 0 -0.05
   children [
     DEF Interface Solid {
       translation 0.51 0.05 0.1
@@ -852,7 +853,7 @@ DEF Red DifferentialWheels {
   name "tamRed"
 }
 DEF Grey DifferentialWheels {
-  translation -0.51 0 0
+  translation -0.51 0 -0.05
   children [
     DEF Interface Solid {
       translation 0.51 0.05 0.1
@@ -1404,7 +1405,7 @@ DEF Grey DifferentialWheels {
   name "tamGrey"
 }
 DEF Blue DifferentialWheels {
-  translation -1.02 0 0
+  translation -1.02 0 -0.05
   children [
     DEF Interface Solid {
       translation 0.51 0.05 0.1
@@ -1959,7 +1960,7 @@ E-puck {
   translation -0.485898 1.88304e-15 -0.289769
   rotation 0 -1 0 6.28318
   controller "CallDuty_v1"
-  name "e-puck2801"
+  name "e-puck2901"
   camera_pixelSize 2
   turretSlot [
     Display {
