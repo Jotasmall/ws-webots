@@ -114,7 +114,7 @@ void updateFiles();
 void writeFile(int idPlace);
 void W_updateNests();
 void W_updateSources();
-int speaking(int toWhom);
+int W_speaking(int toWhom);
 int listening();
 void printStates();
 void updateUtility(int amount);
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
   timeinfo = localtime(&rawtime);
   date = timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min;
   sprintf(dir,"%d-%d-%d",timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
-  printf("\n dir %s", dir);
+  //printf("\n dir %s", dir);
 
   init_variables(); 
   W_reset();
@@ -158,12 +158,14 @@ int main(int argc, char **argv)
     W_read_dsensor();
     W_updateNests();
     W_updateSources();
+    listening();
     //printStates();
     if (timeCounter%448 == 0) {
       timeMinute++;
       if (timeMinute > MINUTES_EMPTY) {
+        printf("\n %s is gonna speak", robotName);
         timeMinute = 0;
-        speaking(M2NEST); // Call of Duty
+        W_speaking(M2NEST); // Call of Duty
       }
     }  
   }  
@@ -175,13 +177,13 @@ int main(int argc, char **argv)
 
 void printStates(){
   int i;
-  printf("\n We sources ares on ");
+  //-- printf("\n We sources ares on ");
   for (i=0; i<noS; i++){
-    printf("\n %d is %d", i, stateSource[i]);  
+  //--   printf("\n %d is %d", i, stateSource[i]);  
   }
   printf("\n We nests ares on ");
   for (i=0; i<noN; i++){
-    printf("\n %d is %d", i, stateNest[i]);  
+  //--   printf("\n %d is %d", i, stateNest[i]);  
   }
 }
 
@@ -387,6 +389,7 @@ void W_reset(){
   // communication module
   receiver = wb_robot_get_device("receiver");
   emitter = wb_robot_get_device("emitter");
+  wb_receiver_enable(receiver,TIME_STEP);
    
   wb_robot_step(TIME_STEP);
   
@@ -394,25 +397,25 @@ void W_reset(){
     wb_distance_sensor_enable(ds1[i], TIME_STEP);
     wb_distance_sensor_enable(ds2[i], TIME_STEP);
   }
-  printf("\n World reset");
+  //printf("\n World reset");
   // randomSeed by the code of the TAM
   wb_robot_step(TIME_STEP);
   
-  printf("\n TAM name is %s", wb_robot_get_name());
+  //printf("\n TAM name is %s", wb_robot_get_name());
   strcpy(robotName, wb_robot_get_name());
 
   if (strcmp("tamRed", robotName) == 0) {
-    printf("\n I am TAM with ground color RED");
+    //printf("\n I am TAM with ground color RED");
     pDisable = pDisableNestRed;
     codeTam = 0;
   }
   if (strcmp("tamGrey", robotName) == 0) {
-    printf("\n I am TAM with ground color GREY");
+    //printf("\n I am TAM with ground color GREY");
     pDisable = pDisableNestGrey;
     codeTam = 1;
   }
   if (strcmp("tamBlue", robotName) == 0) {
-    printf("\n I am TAM with ground color BLUE");  
+    //printf("\n I am TAM with ground color BLUE");  
     pDisable = pDisableNestBlue;
     codeTam = 2;
   }  
@@ -543,13 +546,13 @@ void updateUtility(int amount) {
   utility[codeTam]-=amount;
   for (i = 0; i < NEIGHBORS; i++) {
     if ((i != codeTam) && (utility[codeTam]<utility[i])) {  
-      speaking(M2ROBOT);
+      W_speaking(M2ROBOT);
       break;
     }
   }
 }
 
-int speaking(int toWhom){ //ok-
+int W_speaking(int toWhom){ //ok-
   if (flagCom == 0) { return 0;}
 
   char message[30];
@@ -557,9 +560,9 @@ int speaking(int toWhom){ //ok-
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
   if (toWhom == M2NEST) { // reporting just to have the same number of lines
     sprintf(message, "T2T%dX%d", codeTam, utility[codeTam]);
-    printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], resources[0], resources[1], resources[2]);
-    printf("\n");
     wb_emitter_send(emitter, message, strlen(message)+1);
+    printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], resources[0], resources[1], resources[2]);
+    printf("\n"); 
   } else if (toWhom == M2ROBOT) {
     for (i=0; i<NEIGHBORS; i++) {
       if ((i != codeTam) && (utility[i] > utility[codeTam])) {
@@ -572,9 +575,9 @@ int speaking(int toWhom){ //ok-
     }
     if (place2Go != codeTam) {
       sprintf(message, "T2R%dT%dX%d", codeTam, LEAVE, place2Go);
-      printf("\n %s communicates to its robots", robotName);
-      printf("\n");
       wb_emitter_send(emitter, message, strlen(message)+1);
+      printf("\n %s communicates to its robots", robotName);
+      printf("\n");      
     } else {
       //sprintf(message, "T2R%dT%dX%d", codeTam, COME, codeTam);
       printf("\n %s has no neighbors needing", robotName);
@@ -587,23 +590,26 @@ int speaking(int toWhom){ //ok-
 
 int listening() { 
   int i;
+  //printf("\n %s is receiving a message %s", robotName);
   while(wb_receiver_get_queue_length(receiver)>0){  
+    //printf("\n %s has received a message", robotName);
     const char *data = wb_receiver_get_data(receiver);
     if (data[0] == 'T') {
       if (data[2] == 'T') {
-        printf("\n %s received a message from a Nest", robotName);
         int sender = atoi(&data[3]); //Maximum 9 senders (NEST)
         int value = atoi(&data[5]); //utility value
+        printf("\n %s received a message from %d Nest", robotName, sender);
         printf("\n %s update neighbor %d utility %d", robotName, sender, value);
         utility[sender] = value; 
       }
+      wb_receiver_next_packet(receiver);
     } else if (data[0] == 'R') {
-      if (data[2] == 'T') {
-        printf("\n %s receive a message from a robot", robotName);
+      if (data[2] == 'T') {     
         //R2T0000T##X999
         int robot = atoi(&data[3]); 
         int action = atoi(&data[8]);
         int value = atoi(&data[11]);
+        printf("\n %s receive %s as message from %d robot", robotName, data, robot);
         if (value == codeTam) {
           // The message is for this TAM
           if (action == ROBOT_LEAVING) {
@@ -630,8 +636,9 @@ int listening() {
           }  
         }  
       }
+      wb_receiver_next_packet(receiver);
     }   
-    wb_receiver_next_packet(receiver);
+    //wb_receiver_next_packet(receiver);
   }
   return 1;
 }

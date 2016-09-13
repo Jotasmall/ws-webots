@@ -320,8 +320,10 @@ DEF Red DifferentialWheels {
       boundingObject USE interfaceWall
     }
     Emitter {
+      channel 1
     }
     Receiver {
+      channel 1
     }
     DEF BlockTam-source0 Solid {
       translation 0.76 0.05 0.06
@@ -873,8 +875,10 @@ DEF Grey DifferentialWheels {
       boundingObject USE interfaceWall
     }
     Emitter {
+      channel 1
     }
     Receiver {
+      channel 1
     }
     DEF BlockTam-source0 Solid {
       translation 0.76 0.05 0.06
@@ -1426,8 +1430,10 @@ DEF Blue DifferentialWheels {
       boundingObject USE interfaceWall
     }
     Emitter {
+      channel 1
     }
     Receiver {
+      channel 1
     }
     DEF BlockTam-source0 Solid {
       translation 0.76 0.05 0.06
@@ -1960,22 +1966,6 @@ DEF Blue DifferentialWheels {
   controller "TAM_Random"
 }
 E-puck {
-  translation -0.485898 1.88304e-15 -0.289769
-  rotation 0 -1 0 6.28318
-  controller "CallDuty_v1"
-  name "e-puck2901"
-  camera_pixelSize 2
-  turretSlot [
-    Display {
-      name "displayExtra"
-      width 52
-      height 39
-      windowPosition 0.183766 0.0584046
-      pixelSize 2
-    }
-  ]
-}
-E-puck {
   translation -0.0368837 2.50841e-15 -0.30817
   rotation 0 -1 0 6.28318
   controller "CallDuty_v1"
@@ -2005,6 +1995,22 @@ E-puck {
       width 52
       height 39
       windowPosition 0.183766 0.190845
+      pixelSize 2
+    }
+  ]
+}
+E-puck {
+  translation -0.485898 1.88304e-15 -0.289769
+  rotation 0 -1 0 6.28318
+  controller "CallDuty_v1"
+  name "e-puck2901"
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.183766 0.0584046
       pixelSize 2
     }
   ]

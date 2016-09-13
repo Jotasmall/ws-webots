@@ -638,6 +638,7 @@ void reset(){ //ok-
     ps_offset[i] /= CALIBRATE-1;
   //-- printf("%d ", ps_offset[i]);
   }
+  speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
 }
 
 void resetDisplay(){ //ok
@@ -1652,7 +1653,7 @@ int setRobotPosition(int colorLine){
     wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);      
     readSensors(0);
     counter++;
-    if (ps_value[5]> 250) {
+    if (ps_value[5]> 300) {
       notReady = find_middle(0, colorLine) < 0; // returns the index -1 if not
       wrongDoor = find_middle(1, colorLine) > 0; // return 100 if it found it
       if (wrongDoor) {
@@ -1913,16 +1914,16 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
     }
   } else if (toWhom == M2NEST) {
     if (time == -1) {
-    //-- printf("\n %s will update your estimation NEST %d", robotName, floorColor);
+      printf("\n %s will update your estimation NEST %d", robotName, floorColor);
     } else {
       if (codeTask == ROBOT_LEAVING) {
         sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_LEAVING, floorColor);
-      //-- printf("\n %s is leaving NEST %d", robotName, floorColor);
-      //-- printf("\n");
+        printf("\n %s is leaving NEST %d", robotName, floorColor);
+        printf("\n message %s", message);
       } else if (codeTask == ROBOT_ARRIVING) {
         sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_ARRIVING, floorColor);
-      //-- printf("\n %s is arriving into NEST %d", robotName, floorColor);
-      //-- printf("\n");        
+        printf("\n %s is arriving into NEST %d", robotName, floorColor);
+        printf("\n message %s", message);        
       }
     }
   }
