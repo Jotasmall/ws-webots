@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.00163777 0.778568 0.627559 3.14565
-  position 0.0139283 2.39804 -0.800082
+  orientation -0.00153701 0.765862 0.643004 3.13793
+  position 0.0162714 2.40734 -0.708552
 }
 Background {
   skyColor [
@@ -11,6 +11,14 @@ Background {
     0 0 0
     0 0 0
   ]
+}
+PointLight {
+  intensity 0.4
+  location 0.47 0.3 -0.45
+}
+PointLight {
+  intensity 0.4
+  location -0.47 0.3 -0.45
 }
 DirectionalLight {
   direction 0.33 -1 0
@@ -30,6 +38,9 @@ DirectionalLight {
 RectangleArena {
   floorSize 1.52 1.9
   floorTextureUrl [
+    "textures/metal2.png"
+  ]
+  wallTextureUrl [
     "textures/metal2.png"
   ]
 }
@@ -1966,9 +1977,9 @@ DEF Blue DifferentialWheels {
   controller "TAM_Random"
 }
 E-puck {
-  translation -0.0368837 2.50841e-15 -0.30817
+  translation 0.533116 2.50841e-15 -0.308173
   rotation 0 -1 0 6.28318
-  controller "CallDuty_v1"
+  controller "void"
   name "e-puck2701"
   camera_windowPosition 0.0586907 0.31994
   camera_pixelSize 2
@@ -1983,8 +1994,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.49727 2.36855e-15 -0.302403
-  rotation 0 -1 0 4.71238
+  translation 0.04727 2.36855e-15 -0.302399
   controller "CallDuty_v1"
   name "e-puck2801"
   camera_windowPosition 0.0586907 0.193452
@@ -2002,7 +2012,7 @@ E-puck {
 E-puck {
   translation -0.485898 1.88304e-15 -0.289769
   rotation 0 -1 0 6.28318
-  controller "CallDuty_v1"
+  controller "void"
   name "e-puck2901"
   camera_pixelSize 2
   turretSlot [

@@ -1945,6 +1945,7 @@ int listening() { //ok-
     } else if ((data[0] == 'T') && (data[2] == 'R')) {
       // "T2R0T77X9"
       int place = atoi(&data[3]);
+      printf("\n %s has received %s message from %d", robotName, data, place);
       if (place == floorColor) {
         printf("\n %s is listening its nest location %d", robotName, place);
         printf("\n");
@@ -1957,6 +1958,7 @@ int listening() { //ok-
           printf("\n %s can stay on region %d", robotName, floorColor);
         }    
       }
+      wb_receiver_next_packet(receiver);
     } else if (data[0] == 'R') { 
       /*  
          A standard message Me0000C777T9999X3
@@ -1999,8 +2001,9 @@ int listening() { //ok-
         wb_robot_step(32); // to update global values
         updateEstimations(codeReceived, timeListened, cacheReceived);
       }
+      wb_receiver_next_packet(receiver);
     }
-    wb_receiver_next_packet(receiver);
+    //wb_receiver_next_packet(receiver);
   }  
   return 1;
 }
