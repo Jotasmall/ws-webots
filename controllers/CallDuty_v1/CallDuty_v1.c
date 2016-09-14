@@ -378,7 +378,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
 int moduleTravel(){
   int auxUML = stateUML; 
   color = CYAN;
-  figura = ALL;
+  figura = BOX;
   output = moduleFSM();
   //updateEstimations(IMAGE, timeImage, 0);
   if (output == STOP){  
@@ -405,22 +405,28 @@ int moduleTravel(){
       //auxUML = PICK_SOURCE; //JUAN
       if (floorColor == RED) {
         auxUML = TRAVEL2BLUE;
+        printf("\n %s is going to BLUE",robotName);
+        printf("\n");
       } else if (floorColor == BLUE)  {  
         auxUML = TRAVEL2RED;
+        printf("\n %s is going to RED",robotName);
+        printf("\n");
       } else {
         float p = ((float)rand())/RAND_MAX;
         if (p>0.5) {
-        //-- printf("\n By luck %s is going to BLUE",robotName);
+          printf("\n By luck %s is going to BLUE",robotName);
+          printf("\n");
           auxUML = TRAVEL2BLUE;
         } else {
-        //-- printf("\n By luck %s is going to RED", robotName);
+          printf("\n By luck %s is going to RED", robotName);
+          printf("\n");
           auxUML = TRAVEL2RED;
         }
       }
       updateEstimations(stateUML, timeMeasured, 0);
     } else {
-    //-- printf("\n %s is checking ground color %d", robotName, whereIam(0));
-    //-- printf("\n");
+      //printf("\n %s is checking ground color %d", robotName, whereIam(0));
+      //printf("\n");
     }    
   } else {
     flagTravel = computeTraveling(1);
@@ -895,6 +901,7 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
   int pixelR = wb_camera_image_get_red(image, width, pixelX, pixelY);
   int pixelG = wb_camera_image_get_green(image, width, pixelX, pixelY);
   int pixelB = wb_camera_image_get_blue(image, width, pixelX, pixelY);
+  if ((foreground == CYAN) && (floorColor == GREY)) { foreground = WHITE;}
   switch(foreground){
     case RED:
       auxColor = (pixelR > COLOR_THRES) && (pixelB < 20) && (pixelG < 20); //only red
@@ -922,7 +929,7 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
       auxColor = auxColor && ((pixelR > BLACK_THRES) && (pixelG > BLACK_THRES) && (pixelB > BLACK_THRES));	  
       break;	
     case WHITE:
-      auxColor = (pixelR > COLOR_THRES) || (pixelB > COLOR_THRES);  
+      auxColor = (pixelR > COLOR_THRES) && (pixelB > COLOR_THRES) && (pixelG > COLOR_THRES);  
       break;
     case TAM_WALL:
       auxColor = (pixelR < LOW_THRES) && (pixelG < LOW_THRES) && (pixelB < LOW_THRES); 
@@ -1033,8 +1040,8 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
     //-- printf("\n Really close and sure it is not a robot, go for the center");
       return 100;
     }
-//    if (((area > 10) && (foreground != CYAN)) || ((foreground == CYAN) && (area > 25))) { 
-    if (((area > 10) && (foreground != CYAN)) || ((foreground == CYAN) && (area > 15))) { 
+//    if (((area > 10) && (foreground != CYAN)) || ((foreground == CYAN) && (area > 15))) { 
+    if (((area > 10) && (foreground != CYAN)) || ((foreground == CYAN) && (area > 25))) { 
       int squareWidth = maxH-minH+1;
       int squareHeight = maxV-minV+1;  
       // Middle axis width within the square
@@ -1425,7 +1432,7 @@ int speedAdjustment(int index, int delta) { //ok
         flagRobot = 0;
         return 0;
       }
-      detectImage(CYAN, ALL, 255, &iter);
+      detectImage(CYAN, BOX, 255, &iter);
       //printf("\n Difference between A-B %d", pointA-pointB);
       iter = pointA - pointB;
       if (iter > 2) { hitWall(5);}
@@ -1488,14 +1495,14 @@ int speedAdjustment(int index, int delta) { //ok
 }
 
 int hitWall(int front){ //ok
-  int hit_thres = 200, flag = 1;
+  int hit_thres = 300, flag = 1;//200
   int question;
   speed[LEFT] = 300;
   speed[RIGHT] = 300;
   if (front == 5) { // 6 is 1.5 x K_TURN
-    speed[LEFT] = 300 + 50;//6*(pointA - pointB);
+    speed[LEFT] = 300 + 30;//6*(pointA - pointB);//50
   } else if (front == -5) {
-    speed[RIGHT] = 300 + 50;//6*(pointB - pointA);
+    speed[RIGHT] = 300 + 30;//6*(pointB - pointA);
   }
   while (flag) {
     readSensors(0);
@@ -1506,7 +1513,16 @@ int hitWall(int front){ //ok
       question = (ps_value[0] > hit_thres) || (ps_value[7] > hit_thres);
     }  
     if (question) {
-      waiting(5);
+      if (front == 5) {
+        speed[LEFT] = -speed[LEFT];
+        wb_robot_step(TIME_STEP);
+        wb_robot_step(TIME_STEP);
+      } else if (front == -5) {
+        speed[RIGHT] = -speed[RIGHT];
+        wb_robot_step(TIME_STEP);
+        wb_robot_step(TIME_STEP);
+      }
+      waiting(2);
       readSensors(0);
       if (question || (ps_value[6] > hit_thres) || (ps_value[1] > hit_thres)){
         flag = 0;
@@ -1628,6 +1644,7 @@ int doorEntrance(int steps){
   forward(steps);
   speaking(M2NEST, ROBOT_LEAVING, 0, 0);
   waiting(1);
+  turnSteps(-10);
   return 1;
 }
 
@@ -1639,7 +1656,7 @@ int setRobotPosition(int colorLine){
     forward(-20);
     return 0;
   }
-  forward(2);
+  //forward(4);
   readSensors(0);
   // hit by sensor 1, turn almost 20 degrees
   if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[1] > THRESHOLD_DIST)) { turnSteps(10);} 
@@ -1678,7 +1695,7 @@ int setRobotPosition(int colorLine){
 int going2Region(int colorLine, int colorDestination){ //ok
   int endTask = 0;
   resetDisplay();
-//-- printf("\n %s getting in position destination %d by line of color %d", robotName, colorDestination, colorLine);
+  printf("\n %s getting in position destination %d by line of color %d", robotName, colorDestination, colorLine);
   endTask = setRobotPosition(colorLine);
   if (endTask == -1) { // found no line
     while(!run(60));
@@ -1697,7 +1714,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
       printf("\n Excellent entrance, %s is on desired region", robotName);
       return 1;
     } else {
-      printf("\n Something went wrong, please %s recheck", robotName);
+      printf("\n Something went wrong, please %s recheck color destination %d", robotName, colorDestination);
       return 0;
     } 
   }
