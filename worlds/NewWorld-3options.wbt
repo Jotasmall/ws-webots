@@ -96,7 +96,8 @@ DEF GreyBlue-LandMark Solid {
     Shape {
       appearance Appearance {
         material Material {
-          diffuseColor 0 1 1
+          diffuseColor 1 1 1
+          emissiveColor 1 1 1
           specularColor 0 1 1
         }
       }
@@ -179,7 +180,8 @@ DEF GreyRed-LandMark Solid {
     Shape {
       appearance Appearance {
         material Material {
-          diffuseColor 0 1 1
+          diffuseColor 1 1 1
+          emissiveColor 1 1 1
           specularColor 0 1 1
         }
       }
