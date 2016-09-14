@@ -159,10 +159,10 @@ int main(int argc, char **argv)
   
   while (wb_robot_step(TIME_STEP) != -1) {
     timeCounter++;
-    W_read_dsensor();//no time step
-    W_updateNests();//no time step
-    W_updateSources();//no time step
-    listening();//no time step
+    W_read_dsensor();
+    W_updateNests();
+    W_updateSources();
+    listening();
     //printStates();
     if (timeCounter%448 == 0) {
       timeMinute++;
@@ -557,10 +557,7 @@ void writeFile(int idPlace){
 
 void updateUtility(int amount) {
   int i;
-  utility[codeTam] -= amount;
-  wb_robot_step(32);
-  printf("\n %s utility is %d, it was updated by %d", robotName, utility[codeTam], amount);
-  printf("\n");
+  utility[codeTam]-=amount;
   for (i = 0; i < NEIGHBORS; i++) {
     if ((i != codeTam) && (utility[codeTam]<utility[i])) {  
       W_speaking(M2ROBOT);
@@ -590,7 +587,7 @@ int W_speaking(int toWhom){ //ok-
   if (toWhom == M2NEST) { // reporting just to have the same number of lines
     sprintf(message, "T2T%dX%d", codeTam, utility[codeTam]);
     wb_emitter_send(emitter, message, strlen(message)+1);
-    printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], utility[0], utility[1], utility[2]);
+    printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], resources[0], resources[1], resources[2]);
     printf("\n"); 
   } else if (toWhom == M2ROBOT) {
     for (i=0; i<NEIGHBORS; i++) {
@@ -605,7 +602,7 @@ int W_speaking(int toWhom){ //ok-
     if (place2Go != codeTam) {
       sprintf(message, "T2R%dT%dX%d", codeTam, LEAVE, place2Go);
       wb_emitter_send(emitter, message, strlen(message)+1);
-      printf("\n %s communicates %s to its robots", robotName, message);
+      printf("\n %s communicates to its robots", robotName);
       printf("\n");      
     } else {
       //sprintf(message, "T2R%dT%dX%d", codeTam, COME, codeTam);
@@ -627,7 +624,7 @@ int listening() {
       if (data[2] == 'T') {
         int sender = atoi(&data[3]); //Maximum 9 senders (NEST)
         int value = atoi(&data[5]); //utility value
-        //printf("\n %s received a message from %d Nest", robotName, sender);
+        printf("\n %s received a message from %d Nest", robotName, sender);
         printf("\n %s update neighbor %d utility %d", robotName, sender, value);
         utility[sender] = value; 
       }
@@ -638,9 +635,9 @@ int listening() {
         int robot = atoi(&data[3]); 
         int action = atoi(&data[8]);
         int value = atoi(&data[11]);
+        printf("\n %s receive %s as message from %d robot", robotName, data, robot);
         if (value == codeTam) {
           // The message is for this TAM
-          printf("\n %s receive %s as message from %d robot", robotName, data, robot);
           if (action == ROBOT_LEAVING) {
             for (i = 0; i < nRobots; i++){
               if (robot == listWorkers[i]){

@@ -216,9 +216,9 @@ int doubleCheck();
 // Movement functions
 void avoidance();
 int followingLine(int colorLine);
-int turnSteps(int steps);
+void turnSteps(int steps);
 int run(int steps);
-int forward(int steps);
+void forward(int steps);
 int levyFlight();
 int speedAdjustment(int index, int delta);
 int hitWall(int front);
@@ -378,7 +378,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
 int moduleTravel(){
   int auxUML = stateUML; 
   color = CYAN;
-  figura = BOX;
+  figura = ALL;
   output = moduleFSM();
   //updateEstimations(IMAGE, timeImage, 0);
   if (output == STOP){  
@@ -405,17 +405,15 @@ int moduleTravel(){
       //auxUML = PICK_SOURCE; //JUAN
       if (floorColor == RED) {
         auxUML = TRAVEL2BLUE;
-        printf("\n %s is going to BLUE", robotName);
       } else if (floorColor == BLUE)  {  
         auxUML = TRAVEL2RED;
-        printf("\n %s is going to RED", robotName);
       } else {
         float p = ((float)rand())/RAND_MAX;
         if (p>0.5) {
-          printf("\n By luck %s is going to BLUE",robotName);
+        //-- printf("\n By luck %s is going to BLUE",robotName);
           auxUML = TRAVEL2BLUE;
         } else {
-          printf("\n By luck %s is going to RED", robotName);
+        //-- printf("\n By luck %s is going to RED", robotName);
           auxUML = TRAVEL2RED;
         }
       }
@@ -1076,7 +1074,6 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
       if ((squareWidth >= 4) && (squareHeight >= 4)) {
         //1 Triangle, 2 Box, 3 Circle, 4 Nothing, 0 ReallyNothing, 5 All, 6 Robot
          newShapeSeen = whatIsee(eccentricity, extent, squareWidth, middleAxisH, middleAxisV, numImage);
-         eccentricity = (float) squareHeight/squareWidth;
          if (shape == ROBOT){
            if (newShapeSeen == ROBOT) {
              if ((x > 23) && (x < 29) && (areaSquare > 600)) {
@@ -1193,7 +1190,7 @@ int whatIsee(float Eccentricity, float Extent, int squareWidth, int middleAxisH,
       } else {
         //printf("\n No circle (105.0)");
         shapeFound = NOTHING;
-        if (color == CYAN ){ shapeFound = BOX;} //JUAN CHANGE
+        if (color == CYAN ){ shapeFound = BOX;}
       }    
     }  
     return shapeFound;
@@ -1266,7 +1263,7 @@ int followingLine(int colorLine){//ok-
   return 1;  
 }
 
-int turnSteps(int steps){ //ok-
+void turnSteps(int steps){ //ok-
   // In simulations 360 degrees 106 required steps on encoder at 200 timeStep 64
   if (steps < 0) {
     // Turn upon the same position
@@ -1284,7 +1281,6 @@ int turnSteps(int steps){ //ok-
     cronometer(-1, 0);
   }
   waiting(1);
-  return 1;
 }
 
 int run(int steps){ //ok-
@@ -1317,7 +1313,7 @@ int run(int steps){ //ok-
   return 1;
 }
 
-int forward(int steps){ //ok-
+void forward(int steps){ //ok-
   int k = 1;
   if (steps < 0) {
     k = -1;
@@ -1332,8 +1328,7 @@ int forward(int steps){ //ok-
     wb_robot_step(TIME_STEP); 
     cronometer(-1, 0); // -1 for let it find the task
   }
-  waiting(1);
-  return 1;  
+  waiting(1);  
 }
 
 int levyFlight(){
@@ -1346,7 +1341,8 @@ int levyFlight(){
   while (r > 0) {
     turnSteps(3); // Blind turn
     r -= 3;
-  
+    whereIam(1);
+    
     image = wb_camera_get_image(cam);
     wb_robot_step(TIME_STEP);
     // cronometer(IMAGE, 0) //It is only a line
@@ -1367,8 +1363,7 @@ int levyFlight(){
       }
     //-- printf("\n Shape watched on levy - Levy Aborted %d", index);
       return index;  
-    }
-    whereIam(1); 
+    } 
   } 
   r = rand()%(100-40)+41; // walk forward between 100 to 40 steps
 //-- printf("\n %s Walking forward %d", robotName, r);
@@ -1376,6 +1371,7 @@ int levyFlight(){
   while (r > 0) {
     run(5); // Blind walk
     r -= 5;
+    whereIam(1);
 
     image = wb_camera_get_image(cam);
     wb_robot_step(TIME_STEP);
@@ -1399,8 +1395,7 @@ int levyFlight(){
       }
     //-- printf("\n Color watched on levy - Levy Aborted %d", index);
       return index;  
-    }
-    whereIam(1); 
+    } 
   }
   return index;
 }
@@ -1493,14 +1488,14 @@ int speedAdjustment(int index, int delta) { //ok
 }
 
 int hitWall(int front){ //ok
-  int hit_thres = 300, flag = 1;//200
+  int hit_thres = 200, flag = 1;
   int question;
   speed[LEFT] = 300;
   speed[RIGHT] = 300;
   if (front == 5) { // 6 is 1.5 x K_TURN
-    speed[LEFT] = 300 + 30;//6*(pointA - pointB);
+    speed[LEFT] = 300 + 50;//6*(pointA - pointB);
   } else if (front == -5) {
-    speed[RIGHT] = 300 + 30;//6*(pointB - pointA);
+    speed[RIGHT] = 300 + 50;//6*(pointB - pointA);
   }
   while (flag) {
     readSensors(0);
@@ -1511,15 +1506,6 @@ int hitWall(int front){ //ok
       question = (ps_value[0] > hit_thres) || (ps_value[7] > hit_thres);
     }  
     if (question) {
-      if (front == 5) {
-        speed[LEFT] = -speed[LEFT];
-        wb_robot_step(TIME_STEP);
-        wb_robot_step(TIME_STEP);
-      } else if (front == -5) {
-        speed[RIGHT] = -speed[RIGHT];
-        wb_robot_step(TIME_STEP);
-        wb_robot_step(TIME_STEP);
-      }
       waiting(5);
       readSensors(0);
       if (question || (ps_value[6] > hit_thres) || (ps_value[1] > hit_thres)){
@@ -1641,7 +1627,6 @@ int doorEntrance(int steps){
   turnSteps(TURN_M90);
   forward(steps);
   speaking(M2NEST, ROBOT_LEAVING, 0, 0);
-  turnSteps(-15);
   waiting(1);
   return 1;
 }
@@ -1654,7 +1639,7 @@ int setRobotPosition(int colorLine){
     forward(-20);
     return 0;
   }
-  forward(4);//2 JUAN CHANGE
+  forward(2);
   readSensors(0);
   // hit by sensor 1, turn almost 20 degrees
   if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[1] > THRESHOLD_DIST)) { turnSteps(10);} 
@@ -1706,7 +1691,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
   endTask = followingLine(colorLine);
   if (endTask == -1) { //End of travel
   //-- printf("\n Robot %s going inside", robotName);
-    while(!doorEntrance(60));  
+    endTask = doorEntrance(60);  
     whereArrive();
     if (floorColor == colorDestination) {
       printf("\n Excellent entrance, %s is on desired region", robotName);

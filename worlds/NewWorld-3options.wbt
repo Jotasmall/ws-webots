@@ -3,7 +3,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.00153701 0.765862 0.643004 3.13793
-  position 0.0162217 2.34825 -0.698167
+  position 0.0162714 2.40734 -0.708552
 }
 Background {
   skyColor [
@@ -1977,7 +1977,7 @@ DEF Blue DifferentialWheels {
   controller "TAM_Random"
 }
 E-puck {
-  translation 0.593116 2.50841e-15 -0.308173
+  translation 0.533116 2.50841e-15 -0.308173
   rotation 0 -1 0 6.28318
   controller "void"
   name "e-puck2701"
