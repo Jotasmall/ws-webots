@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <windows.h>
 
 #define TIME_STEP 128
 #define TIME4LOAD 75 // Time to load or unload a package
@@ -29,14 +30,14 @@
 
 // This is the cost to get each object 75, 150, 350, 700, 1000
 #define TIME4NEST 75
-#define MINUTES_EMPTY 2
+#define MINUTES_EMPTY 0
 float pDisableNestRed = 0.00;
 float pDisableNestGrey = 0.33;
 float pDisableNestBlue = 0.66;
 float pDisable = 0.0;
 #define nRobots 4
 int listWorkers[] = {0,0,0,0}; // number of robots
-int flagFiles = 0;
+int flagFiles = 1;
 
 // Communication flags
 int flagCom = 1;                //to enable or disable communications 
@@ -95,9 +96,10 @@ int timeMinute = 0;
 int date = 0;
 int resources[] = {0, 0, 0};
 
-char dir[] = "dd-hh-mm";//"/home/sim/dd-hh-mm/";
-char file[] = "dd-hh-mm/visit_vector.txt";
-char fileAux[] = "dd-hh-mm/visit_vector_aux.txt";
+char dir[] = "./dd-hh-mm";//"/home/sim/dd-hh-mm/";
+char file[] = "./dd-hh-mm/visit_vector##.txt";
+char fileAux[] = "./dd-hh-mm/visit_vector##_aux.txt";
+char fileWorkers[] = "./dd-hh-mm/workers##.txt";
 #define MY_MASK 0777/home/sim/
 #include <errno.h>
 
@@ -129,9 +131,11 @@ int main(int argc, char **argv)
   time (&rawtime);
   timeinfo = localtime(&rawtime);
   date = timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min;
-  sprintf(dir,"%d-%d-%d",timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
+  sprintf(dir,"./%d-%d-%d",timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
   //printf("\n dir %s", dir);
-
+  //if (!flagFiles){ mkdir(dir,0700);}  // CHANGE LINUX
+  if (flagFiles) { CreateDirectory(dir, NULL);} 
+ 
   init_variables(); 
   W_reset();
   W_led_ON();
@@ -151,7 +155,7 @@ int main(int argc, char **argv)
   */
   printf("\n Leds ready");
   
-  if (flagFiles) { createFile();}
+  if (flagFiles) { createFile();} 
   
   while (wb_robot_step(TIME_STEP) != -1) {
     timeCounter++;
@@ -181,7 +185,7 @@ void printStates(){
   for (i=0; i<noS; i++){
   //--   printf("\n %d is %d", i, stateSource[i]);  
   }
-  printf("\n We nests ares on ");
+  //-- printf("\n We nests ares on ");
   for (i=0; i<noN; i++){
   //--   printf("\n %d is %d", i, stateNest[i]);  
   }
@@ -452,19 +456,20 @@ void W_led_OFF(){
 
 
 void createFile(){
-  sprintf(file,"%s_visits_vector%d.txt", dir, codeTam);
-  printf("\n file %s",file);
+  sprintf(file,"%s/visits_vector%d.txt", dir, codeTam);
+  //printf("\n file %s",file);
 
   FILE *fw1 = fopen(file,"w");
   if(fw1 == NULL){
-      printf("Error opening file 1\n");
+      printf("Error opening file 1 -creation\n");
       exit(1);
   }
-  sprintf(fileAux, "%s_visit_vector%d_aux.txt", dir, codeTam);
-
-   FILE *fw2 = fopen(fileAux,"w");
+  sprintf(fileAux, "%s/visit_vector%d_aux.txt", dir, codeTam);
+  //printf("\n file %s",fileAux);
+  
+  FILE *fw2 = fopen(fileAux,"w");
   if(fw2 == NULL){
-      printf("Error opening auxiliar file \n");
+      printf("Error opening auxiliar file -creation \n");
       exit(1);
   }
 
@@ -476,7 +481,16 @@ void createFile(){
   
   fclose(fw1);
   fclose(fw2);
-  printf("\n Files created!!");
+
+  sprintf(fileWorkers, "%s/workers%d.txt", dir, codeTam);
+  //printf("\n file %s",fileWorkers);
+  FILE *fw3 = fopen(fileWorkers,"w");
+  if (fw3 == NULL) {
+    printf("Error opening auxiliar file \n");
+    exit(1);
+  }
+  fclose(fw3);
+  //-- printf("\n Files created!!");
 }
 
 void updateFiles(){
@@ -488,7 +502,7 @@ void updateFiles(){
   }
   FILE *fr=fopen(file,"r");
   if(fr == NULL ){
-      printf("Error opening file 1 \n");
+      printf("Error opening file 1 - update \n");
       exit(1);
   }
   rewind(fr);
@@ -511,7 +525,7 @@ void writeFile(int idPlace){
   if (flagFiles) {
   FILE *fw=fopen(file,"w");
   if (fw == NULL){
-      printf("Error opening file 1\n");
+      printf("Error opening file 1 - writing\n");
       exit(1);
   }
   FILE *fr=fopen(fileAux,"r");
@@ -552,6 +566,18 @@ void updateUtility(int amount) {
       W_speaking(M2ROBOT);
       break;
     }
+  }
+  if (flagFiles) {
+    FILE *fw = fopen(fileWorkers,"a");
+    if (fw == NULL){
+      printf("Error opening file workers\n");
+      exit(1);
+    }
+    for (i = 0; i < nRobots; i++){
+      fprintf(fw, "%d, ", listWorkers[i]);
+    }
+    fprintf(fw,"\n");
+    fclose(fw);
   }
 }
 
