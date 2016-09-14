@@ -322,7 +322,7 @@ DEF Red DifferentialWheels {
         Shape {
           appearance DEF cacheAppearance Appearance {
             material Material {
-              diffuseColor 0.301 0.301 0.301
+              diffuseColor 0.32 0.32 0.32
             }
           }
           geometry DEF interfaceWall Box {
@@ -877,7 +877,7 @@ DEF Grey DifferentialWheels {
         Shape {
           appearance DEF cacheAppearance Appearance {
             material Material {
-              diffuseColor 0.301 0.301 0.301
+              diffuseColor 0.32 0.32 0.32
             }
           }
           geometry DEF interfaceWall Box {
@@ -1432,7 +1432,7 @@ DEF Blue DifferentialWheels {
         Shape {
           appearance DEF cacheAppearance Appearance {
             material Material {
-              diffuseColor 0.301 0.301 0.301
+              diffuseColor 0.32 0.32 0.32
             }
           }
           geometry DEF interfaceWall Box {
