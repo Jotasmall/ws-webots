@@ -271,6 +271,7 @@ void init_variables(){
       stateUML = TRAVEL2GREY;
       color = CYAN;
       figura = BOX;
+      // while(1){ check4Robot();}
     break;
     case NEVER:
       flagMasterRecruiting = -1;
@@ -807,7 +808,7 @@ int whereIam(int avoiding){
     groundDetected = GREY;
   }
   if ((avoiding) && (groundDetected != floorColor)) {
-      turnSteps(TURN_CACHE);
+      turnSteps(TURN_CACHE/2); //-- JUAN EDITED
       run(7);//15
     //-- printf("\n Missing my region %s", robotName);
   }    
@@ -818,8 +819,8 @@ int check4Robot(){//ok-
   int nComp, sizeRobot = 0;
   sizeRobot = detectImage(ROBOT_COLOR, ROBOT, 0, &nComp);
   //printf("\n I %s looking a robot in the image of height %d components %d", robotName, sizeRobot, nComp);
-  if ((sizeRobot > 4) && (nComp >= 1)) {//3
-  //-- printf("\n I %s am seeing a robot of height %d components %d", robotName, sizeRobot, nComp);
+  if (((sizeRobot > 9) && (nComp > 1)) || ((sizeRobot > 4) && (nComp > 3))) {//4 3
+    printf("\n I %s am seeing a robot of height %d components %d", robotName, sizeRobot, nComp);
     return 1;
   }
   return 0;
@@ -898,6 +899,7 @@ int cont_height_figure(int indexP){ //ok
 
 int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
   int auxColor = 0;
+  int low = 38, lowdark = 34, high = 200;  //38 - 30 - 200
   int pixelR = wb_camera_image_get_red(image, width, pixelX, pixelY);
   int pixelG = wb_camera_image_get_green(image, width, pixelX, pixelY);
   int pixelB = wb_camera_image_get_blue(image, width, pixelX, pixelY);
@@ -921,8 +923,10 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
     case BLACK:
       auxColor = (pixelR < BLACK_THRES) && (pixelG < BLACK_THRES) && (pixelB < BLACK_THRES);
       break;
-    case ROBOT_COLOR:
-      auxColor = (pixelR > ROBOT_THRES) && (pixelG > ROBOT_THRES) && (pixelB > ROBOT_THRES); 
+    case ROBOT_COLOR:  
+      auxColor = (pixelR < low) && (pixelG < low) && (pixelB < low); 
+      auxColor = auxColor && ((pixelR > lowdark) && (pixelG > lowdark) && (pixelB > lowdark));
+      auxColor = auxColor || ((pixelR > ROBOT_THRES) && (pixelR < high) && (pixelG > ROBOT_THRES) && (pixelG < high) && (pixelB > ROBOT_THRES) &&  (pixelB < high));
       break;
     case GREY:
       auxColor = (pixelR < COMP_COLOR) && (pixelG < COMP_COLOR) && (pixelB < COMP_COLOR);
@@ -1258,7 +1262,7 @@ int followingLine(int colorLine){//ok-
       } else {
         flagRobot = check4Robot();
         if (flagRobot) {
-          waiting(20);
+          waiting(30);//20
           //printf("\n Robot is out by line");
         } else {
         //-- printf("\n %s is lost from the line", robotName);
@@ -1348,7 +1352,6 @@ int levyFlight(){
   while (r > 0) {
     turnSteps(3); // Blind turn
     r -= 3;
-    whereIam(1);
     
     image = wb_camera_get_image(cam);
     wb_robot_step(TIME_STEP);
@@ -1371,6 +1374,7 @@ int levyFlight(){
     //-- printf("\n Shape watched on levy - Levy Aborted %d", index);
       return index;  
     } 
+    whereIam(1);
   } 
   r = rand()%(100-40)+41; // walk forward between 100 to 40 steps
 //-- printf("\n %s Walking forward %d", robotName, r);
@@ -1525,6 +1529,7 @@ int hitWall(int front){ //ok
       waiting(2);
       readSensors(0);
       if (question || (ps_value[6] > hit_thres) || (ps_value[1] > hit_thres)){
+        forward(5);
         flag = 0;
       }
     }    
@@ -1641,6 +1646,11 @@ int doorEntrance(int steps){
   printf("\n %s is entering a new region", robotName);
   forward(10);
   turnSteps(TURN_M90);
+  readSensors(0);
+  if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[7]> THRESHOLD_DIST)) {
+    printf("\n %s wrong turn", robotName);
+    return 0;
+  }
   forward(steps);
   speaking(M2NEST, ROBOT_LEAVING, 0, 0);
   waiting(1);
@@ -1664,7 +1674,7 @@ int setRobotPosition(int colorLine){
   speed[RIGHT] = -100;
   int notReady = 1;
   int wrongDoor = 0;
-  int counter = 0;
+  int counter = 0, aux;
 //-- printf("\n %s is looking for line of color %d", robotName, colorLine);
   while(notReady) { 
     wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);      
@@ -1673,17 +1683,35 @@ int setRobotPosition(int colorLine){
     if (ps_value[5]> 300) {
       notReady = find_middle(0, colorLine) < 0; // returns the index -1 if not
       wrongDoor = find_middle(1, colorLine) > 0; // return 100 if it found it
+      flagRobot = check4Robot();
+      aux = counter;
+      while (flagRobot) {
+        flagRobot = check4Robot();
+        printf("\n %s waiting for another robot to leave", robotName);
+        printf("\n");
+        waiting(20);
+        counter++;
+        if (counter > 90) {
+          printf("\n %s wait for an entire turn and no free way", robotName);
+          printf("\n");
+          return -1;
+        } else if (flagRobot == 0) {
+          counter = aux;
+          printf("\n %s has a clear way", robotName);
+          printf("\n");
+        }
+      }
       if (wrongDoor) {
         return -2;
-      }
+      } 
     } else {
       flagRobot = check4Robot();
       if (flagRobot) {
-      //-- printf("\n %s find another robot here",robotName);
-        //return 0;
+        printf("\n %s find another robot here",robotName);
+        return -1;
       }
       if (counter > 60) {
-      //-- printf("\n %s gave a entire turn and no line", robotName);
+        printf("\n %s gave a entire turn and no line", robotName);
         return -1;
       }
     }
@@ -1698,7 +1726,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
   printf("\n %s getting in position destination %d by line of color %d", robotName, colorDestination, colorLine);
   endTask = setRobotPosition(colorLine);
   if (endTask == -1) { // found no line
-    while(!run(60));
+    while(!run(50)); //60
     return 0;
   } else if (endTask == -2) { //found another color
     turnSteps(15);
@@ -1708,7 +1736,11 @@ int going2Region(int colorLine, int colorDestination){ //ok
   endTask = followingLine(colorLine);
   if (endTask == -1) { //End of travel
   //-- printf("\n Robot %s going inside", robotName);
-    endTask = doorEntrance(60);  
+    endTask = doorEntrance(60); 
+    if (endTask == 0) {
+      forward(-20);
+      return 0;
+    }
     whereArrive();
     if (floorColor == colorDestination) {
       printf("\n Excellent entrance, %s is on desired region", robotName);
