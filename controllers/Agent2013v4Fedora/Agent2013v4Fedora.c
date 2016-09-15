@@ -3,7 +3,7 @@
  * Date:          
  * Description:   
  * Author: Jotasmall        
- * Modifications: 
+ * Modifications:  
  */
  
 #include <webots/robot.h>

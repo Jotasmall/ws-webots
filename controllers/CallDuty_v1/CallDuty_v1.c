@@ -257,7 +257,7 @@ int main(int argc, char **argv) {
   reset(); 
   wb_robot_step(TIME_STEP);
   
-  init_variables();    
+  init_variables();     
 //-- printf("\n Robot %s is ready to begin", robotName);
   
   executeUML();

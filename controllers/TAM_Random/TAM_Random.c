@@ -32,8 +32,8 @@
 #define TIME4NEST 75
 #define MINUTES_EMPTY 0
 float pDisableNestRed = 0.00;
-float pDisableNestGrey = 0.33;
-float pDisableNestBlue = 0.66;
+float pDisableNestGrey = 0.2;
+float pDisableNestBlue = 0.6;
 float pDisable = 0.0;
 #define nRobots 4
 int listWorkers[] = {0,0,0,0}; // number of robots
@@ -576,7 +576,7 @@ void updateUtility(int amount) {
     fprintf(fw,"\n");
     fclose(fw);
   }
-}
+} 
 
 int W_speaking(int toWhom){ //ok-
   if (flagCom == 0) { return 0;}
