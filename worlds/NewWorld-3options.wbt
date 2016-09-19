@@ -3,7 +3,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.00153701 0.765862 0.643004 3.13793
-  position 0.0163708 2.52553 -0.729323
+  position 0.036736 2.61363 -0.805629
 }
 Background {
   skyColor [
@@ -1980,7 +1980,7 @@ DEF Blue DifferentialWheels {
 }
 E-puck {
   translation 0.533116 2.50841e-15 -0.308173
-  rotation 0 -1 0 6.28318
+  rotation 0 -1 0 3.14159
   controller "CallDuty_v1"
   name "e-puck2701"
   camera_windowPosition 0.0586907 0.31994
