@@ -252,7 +252,7 @@ void writeMessage(int speaking, const char *msg);                               
 // Model functions
 int computeTraveling(int levy);
 
-char dirPath[] = "//dir-dd-hh-mm";
+char dirPath[] = "/dir-dd-hh-mm";
 time_t rawtime;
 struct tm * timeinfo;
 

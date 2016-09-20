@@ -96,11 +96,8 @@ long int timeCounter = 0;
 int timeMinute = 0;
 int date = 0;
 
-char dir[] = "./dd-hh-mm";//"/home/sim/dd-hh-mm/";
-char file[] = "./dd-hh-mm/visit_vector##.txt";
-char fileAux[] = "./dd-hh-mm/visit_vector##_aux.txt";
-char fileWorkers[] = "./dd-hh-mm/workers##.txt";
-char fileUtility[] = "./dd-hh-mm/utility##.txt";
+char fileRobot[] = "./DIRPATH/dd-hh-mm/TAM-COLOR##.txt";
+char fileAux[] = "./DIRPATH/dd-hh-mm/TAM-COLOR_AUX##.txt";
 #define MY_MASK 0777/home/sim/
 #include <errno.h>
 
@@ -112,8 +109,6 @@ void W_initialize();
 void W_calibrate(int n);
 void W_read_dsensor();
 int W_waiting(int n);
-void createFile();
-void updateFiles();
 void writeFile(int idPlace);
 void W_updateNests();
 void W_updateSources();
@@ -121,25 +116,32 @@ int W_speaking(int toWhom);
 int listening();
 void printStates();
 void updateUtility(int amount);
+// Robot files
+#define COMMUNICATION 5
+#define WORKERS 6
+#define UTILITY 7
+#define VISIT 8
+
+void createFiles();
+void updateFiles();
+void createDir(int option, int dirBuild);
 void recordUtility();
 void writeMessage(int speaking, const char *msg);  
 
-int main(int argc, char **argv)
-{
+char dirPath[] = "./dir-dd-hh-mm";
+time_t rawtime;
+struct tm * timeinfo;
+
+int main(int argc, char **argv) {
   /* necessary to initialize webots stuff */
   wb_robot_init();
   
-  time_t rawtime;
-  struct tm * timeinfo;
   time (&rawtime);
   timeinfo = localtime(&rawtime);
   date = timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min;
-  sprintf(dir,"./%d-%d-%d",timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
-  //printf("\n dir %s", dir);
+  sprintf(dirPath,"./%d-%d-%d", timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
+  //printf("\n dir %s", dirPath);
   
-  //if (!flagFiles){ mkdir(dir,0700);}  // CHANGE LINUX
-  if (flagFiles) { CreateDirectory(dir, NULL);} 
- 
   init_variables(); 
   W_reset();
   W_led_ON();
@@ -150,17 +152,8 @@ int main(int argc, char **argv)
   wb_robot_step(TIME_STEP);
   W_initialize();
   
-  /*
-  int n;
-  for(n=0; n<noN; n++){
-    printf("\n Sensor nest %d state %d", n, stateNest[n]);
-    printf("\n");
-  }  
-  */
   //printf("\n Leds ready");
-  
-  if (flagFiles) { createFile();} 
-  
+    
   while (wb_robot_step(TIME_STEP) != -1) {
     timeCounter++;
     W_read_dsensor();
@@ -181,7 +174,6 @@ int main(int argc, char **argv)
   
   return 0;
 }
-
 
 void printStates(){
   int i;
@@ -427,12 +419,123 @@ void W_reset(){
     pDisable = pDisableNestBlue;
     codeTam = 2;
   }  
+  if (flagFiles) {createFiles();}
+  
   strcpy(robotName, wb_robot_get_name());
   srand(codeTam*100+date);
   wb_robot_step(TIME_STEP);
  
  //*  printf("\n %s is ready to work!", robotName);
 }
+
+void createFiles(){
+  createDir(COMMUNICATION, 1);
+  FILE *fcom = fopen(fileRobot, "w");
+  if (fcom == NULL) {
+    printf("Error opening file com\n");
+    printf("\n");
+    exit(1);
+  }
+  fclose(fcom);
+  
+  createDir(WORKERS, 1);
+  FILE *fworker = fopen(fileRobot, "w");
+  if (fworker == NULL) {
+    printf("Error opening file robot\n");
+    printf("\n");
+    exit(1);
+  }
+  fclose(fworker);
+  
+  createDir(UTILITY, 1);
+  FILE *futi = fopen(fileRobot, "w");
+  if (futi == NULL) {
+    printf("Error opening file utility\n");
+    printf("\n");
+    exit(1);
+  }
+  fclose(futi);
+
+  createDir(VISIT, 1);
+  FILE *fvis1 = fopen(fileRobot, "w");
+  if (fvis1 == NULL) {
+    printf("Error opening file visit\n");
+    printf("\n");
+    exit(1);
+  }
+  FILE *fvis2 = fopen(fileAux, "w");
+  if (fvis2 == NULL) {
+    printf("Error opening file visits-aux\n");
+    printf("\n");
+    exit(1);
+  }
+  int row;
+  for (row=0; row<NB_TAM; row++){
+    fprintf(fvis1, "Place%d %3d\n", row, 0);
+    fprintf(fvis2, "Place%d %3d\n", row, 0);
+  }
+  fclose(fvis1);
+  fclose(fvis2);
+}
+
+void createDir(int option, int dirBuild){
+  switch(option){
+    case COMMUNICATION:
+      sprintf(fileRobot, "%s-COM", dirPath); 
+      //printf("\n fileRobot %s", fileRobot);
+      //printf("\n"); 
+      break;
+    case WORKERS:
+      sprintf(fileRobot, "%s-PER", dirPath);
+      //printf("\n fileRobot %s", fileRobot);
+      //printf("\n"); 
+      break;
+    case UTILITY:
+      sprintf(fileRobot, "%s-PER", dirPath); 
+      //printf("\n fileRobot %s", fileRobot);
+      //printf("\n"); 
+      break;
+    case VISIT:
+      sprintf(fileRobot, "%s-VIS", dirPath); 
+      //printf("\n fileRobot %s", fileRobot);
+      //printf("\n"); 
+      break;
+   }
+   
+   //if (dir){ mkdir(fileRobot,0700);} 
+   if (dirBuild){ CreateDirectory(fileRobot, NULL);} 
+    
+   switch(option){
+     case COMMUNICATION:
+       sprintf(fileRobot, "%s/Node%d-COM.txt", fileRobot, codeTam);
+       //printf("\n fileRobot %s", fileRobot);
+       //printf("\n"); 
+       break;       
+     case WORKERS:
+       sprintf(fileRobot, "%s/Node%d-WOR.txt", fileRobot, codeTam);
+       //printf("\n fileRobot %s", fileRobot);
+       //printf("\n");
+       break;       
+     case UTILITY:
+       sprintf(fileRobot, "%s/Node%d-UTI.txt", fileRobot, codeTam);
+       //printf("\n fileRobot %s", fileRobot);
+       //printf("\n"); 
+       break;
+     case VISIT:
+       sprintf(fileAux, "%s/Node%d-auxV.txt", fileRobot, codeTam);
+       //printf("\n fileRobot auxiliar %s", fileAux);
+       //printf("\n"); 
+       sprintf(fileRobot, "%s/Node%d-VIS.txt", fileRobot, codeTam);
+       //printf("\n fileRobot %s", fileRobot);
+       //printf("\n"); 
+       break;
+     
+  }
+  if (dirBuild){
+    printf("\n %s is accessing to %s", robotName, fileRobot);
+  }  
+}
+
 
 int W_waiting(int n){
   int i;
@@ -458,92 +561,47 @@ void W_led_OFF(){
   wb_robot_step(TIME_STEP);
 }
 
-
-void createFile(){
-  sprintf(file,"%s/visits_vector%d.txt", dir, codeTam);
-  //printf("\n file %s",file);
-  FILE *fw1 = fopen(file,"w");
-  if (fw1 == NULL){
-    printf("Error opening file 1 -creation\n");
-    exit(1);
-  }
-  
-  sprintf(fileAux, "%s/visit_vector%d_aux.txt", dir, codeTam);
-  //printf("\n file %s",fileAux);
-  FILE *fw2 = fopen(fileAux,"w");
-  if (fw2 == NULL){
-    printf("Error opening auxiliar file -creation \n");
-    exit(1);
-  }
-
-  int row;
-  for (row=0; row<NB_TAM; row++){
-    fprintf(fw1, "Place%d %3d\n", row, 0);
-    fprintf(fw2, "Place%d %3d\n", row, 0);
-  }
-  
-  fclose(fw1);
-  fclose(fw2);
-
-  sprintf(fileWorkers, "%s/workers%d.txt", dir, codeTam);
-  //printf("\n file %s",fileWorkers);
-  FILE *fw3 = fopen(fileWorkers,"w");
-  if (fw3 == NULL) {
-    printf("Error opening workers file \n");
-    exit(1);
-  }
-  fclose(fw3);
-  
-  sprintf(fileUtility, "%s/utility%d.txt", dir, codeTam);
-  //printf("\n file %s", fileUtility);
-  FILE *fw4 = fopen(fileUtility, "w");
-  if (fw4 == NULL) {
-    printf("Error opening utility file \n");
-    exit(1);
-  }
-  fclose(fw4);
-  //--//*  printf("\n Files created!!");
-}
-
 void updateFiles(){
   if (flagFiles) {
-  FILE *fw=fopen(fileAux,"w");
-  if (fw == NULL){
-     //*  printf("Error opening auxiliar file\n");
+    createDir(VISIT, 0);
+    FILE *fw=fopen(fileAux,"w");
+    if (fw == NULL){
+      printf("Error opening auxiliar file\n");
       exit(1);
-  }
-  FILE *fr=fopen(file,"r");
-  if(fr == NULL ){
-     //*  printf("Error opening file 1 - update \n");
+    }
+    FILE *fr=fopen(fileRobot,"r");
+    if (fr == NULL ){
+      printf("Error opening file 1 - update \n");
       exit(1);
-  }
-  rewind(fr);
-  rewind(fw);
-  int row, aux;
-  char textPS[] = "Place00";
-  
-  for (row=0; row<NB_TAM; row++){
-    fscanf(fr, "%s %3d", textPS, &aux);
-    fprintf(fw, "Place%d %3d ", row, aux);
-    fprintf(fw, "\n");
-  }
-  fclose(fw);
-  fclose(fr);
-  //printf("\n Final update");
+    }
+    rewind(fr);
+    rewind(fw);
+    int row, aux;
+    char textPS[] = "Place00";
+    
+    for (row=0; row<NB_TAM; row++){
+      fscanf(fr, "%s %3d", textPS, &aux);
+      fprintf(fw, "Place%d %3d ", row, aux);
+      fprintf(fw, "\n");
+    }
+    fclose(fw);
+    fclose(fr);
+    //printf("\n Final update");
   }
 }
 
 void writeFile(int idPlace){
   if (flagFiles) {
-    FILE *fw=fopen(file,"w");
+    createDir(VISIT, 0);
+    FILE *fw=fopen(fileRobot,"w");
     if (fw == NULL){
-       //*  printf("Error opening file 1 - writing\n");
-        exit(1);
+      printf("Error opening file 1 - writing\n");
+      exit(1);
     }
     FILE *fr=fopen(fileAux,"r");
-    if(fr == NULL ){
-       //*  printf("Error opening auxiliar file \n");
-        exit(1);
+    if (fr == NULL ){
+      printf("Error opening auxiliar file \n");
+      exit(1);
     }
     rewind(fr);
     rewind(fw);
@@ -577,7 +635,8 @@ void updateUtility(int amount) {
     }
   }
   if (flagFiles) {
-    FILE *fw1 = fopen(fileWorkers,"a");
+    createDir(WORKERS, 0);
+    FILE *fw1 = fopen(fileRobot,"a");
     if (fw1 == NULL){
       printf("Error opening file workers\n");
       exit(1);
@@ -593,22 +652,25 @@ void updateUtility(int amount) {
 
 void recordUtility(){
   if (flagFiles) {
-    FILE *fw2 = fopen(fileUtility, "a");
+    createDir(UTILITY, 0);
+    FILE *fw2 = fopen(fileRobot, "a");
     if (fw2 == NULL) {
       printf("Error opening file utilities \n");
       exit(1);
     }
     printf("\n %s is updating utilities %d, %d, %d", robotName, utility[0], utility[1], utility[2]);
     printf("\n");
+    int i;
     for (i = 0; i < NEIGHBORS; i++) {
       fprintf(fw2, "%d, ", utility[i]);
     }
     fprintf(fw2,"\n");
+    fclose(fw2);
   }  
 }
 
-/*void writeMessage(int speaking, const char *msg) {
-  if (flagFilesCOM) {
+void writeMessage(int speaking, const char *msg) {
+  if (flagFiles) {
       // File for decisions
     createDir(COMMUNICATION, 0);
     //printf("\n %s is registering its messages in %s", robotName, fileRobot);
@@ -629,7 +691,7 @@ void recordUtility(){
     }
     fclose(file);
   }
-}*/
+}
 
 
 int W_speaking(int toWhom){ //ok-
@@ -641,6 +703,7 @@ int W_speaking(int toWhom){ //ok-
   if (toWhom == M2NEST) { // reporting just to have the same number of lines
     sprintf(message, "T2T%dX%d", codeTam, utility[codeTam]);
     wb_emitter_send(emitter, message, strlen(message)+1);
+    writeMessage(1, message);
    //*  printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], utility[0], utility[1], utility[2]);
    //*  printf("\n"); 
   } else if (toWhom == M2ROBOT) {
@@ -656,6 +719,7 @@ int W_speaking(int toWhom){ //ok-
     if (place2Go != codeTam) {
       sprintf(message, "T2R%dT%dX%d", codeTam, LEAVE, place2Go);
       wb_emitter_send(emitter, message, strlen(message)+1);
+      writeMessage(1, message);
      //*  printf("\n %s communicates to its robots", robotName);
      //*  printf("\n");      
     }
@@ -665,6 +729,7 @@ int W_speaking(int toWhom){ //ok-
       if ((newNode != 0) && (listWorkers[i] != 0) && (listWorkers[i] != newNode)) {
         sprintf(message, "T2R%dR%dR%d", codeTam, newNode, listWorkers[i]);
         wb_emitter_send(emitter, message, strlen(message)+1);
+        writeMessage(1, message);
         printf("\n %s introduces %d to %d", robotName, listWorkers[i], newNode);
         printf("\n");
       }
@@ -685,7 +750,8 @@ int listening() {
       value = atoi(&data[5]); //utility value
       printf("\n %s received a message from %d Nest", robotName, robot);
       printf("\n %s update neighbor %d utility %d", robotName, robot, value);
-      utility[robot] = value; 
+      utility[robot] = value;
+      writeMessage(0, data); 
       recordUtility();
       wb_receiver_next_packet(receiver);
     } else if ((data[0] == 'R') && (data[2] == 'T')) {     
@@ -697,6 +763,7 @@ int listening() {
         // The message is for this TAM
         printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
         printf("\n");
+        writeMessage(0, data);
         if (action == ROBOT_LEAVING) {
           for (i = 0; i < nRobots; i++){
             if (robot == listWorkers[i]){
@@ -724,6 +791,7 @@ int listening() {
         for (i = 0; i < nRobots; i++){
           if (robot == listWorkers[i]){
             // proceed to listen the information
+            writeMessage(0, data);
             printf("\n %s has received a time of %d from %d", robotName, value, robot);
             printf("\n");
           }
