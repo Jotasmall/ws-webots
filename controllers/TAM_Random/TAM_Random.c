@@ -532,7 +532,7 @@ void createDir(int option, int dirBuild){
      
   }
   if (dirBuild){
-    printf("\n %s is accessing to %s", robotName, fileRobot);
+    //printf("\n %s is accessing to %s", robotName, fileRobot);
   }  
 }
 

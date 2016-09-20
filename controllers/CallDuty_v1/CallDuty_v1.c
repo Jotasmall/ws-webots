@@ -319,39 +319,39 @@ void executeUML(){
         printf("\n %d is on floorColor %d", botNumber, floorColor);
       break;
       case PICK_SOURCE:
-        printf("\n state PICK_SOURCE");
-        printf("\n");
+        //printf("\n state PICK_SOURCE");
+        //printf("\n");
         stateUML = moduleUML(RED, BOX, PICKING, DROP_NEST, travelDestination, 0);
-        printf("\n pass 2 state %d", stateUML); 
-        printf("\n");
+        //printf("\n pass 2 state %d", stateUML); 
+        //printf("\n");
         break;
       case DROP_NEST:
-        printf("\n state DROP_NEST");
-        printf("\n");
+        //printf("\n state DROP_NEST");
+        //printf("\n");
         stateUML = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, travelDestination, 1);
-        printf("\n pass 2 state %d", stateUML);
-        printf("\n");
+        //printf("\n pass 2 state %d", stateUML);
+        //printf("\n");
       break;
       case TRAVEL2GREY:
-        printf("\n state TRAVEL2NEST");
-        printf("\n");
+        //printf("\n state TRAVEL2NEST");
+        //printf("\n");
         stateUML = moduleTravel();
-        printf("\n pass 2 state %d", stateUML);
-        printf("\n");
+        //printf("\n pass 2 state %d", stateUML);
+        //printf("\n");
       break;      
       case TRAVEL2BLUE:
-        printf("\n state TRAVEL2SOURCE");
-        printf("\n");
+        //printf("\n state TRAVEL2SOURCE");
+        //printf("\n");
         stateUML = moduleTravel();
-        printf("\n pass 2 state %d", stateUML);
-        printf("\n");
+        //printf("\n pass 2 state %d", stateUML);
+        //printf("\n");
       break;
       case TRAVEL2RED:
-        printf("\n state TRAVEL2SOURCE");
-        printf("\n");
+        //printf("\n state TRAVEL2SOURCE");
+        //printf("\n");
         stateUML = moduleTravel();
-        printf("\n pass 2 state %d", stateUML);
-        printf("\n");
+        //printf("\n pass 2 state %d", stateUML);
+        //printf("\n");
       break;
       default:
         printf("\n Big failure on UML machine");
@@ -504,8 +504,8 @@ int moduleFSM(){
         index = levyFlight();
         if (index == -1) {
           contLevy++;
-          printf("\n %s is thinking about her decision", robotName);
-          printf("\n");
+          //printf("\n %s is thinking about her decision", robotName);
+          //printf("\n");
           switch(stateUML){
            /* case TRAVEL2GREY:
             case TRAVEL2BLUE:
@@ -593,8 +593,8 @@ int moduleFSM(){
             if ((contViewShape > 10) && (nComp == 1)) {
               contViewShape = 0;
               flagSureSeen = 1;
-              printf("\n %s is sure that saw shape %d", robotName, oldShape);
-              printf("\n");
+              //printf("\n %s is sure that saw shape %d", robotName, oldShape);
+              //printf("\n");
               //speaking(M2ROBOT, shapeSeen, shapeSeen, shapeSeen); //to make a rendesvouz
             }           
           }
@@ -770,7 +770,7 @@ void createDir(int option, int dirBuild){
        break;
   }
   if (dirBuild){
-    printf("\n %s is accessing to %s", robotName, fileRobot);
+    //printf("\n %s is accessing to %s", robotName, fileRobot);
   }  
 }
 
@@ -870,8 +870,8 @@ int readSensors(int print){ //ok-
     if (ps_value[i] > THRESHOLD_DIST) { 
       flag = 1;
       if (print) { //Sensor 5 for follow wall
-        printf("\n An obstacle is detected at sensor %d value %d", i, ps_value[i]);
-        printf("\n");
+        //printf("\n An obstacle is detected at sensor %d value %d", i, ps_value[i]);
+        //printf("\n");
       }
     } 
   }
@@ -916,8 +916,8 @@ int whereIam(int avoiding){
     if (p>0.5) {p = 1;} else { p = -1;} //-- JUAN EDITED
     turnSteps((int) p*TURN_CACHE/2);    //-- JUAN EDITED
     run(7);//15
-    printf("\n Missing my region %s", robotName);
-    printf("\n");
+    //printf("\n Missing my region %s", robotName);
+    //printf("\n");
   }    
   return groundDetected;
 } 
@@ -943,9 +943,9 @@ int waiting_color(int foreground) {//ok
   countArriving = cont_height_figure(102);
   if (flagPrint1) {
     if (count > countArriving) {
-      printf("\n Intensity %d half line", count);
+      //printf("\n Intensity %d half line", count);
     } else {
-      printf("\n Intensity %d half line", countArriving);  
+      //printf("\n Intensity %d half line", countArriving);  
     }
   
     flagPrint1 = 0;
@@ -1162,8 +1162,8 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
     if ((numImage == 255) && (color == CYAN)) {
       pointA = cont_height_figure(minH+1); 
       pointB = cont_height_figure(maxH-1);
-      printf("\n %s really close and sure it is not a robot, go for the center", robotName);
-      printf("\n");
+      //printf("\n %s really close and sure it is not a robot, go for the center", robotName);
+      //printf("\n");
       return 100;
     }
 //    if (((area > 10) && (foreground != CYAN)) || ((foreground == CYAN) && (area > 15))) { 
@@ -1337,8 +1337,8 @@ int doubleCheck(){
     printf("\n");
     return -1;
   } 
-  printf("\n Shape %d watched on 2check", figura);
-  printf("\n");
+  //printf("\n Shape %d watched on 2check", figura);
+  //printf("\n");
   return index; 
 }
 
@@ -1386,8 +1386,8 @@ int followingLine(int colorLine){//ok-
         if (flagRobot) {
           waiting(30);//20
         } else {
-          printf("\n %s is lost from the line", robotName);
-          printf("\n");
+          //printf("\n %s is lost from the line", robotName);
+          //printf("\n");
           return -1; // End of travel
         }  
       }
@@ -1580,8 +1580,8 @@ int speedAdjustment(int index, int delta) { //ok
       else if (iter < -2) { hitWall(-5);}
       else { hitWall(0);}
    
-      printf("\n %s reached cyan landmark!", robotName);
-      printf("\n");
+      //printf("\n %s reached cyan landmark!", robotName);
+      //printf("\n");
       waiting(1);      
       return 1;
     } else {
@@ -1620,8 +1620,8 @@ int speedAdjustment(int index, int delta) { //ok
     // printf("\n %s saw shape with height %d", robotName, count);
     if (readSensors(0) && ((ps_value[0] > THRESHOLD_DIST) || (ps_value[1] > THRESHOLD_DIST) 
     || (ps_value[7] > THRESHOLD_DIST) || (ps_value[6] > THRESHOLD_DIST))) { // 1 for obstacle
-      printf("\n %s found obstacle on the way", robotName);
-      printf("\n");
+      //printf("\n %s found obstacle on the way", robotName);
+      //printf("\n");
       avoidance();
     }
     
@@ -1795,8 +1795,8 @@ int whereArrive(){
 }
 
 int doorEntrance(int steps){
-  printf("\n %s is entering a new region", robotName);
-  printf("\n");
+  //printf("\n %s is entering a new region", robotName);
+  //printf("\n");
   forward(10);
   turnSteps(TURN_M90);
   readSensors(0);
@@ -1829,8 +1829,8 @@ int setRobotPosition(int colorLine){
   int notReady = 1;
   int wrongDoor = 0;
   int counter = 0, aux;
-  printf("\n %s is looking for line of color %d", robotName, colorLine);
-  printf("\n");
+  //printf("\n %s is looking for line of color %d", robotName, colorLine);
+  //printf("\n");
   while(notReady) { 
     wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);      
     readSensors(0);
@@ -1902,12 +1902,12 @@ int going2Region(int colorLine, int colorDestination){ //ok
     }
     whereArrive();
     if (floorColor == colorDestination) {
-      printf("\n Excellent entrance, %s is on desired region", robotName);
-      printf("\n");
+      //printf("\n Excellent entrance, %s is on desired region", robotName);
+      //printf("\n");
       return 1;
     } else {
-      printf("\n Something went wrong, please %s recheck color destination %d", robotName, colorDestination);
-      printf("\n");
+      //printf("\n Something went wrong, please %s recheck color destination %d", robotName, colorDestination);
+      //printf("\n");
       return 0;
     } 
   }
@@ -1988,8 +1988,8 @@ void countObjects(){
   }
   if (flagFilesPER) {
     createDir(PERFORMANCE, 0);
-    printf("\n %s is counting objects in %s", robotName, fileRobot);
-    printf("\n");
+    //printf("\n %s is counting objects in %s", robotName, fileRobot);
+    //printf("\n");
     FILE *fper = fopen(fileRobot, "a+");
     int i;
     for (i=0; i<NB_REGIONS; i++){ 
@@ -2145,10 +2145,10 @@ void writeMessage(int speaking, const char *msg) {
     //printf("\n %s is updating with %s", robotName, msg);
     if (speaking) {
       fprintf(file, "\n speaking, %s", msg);
-      printf("\n %s is updating with %s by speaking", robotName, msg);
+      //printf("\n %s is updating with %s by speaking", robotName, msg);
     } else {
       fprintf(file, "\n listening, %s", msg);
-      printf("\n %s is updating with %s by listening", robotName, msg);
+      //printf("\n %s is updating with %s by listening", robotName, msg);
     }
     fclose(file);
   }
@@ -2190,7 +2190,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
     }
   }
   if (strcmp(message, "U")) {
-    printf("\n %s updating its record of messages", robotName);
+    //printf("\n %s updating its record of messages", robotName);
     writeMessage(1, message);
   }  
   wb_emitter_send(emitter, message, strlen(message)+1);
