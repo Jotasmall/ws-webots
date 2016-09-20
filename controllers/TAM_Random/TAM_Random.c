@@ -37,6 +37,7 @@ float pDisableNestBlue = 0.6;
 float pDisable = 0.0;
 #define nRobots 4
 int listWorkers[] = {0,0,0,0}; // number of robots
+int newNode = 0;
 // Communication flags
 int flagFiles = 1;
 int flagCom = 1;                //to enable or disable communications 
@@ -590,7 +591,7 @@ int W_speaking(int toWhom){ //ok-
    //*  printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], resources[0], resources[1], resources[2]);
    //*  printf("\n"); 
   } else if (toWhom == M2ROBOT) {
-    for (i=0; i<NEIGHBORS; i++) {
+    for (i = 0; i<NEIGHBORS; i++) {
       if ((i != codeTam) && (utility[i] > utility[codeTam])) {
         dif = utility[i]-utility[codeTam];
         if (dif > maxDif) {
@@ -604,68 +605,81 @@ int W_speaking(int toWhom){ //ok-
       wb_emitter_send(emitter, message, strlen(message)+1);
      //*  printf("\n %s communicates to its robots", robotName);
      //*  printf("\n");      
-    } else {
-      //sprintf(message, "T2R%dT%dX%d", codeTam, COME, codeTam);
-     //*  printf("\n %s has no neighbors needing", robotName);
-     //*  printf("\n");
-    }  
-  }
+    }
+  } else {
+    printf("\n %s is introducing the new %d", robotName, newNode);
+    for (i = 0; i<nRobots; i++) {
+      if ((listWorkers[i] != 0) && (listWorkers[i] != newNode)) {
+        sprintf(message, "T2R%dR%dR%d", codeTam, newNode, listWorkers[i]);
+        wb_emitter_send(emitter, message, strlen(message)+1);
+        printf("\n %s introduces %d to %d", robotName, listWorkers[i], newNode);
+        printf("\n");
+      }
+    }
+  }  
   wb_robot_step(32);
   return 1;
 }
 
 int listening() { 
-  int i;
+  int i, robot, value;
   //printf("\n %s is receiving a message %s", robotName);
   while(wb_receiver_get_queue_length(receiver)>0){  
     //printf("\n %s has received a message", robotName);
     const char *data = wb_receiver_get_data(receiver);
-    if (data[0] == 'T') {
-      if (data[2] == 'T') {
-        int sender = atoi(&data[3]); //Maximum 9 senders (NEST)
-        int value = atoi(&data[5]); //utility value
-       //*  printf("\n %s received a message from %d Nest", robotName, sender);
-       //*  printf("\n %s update neighbor %d utility %d", robotName, sender, value);
-        utility[sender] = value; 
-      }
+    if ((data[0] == 'T') && (data[2] == 'T')) {
+      robot = atoi(&data[3]); //Maximum 9 senders (NEST)
+      value = atoi(&data[5]); //utility value
+      printf("\n %s received a message from %d Nest", robotName, robot);
+      printf("\n %s update neighbor %d utility %d", robotName, robot, value);
+      utility[robot] = value; 
       wb_receiver_next_packet(receiver);
-    } else if (data[0] == 'R') {
-      if (data[2] == 'T') {     
-        //R2T0000T##X999
-        int robot = atoi(&data[3]); 
-        int action = atoi(&data[8]);
-        int value = atoi(&data[11]);
-        printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
-        if (value == codeTam) {
-          // The message is for this TAM
-          if (action == ROBOT_LEAVING) {
-            for (i = 0; i < nRobots; i++){
-              if (robot == listWorkers[i]){
-                // proceed to listen the information
-                listWorkers[i] = 0;
-                printf("\n %s removed from its list %d", robotName, robot);
-                updateUtility(-1);
-              }
-            } 
-          } else if (action == ROBOT_ARRIVING) {
-            for (i = 0; i < nRobots; i++) {
-              if (listWorkers[i] == 0) {
-                listWorkers[i] = robot;
-                printf("\n %s add to its list %d", robotName, robot);
-                printf("\n");
-                updateUtility(1);
-                break;
-              }
+    } else if ((data[0] == 'R') && (data[2] == 'T')) {     
+      //R2T0000T##X999
+      robot = atoi(&data[3]); 
+      int action = atoi(&data[8]); //LEAVE OR STAY
+      value = atoi(&data[11]); //PLACE
+      printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
+      printf("\n");
+      if (value == codeTam) {
+        // The message is for this TAM
+        if (action == ROBOT_LEAVING) {
+          for (i = 0; i < nRobots; i++){
+            if (robot == listWorkers[i]){
+              // proceed to listen the information
+              listWorkers[i] = 0;
+              printf("\n %s removed from its list %d", robotName, robot);
+              printf("\n");
+              updateUtility(-1);
             }
-          } else {          
-            //*  printf("\n %s has received %d from %d", robotName, value, robot);
-            //*  printf("\n");
-          }  
-        }  
+          } 
+        } else if (action == ROBOT_ARRIVING) {
+          for (i = 0; i < nRobots; i++) {
+            if (listWorkers[i] == 0) {
+              listWorkers[i] = robot;
+              printf("\n %s add to its list %d", robotName, robot);
+              printf("\n");
+              updateUtility(1);
+              W_speaking(-1); //to introduce new friends
+              break; //only add it once
+            }
+          }
+        }
       }
+      if (action == ROBOT_UPDATING) {          
+        for (i = 0; i < nRobots; i++){
+          if (robot == listWorkers[i]){
+            // proceed to listen the information
+            printf("\n %s has received a time of %d from %d", robotName, value, robot);
+            printf("\n");
+          }
+        } 
+      }  
       wb_receiver_next_packet(receiver);
-    }   
-    //wb_receiver_next_packet(receiver);
+    } else {  
+      printf("\n %s receive %s message for other", robotName, data);
+      wb_receiver_next_packet(receiver);
+    }  
   }
   return 1;
 }

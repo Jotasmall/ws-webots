@@ -1766,7 +1766,8 @@ int doorEntrance(int steps){
     return 0;
   }
   forward(steps);
-  speaking(M2NEST, ROBOT_LEAVING, 0, 0);
+  speaking(M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
+  speaking(-1, ROBOT_LEAVING, 0, 0); // To indicate friends 
   waiting(1);
   turnSteps(-10);
   return 1;
@@ -1921,7 +1922,9 @@ void cronometer(int task, int cache){//ok-
   } else {  
     timeMeasured++;
   }
-  //listening(); --JUAN EDIT FILES
+  printf("\n %s is listening", robotName);
+  printf("\n");
+  listening(); //--JUAN EDIT FILES
   if (flagFilesLIFE) {
     createDir(LIFE, 0);
     //printf("\n %s is updating in %s", robotName, fileRobot);
@@ -2095,8 +2098,10 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   if (toWhom == M2ROBOT) {
     if (time == -1) { // reporting just to have the same number of lines
       sprintf(message, "U");
+    } else if (toWhom == -1){ 
+      sprintf(message, "R2R%dR%d",botNumber, ROBOT_LEAVING);
     } else {
-      sprintf(message, "Re%c%c%c%cC%dT%dX%d",robotName[6], robotName[7], robotName[8], robotName[9], codeTask, time, cache);
+      sprintf(message, "R2R%dC%dT%d",botNumber, codeTask, time);
     }
   } else if (toWhom == M2NEST) {
     if (time == -1) {
@@ -2110,7 +2115,12 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
       } else if (codeTask == ROBOT_ARRIVING) {
         sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_ARRIVING, floorColor);
         printf("\n %s is arriving into NEST %d", robotName, floorColor);
-        printf("message %s", message);        
+        printf(" message %s", message);        
+        printf("\n");
+      } else if (codeTask == ROBOT_UPDATING) {
+        sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_UPDATING, estPickS + estDropN);
+        printf("\n %s is arriving into NEST %d", robotName, floorColor);
+        printf(" message %s", message);        
         printf("\n");
       }
     }
@@ -2128,8 +2138,6 @@ int listening() { //ok-
       //printf("\n %s will update its state of partitioning %d", robotName, flagTravel);
       writeDecision(0, 0, TRAVELING_CALL);
       wb_receiver_next_packet(receiver);
-      wb_robot_step(32);
-      return 0;
     } else if ((data[0] == 'T') && (data[2] == 'R')) {
       // "T2R0T77X9"
       int place = atoi(&data[3]);
@@ -2139,59 +2147,79 @@ int listening() { //ok-
         //-- printf("\n %s is listening its nest location %d", robotName, place);
         //-- printf("\n");
         int action = atoi(&data[5]);
-        int destination = atoi(&data[8]); 
         if (action == LEAVE) {
-          printf("\n %s is being requested to leave from %d to %d", robotName, place, destination);
-          printf("\n");
-        } else {
-          printf("\n %s can stay on region %d", robotName, floorColor);
-          printf("\n");
+          //-- int destination = atoi(&data[8]); 
+          //-- printf("\n %s is being requested to leave from %d to %d", robotName, place, destination);
+          //-- printf("\n");
+        } else if (action == botNumber){ 
+          int newFriend = atoi(&data[10]);
+          int flagNew = 1, pos = nRobots; 
+          //-- printf("\n %s was introduced to %d", robotName, newFriend);
+          //-- printf("\n");
+          for (i = 0; i < nRobots; i++) { 
+            if (newFriend == listFriends[i]) {
+              flagNew = 0; // it already exists
+              break;
+            }
+            if (listFriends[i] == 0) {
+              if (pos > i) {
+                pos = i; // to fill the empty spaces
+              }
+            }
+          }
+          if (flagNew) {
+            listFriends[pos] = newFriend;
+            printf("\n %s added to its friends %d", robotName, newFriend);
+            printf("\n");
+          }
         }    
       }
       wb_receiver_next_packet(receiver);
-    } else if (data[0] == 'R') { 
+    } else if ((data[0] == 'R') && (data[2] == 'R')) { 
       /*  
-         A standard message Me0000C777T9999X3
-         Me0000 = number of robot
+         A standard message R2R0000C777T9999X3
+         0000 = number of robot
          C777 = code of task
          T9999 = time of task
          X3 = type of cache found //still not used
       */
-      int name = atoi(&data[2]);
-      int i;
-      for (i = 0; i < nRobots; i++){
-        if (name == listFriends[i]){
-          // proceed to listen the information
-        }
-      }
-      int codeReceived = atoi(&data[7]);
-      timeListened = atoi(&data[11]);
-      char *p = (char*) data;
-      p+=11;
-      while(*p) {
-        if (*p == 'X') { 
-          p++;	  
-          break; 
+      int name = atoi(&data[3]);
+      int codeReceived = atoi(&data[8]);
+      for (i = 0; i < nRobots; i++) {
+        if (name == listFriends[i]) {
+          if (codeReceived == ROBOT_LEAVING) {
+            printf("\n %s bye bye %d", robotName, name);
+            printf("\n");
+            listFriends[i] = 0;
+          } else {
+            // proceed to listen the information
+            timeListened = atoi(&data[12]);
+            /* Robot codes 
+            301 TRIANGLE     100 timePickSource       106 timeStore
+            302 BOX          101 timepickCache        107 timeHarvest
+            303 CIRCLE       102 timeDropCache        201 timeImage
+            304 ALL          103 timeDropNest         202 timeCache
+            305 NOTHING      104 timeTravel2Nest      777 waiting
+            306 ROBOT        105 timeTravel2Source
+            */
+            if ((codeReceived >= 100) && (codeReceived <= 107)){	
+              printf("\n Thanks %d buddy, %s will consider your estimations for %d of time %d", name, robotName, codeReceived, timeListened);
+              printf("\n");
+              flagListened = 1;
+              wb_robot_step(32); // to update global values
+              updateEstimations(codeReceived, timeListened, 0);
+            }
+          }
+          break;
         } else {
-          p++;
+          printf("\n %s receive a message from %d, but it is not for him %s", robotName, name, data);
+          printf("\n");
         }
       }
-      int cacheReceived = atoi(p);
-      /* Robot codes 
-      301 TRIANGLE     100 timePickSource       106 timeStore
-      302 BOX          101 timepickCache        107 timeHarvest
-      303 CIRCLE       102 timeDropCache        201 timeImage
-      304 ALL          103 timeDropNest         202 timeCache
-      305 NOTHING      104 timeTravel2Nest      777 waiting
-      306 ROBOT        105 timeTravel2Source
-      */
-      if ((codeReceived >= 100) && (codeReceived <= 107)){	
-        printf("\n Thanks %d buddy, %s will consider your estimations for %d of time %d", name, robotName, codeReceived, timeListened);
-        printf("\n");
-        flagListened = 1;
-        wb_robot_step(32); // to update global values
-        updateEstimations(codeReceived, timeListened, cacheReceived);
-      }
+      wb_receiver_next_packet(receiver);
+    } else {
+      printf("\n %s receive a message no for him %s", robotName, data);
+      printf("\n");
       wb_receiver_next_packet(receiver);
     }
   }  
