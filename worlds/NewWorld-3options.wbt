@@ -3,7 +3,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation -0.00153701 0.765862 0.643004 3.13793
-  position 0.036736 2.61363 -0.805629
+  position 0.0367029 2.57423 -0.798705
 }
 Background {
   skyColor [
@@ -1997,7 +1997,7 @@ E-puck {
 }
 E-puck {
   translation 0.04727 2.36855e-15 -0.302399
-  controller "void"
+  controller "CallDuty_v1"
   name "e-puck2801"
   camera_windowPosition 0.0586907 0.193452
   camera_pixelSize 2
@@ -2014,7 +2014,7 @@ E-puck {
 E-puck {
   translation -0.485898 1.88304e-15 -0.289769
   rotation 0 -1 0 6.28318
-  controller "void"
+  controller "CallDuty_v1"
   name "e-puck2901"
   camera_pixelSize 2
   turretSlot [

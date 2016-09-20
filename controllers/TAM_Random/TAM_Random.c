@@ -121,6 +121,8 @@ int W_speaking(int toWhom);
 int listening();
 void printStates();
 void updateUtility(int amount);
+void recordUtility();
+void writeMessage(int speaking, const char *msg);  
 
 int main(int argc, char **argv)
 {
@@ -585,17 +587,50 @@ void updateUtility(int amount) {
     }
     fprintf(fw1,"\n");
     fclose(fw1);
+  }
+  recordUtility();
+} 
+
+void recordUtility(){
+  if (flagFiles) {
     FILE *fw2 = fopen(fileUtility, "a");
     if (fw2 == NULL) {
       printf("Error opening file utilities \n");
       exit(1);
     }
+    printf("\n %s is updating utilities %d, %d, %d", robotName, utility[0], utility[1], utility[2]);
+    printf("\n");
     for (i = 0; i < NEIGHBORS; i++) {
       fprintf(fw2, "%d, ", utility[i]);
     }
     fprintf(fw2,"\n");
+  }  
+}
+
+/*void writeMessage(int speaking, const char *msg) {
+  if (flagFilesCOM) {
+      // File for decisions
+    createDir(COMMUNICATION, 0);
+    //printf("\n %s is registering its messages in %s", robotName, fileRobot);
+    //printf("\n");	
+    FILE *file = fopen(fileRobot, "a+");
+    if (file == NULL) {
+      printf("Error opening file of communications\n");
+      printf("\n");
+      exit(1);
+    }
+    //printf("\n %s is updating with %s", robotName, msg);
+    if (speaking) {
+      fprintf(file, "\n speaking, %s", msg);
+      printf("\n %s is updating with %s by speaking", robotName, msg);
+    } else {
+      fprintf(file, "\n listening, %s", msg);
+      printf("\n %s is updating with %s by listening", robotName, msg);
+    }
+    fclose(file);
   }
-} 
+}*/
+
 
 int W_speaking(int toWhom){ //ok-
   if (flagCom == 0) { return 0;}
@@ -627,7 +662,7 @@ int W_speaking(int toWhom){ //ok-
   } else {
     printf("\n %s is introducing the new %d", robotName, newNode);
     for (i = 0; i<nRobots; i++) {
-      if ((listWorkers[i] != 0) && (listWorkers[i] != newNode)) {
+      if ((newNode != 0) && (listWorkers[i] != 0) && (listWorkers[i] != newNode)) {
         sprintf(message, "T2R%dR%dR%d", codeTam, newNode, listWorkers[i]);
         wb_emitter_send(emitter, message, strlen(message)+1);
         printf("\n %s introduces %d to %d", robotName, listWorkers[i], newNode);
@@ -651,16 +686,17 @@ int listening() {
       printf("\n %s received a message from %d Nest", robotName, robot);
       printf("\n %s update neighbor %d utility %d", robotName, robot, value);
       utility[robot] = value; 
+      recordUtility();
       wb_receiver_next_packet(receiver);
     } else if ((data[0] == 'R') && (data[2] == 'T')) {     
       //R2T0000T##X999
       robot = atoi(&data[3]); 
       int action = atoi(&data[8]); //LEAVE OR STAY
       value = atoi(&data[11]); //PLACE
-      printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
-      printf("\n");
       if (value == codeTam) {
         // The message is for this TAM
+        printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
+        printf("\n");
         if (action == ROBOT_LEAVING) {
           for (i = 0; i < nRobots; i++){
             if (robot == listWorkers[i]){
@@ -695,7 +731,7 @@ int listening() {
       }  
       wb_receiver_next_packet(receiver);
     } else {  
-      printf("\n %s receive %s message for other", robotName, data);
+      //printf("\n %s receive %s message for other", robotName, data);
       wb_receiver_next_packet(receiver);
     }  
   }

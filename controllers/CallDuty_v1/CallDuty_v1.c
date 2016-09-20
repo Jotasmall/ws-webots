@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #define TIME_STEP 64
-
+#define SPEEDCARGO 1
 //Model -1 is for experiments, 0 is 2011, 1 is mine, 2 is UCB, 3 is Greedy 
 #define ESSAY 0
 #define RANDOMLY 1
@@ -43,6 +43,7 @@ int flagFilesEST = 1;
 int flagFilesLIFE = 1;
 int flagFilesDM = 1;
 int flagFilesPER = 1;
+int flagFilesCOM = 1;
 // Communication flags
 int flagCom = 1;                //to enable or disable communications
 int flagListened = 0;           //to know if a data was listened or by herself
@@ -60,7 +61,7 @@ int flagMasterRecruiting = 0;   //1 RANDOMLY, -1 never, 0 whatever
 int flagReady = 0;              //to know when she ended a travel
 int flagLoad = 0;               //to know if she has a load or not
 int flagRobot = 0;              //to know if there is a robot in front
-int flagPrint1 = 1;
+int flagPrint1 = 0;
 int flagTravel = 0;             //to know if a robot is partitioning or not
 int flagHold = 0;               //to keep counting the time  
 int flagInside = 0;             //to know if a robot entered a TAM
@@ -146,6 +147,7 @@ int nRobots = 10;
 #define LIFE 2
 #define DECISIONS 3
 #define PERFORMANCE 4 
+#define COMMUNICATION 5
 char robotName[11];
 int botNumber;
 char fileRobot[] = "DIRPATH\\dd-hh-mm\\e-puck0000-OPTION.txt";
@@ -245,7 +247,8 @@ void updateBitacora(int codeTask, int estimations, int cache);
 void writeDecision(float boundP, float realP, int mechanism);
 // Communication functions
 int speaking(int toWhom, int codeTask, int time, int cache);//checked
-int listening();                                //checked
+int listening();
+void writeMessage(int speaking, const char *msg);                                //checked
 // Model functions
 int computeTraveling(int levy);
 
@@ -274,6 +277,10 @@ int main(int argc, char **argv) {
 }
 
 void init_variables(){
+  if (botNumber != 2701) {
+    modelTest = ESSAY;
+  }
+  
   switch(modelTest){
     case ESSAY:
       stateUML = TRAVEL2GREY;
@@ -715,6 +722,11 @@ void createDir(int option, int dirBuild){
       //printf("\n fileRobot %s", fileRobot);
       //printf("\n"); 
       break;
+    case COMMUNICATION:
+      sprintf(fileRobot, "%s-COM", dirPath);
+      //printf("\n fileRobot %s", fileRobot);
+      //printf("\n");
+      break;
    }
    
    //if (dir){ mkdir(fileRobot,0700);} 
@@ -750,6 +762,11 @@ void createDir(int option, int dirBuild){
        strcat(fileRobot, "-OBJ.txt"); 
        //printf("\n fileRobot %s", fileRobot);
        //printf("\n"); 
+       break;
+     case COMMUNICATION:
+       strcat(fileRobot, "-COM.txt");
+       //printf("\n fileRobot %s", fileRobot);
+       //printf("\n");
        break;
   }
   if (dirBuild){
@@ -810,6 +827,16 @@ void createFiles(){ //ok
   }
   fprintf(fper, "PICK, DROP, HARVEST, STORE\n");
   fclose(fper);
+  // File for communications
+  createDir(COMMUNICATION, 1);
+  FILE *fcom = fopen(fileRobot, "w");
+  if (fcom == NULL) {
+    printf("Error opening communication file \n");
+    printf("\n");
+    exit(1);
+  }
+  fprintf(fcom, "who, message");
+  fclose(fcom);
 }
 
 void initEstimations(){ //ok-
@@ -914,7 +941,7 @@ int waiting_color(int foreground) {//ok
   count = cont_height_figure(101);
   int countArriving = 0;
   countArriving = cont_height_figure(102);
-  /* if (flagPrint1) {
+  if (flagPrint1) {
     if (count > countArriving) {
       printf("\n Intensity %d half line", count);
     } else {
@@ -922,7 +949,7 @@ int waiting_color(int foreground) {//ok
     }
   
     flagPrint1 = 0;
-  } */
+  } 
   if ((count > 26) || (countArriving > 26)) {
     if (stateUML == PICK_SOURCE) {
       cronometer(WAITING, 0); //shapeSeen); //when using different shapes
@@ -1407,8 +1434,8 @@ int run(int steps){ //ok-
       }
     }
     if (flagLoad){ //reducing speed when cargo
-      speed[LEFT]*=.6;
-      speed[RIGHT]*=.6;
+      speed[LEFT]=speed[LEFT]*SPEEDCARGO;
+      speed[RIGHT]=speed[RIGHT]*SPEEDCARGO;
     }
     wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
     wb_robot_step(TIME_STEP);
@@ -1431,10 +1458,10 @@ void forward(int steps){ //ok-
   speed[LEFT] = k*300; //200
   speed[RIGHT] = k*300;
   k = 0;
-  if (flagLoad){ //reducing speed when cargo
-    speed[LEFT]*=.6;
-    speed[RIGHT]*=.6;
-  }
+  /*if (flagLoad){ //reducing speed when cargo
+    speed[LEFT]=speed[LEFT]*SPEEDCARGO;
+    speed[RIGHT]=speed[LEFT]*SPEEDCARGO;
+  }*/
   wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
   while (k < steps) {
     k++;
@@ -1606,6 +1633,12 @@ int speedAdjustment(int index, int delta) { //ok
       else { turnSteps(6);}
       return 0;  
     }
+    speed[LEFT] = speed[LEFT]+K_TURN*delta;
+    speed[RIGHT] = speed[RIGHT]-K_TURN*delta;
+    if (flagLoad){ //reducing speed when cargo
+      speed[LEFT]=speed[LEFT]*SPEEDCARGO;
+      speed[RIGHT]=speed[RIGHT]*SPEEDCARGO;
+    }
     wb_differential_wheels_set_speed(speed[LEFT]+K_TURN*delta,
                                      speed[RIGHT]-K_TURN*delta);
     wb_robot_step(TIME_STEP); 
@@ -1654,8 +1687,8 @@ int hitWall(int front){ //ok
     cronometer(-1, 0); 
   }
   waiting(1);
-  printf("\n Robot %s hit against a wall...", robotName);
-  printf("\n");
+  //printf("\n Robot %s hit against a wall...", robotName);
+  //printf("\n");
   return 1;
 }
 
@@ -2097,6 +2130,30 @@ void writeDecision(float boundP, float realP, int mechanism){ //ok-
   }
 }
 
+void writeMessage(int speaking, const char *msg) {
+  if (flagFilesCOM) {
+      // File for decisions
+    createDir(COMMUNICATION, 0);
+    //printf("\n %s is registering its messages in %s", robotName, fileRobot);
+    //printf("\n");	
+    FILE *file = fopen(fileRobot, "a+");
+    if (file == NULL) {
+      printf("Error opening file of communications\n");
+      printf("\n");
+      exit(1);
+    }
+    //printf("\n %s is updating with %s", robotName, msg);
+    if (speaking) {
+      fprintf(file, "\n speaking, %s", msg);
+      printf("\n %s is updating with %s by speaking", robotName, msg);
+    } else {
+      fprintf(file, "\n listening, %s", msg);
+      printf("\n %s is updating with %s by listening", robotName, msg);
+    }
+    fclose(file);
+  }
+}
+
 int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   if (flagCom == 0) { return 0;}
 
@@ -2132,6 +2189,10 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
       }
     }
   }
+  if (strcmp(message, "U")) {
+    printf("\n %s updating its record of messages", robotName);
+    writeMessage(1, message);
+  }  
   wb_emitter_send(emitter, message, strlen(message)+1);
   wb_robot_step(32);
   return 1;
@@ -2148,11 +2209,12 @@ int listening() { //ok-
     } else if ((data[0] == 'T') && (data[2] == 'R')) {
       // "T2R0T77X9"
       int place = atoi(&data[3]);
-      printf("\n %s has received %s message from %d", robotName, data, place);
-      printf("\n");
+      //printf("\n %s has received %s message from %d", robotName, data, place);
+      //printf("\n");
       if (place == floorColor) {
-        //-- printf("\n %s is listening its nest location %d", robotName, place);
-        //-- printf("\n");
+        printf("\n %s is listening its nest location %d to say %s", robotName, place, data);
+        printf("\n");
+        writeMessage(0, data);
         int action = atoi(&data[5]);
         if (action == LEAVE) {
           //-- int destination = atoi(&data[8]); 
@@ -2194,6 +2256,7 @@ int listening() { //ok-
       int codeReceived = atoi(&data[8]);
       for (i = 0; i < nRobots; i++) {
         if (name == listFriends[i]) {
+          writeMessage(0, data);
           if (codeReceived == ROBOT_LEAVING) {
             printf("\n %s bye bye %d", robotName, name);
             printf("\n");
@@ -2218,15 +2281,15 @@ int listening() { //ok-
             }
           }
           break;
-        } else {
+        } /*else {
           printf("\n %s receive a message from %d, but it is not for him %s", robotName, name, data);
           printf("\n");
-        }
+        }*/
       }
       wb_receiver_next_packet(receiver);
     } else {
-      printf("\n %s receive a message no for him %s", robotName, data);
-      printf("\n");
+      //printf("\n %s receive a message no for him %s", robotName, data);
+      //printf("\n");
       wb_receiver_next_packet(receiver);
     }
   }  
