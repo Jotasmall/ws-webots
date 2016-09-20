@@ -31,7 +31,7 @@
 // This is the cost to get each object 75, 150, 350, 700, 1000
 #define TIME4NEST 75
 #define MINUTES_EMPTY 0
-float pDisableNestRed = 0.00;
+float pDisableNestRed  = 0.0;
 float pDisableNestGrey = 0.2;
 float pDisableNestBlue = 0.6;
 float pDisable = 0.0;
@@ -55,7 +55,8 @@ char robotName[8];
 int codeTam = 0;
 #define NEIGHBORS 3
 int utility[] = {nRobots,nRobots,nRobots};
- 
+int resources[] = {0, 0, 0};
+
 #define NB_TAM 10
 #define noS 5
 int sensorSource[] = {5,6,7,8,9};
@@ -94,12 +95,12 @@ int contUnload[noN];
 long int timeCounter = 0;
 int timeMinute = 0;
 int date = 0;
-int resources[] = {0, 0, 0};
 
 char dir[] = "./dd-hh-mm";//"/home/sim/dd-hh-mm/";
 char file[] = "./dd-hh-mm/visit_vector##.txt";
 char fileAux[] = "./dd-hh-mm/visit_vector##_aux.txt";
 char fileWorkers[] = "./dd-hh-mm/workers##.txt";
+char fileUtility[] = "./dd-hh-mm/utility##.txt";
 #define MY_MASK 0777/home/sim/
 #include <errno.h>
 
@@ -459,19 +460,18 @@ void W_led_OFF(){
 void createFile(){
   sprintf(file,"%s/visits_vector%d.txt", dir, codeTam);
   //printf("\n file %s",file);
-
   FILE *fw1 = fopen(file,"w");
-  if(fw1 == NULL){
-     //*  printf("Error opening file 1 -creation\n");
-      exit(1);
+  if (fw1 == NULL){
+    printf("Error opening file 1 -creation\n");
+    exit(1);
   }
+  
   sprintf(fileAux, "%s/visit_vector%d_aux.txt", dir, codeTam);
   //printf("\n file %s",fileAux);
-  
   FILE *fw2 = fopen(fileAux,"w");
-  if(fw2 == NULL){
-     //*  printf("Error opening auxiliar file -creation \n");
-      exit(1);
+  if (fw2 == NULL){
+    printf("Error opening auxiliar file -creation \n");
+    exit(1);
   }
 
   int row;
@@ -487,10 +487,19 @@ void createFile(){
   //printf("\n file %s",fileWorkers);
   FILE *fw3 = fopen(fileWorkers,"w");
   if (fw3 == NULL) {
-   //*  printf("Error opening auxiliar file \n");
+    printf("Error opening workers file \n");
     exit(1);
   }
   fclose(fw3);
+  
+  sprintf(fileUtility, "%s/utility%d.txt", dir, codeTam);
+  //printf("\n file %s", fileUtility);
+  FILE *fw4 = fopen(fileUtility, "w");
+  if (fw4 == NULL) {
+    printf("Error opening utility file \n");
+    exit(1);
+  }
+  fclose(fw4);
   //--//*  printf("\n Files created!!");
 }
 
@@ -524,35 +533,35 @@ void updateFiles(){
 
 void writeFile(int idPlace){
   if (flagFiles) {
-  FILE *fw=fopen(file,"w");
-  if (fw == NULL){
-     //*  printf("Error opening file 1 - writing\n");
-      exit(1);
-  }
-  FILE *fr=fopen(fileAux,"r");
-  if(fr == NULL ){
-     //*  printf("Error opening auxiliar file \n");
-      exit(1);
-  }
-  rewind(fr);
-  rewind(fw);
-  int row, aux;
-  char textPS[] = "Place00";
-
-  for (row=0; row<NB_TAM; row++){
-    if (row==idPlace){
-      fscanf(fr, "%s %3d", textPS, &aux);
-      //printf("\n Value to be modified %d", aux);
-      fprintf(fw, "Place%d %3d ", row, ++aux);
-    } else {
-      fscanf(fr, "%s %3d", textPS, &aux);
-      fprintf(fw, "Place%d %3d ", row, aux);
+    FILE *fw=fopen(file,"w");
+    if (fw == NULL){
+       //*  printf("Error opening file 1 - writing\n");
+        exit(1);
     }
-    fprintf(fw, "\n");
-  }
-  fclose(fw);
-  fclose(fr);
-  updateFiles();
+    FILE *fr=fopen(fileAux,"r");
+    if(fr == NULL ){
+       //*  printf("Error opening auxiliar file \n");
+        exit(1);
+    }
+    rewind(fr);
+    rewind(fw);
+    int row, aux;
+    char textPS[] = "Place00";
+  
+    for (row=0; row<NB_TAM; row++){
+      if (row==idPlace){
+        fscanf(fr, "%s %3d", textPS, &aux);
+        //printf("\n Value to be modified %d", aux);
+        fprintf(fw, "Place%d %3d ", row, ++aux);
+      } else {
+        fscanf(fr, "%s %3d", textPS, &aux);
+        fprintf(fw, "Place%d %3d ", row, aux);
+      }
+      fprintf(fw, "\n");
+    }
+    fclose(fw);
+    fclose(fr);
+    updateFiles();
   }
 }
 
@@ -566,16 +575,25 @@ void updateUtility(int amount) {
     }
   }
   if (flagFiles) {
-    FILE *fw = fopen(fileWorkers,"a");
-    if (fw == NULL){
-     //*  printf("Error opening file workers\n");
+    FILE *fw1 = fopen(fileWorkers,"a");
+    if (fw1 == NULL){
+      printf("Error opening file workers\n");
       exit(1);
     }
     for (i = 0; i < nRobots; i++){
-      fprintf(fw, "%d, ", listWorkers[i]);
+      fprintf(fw1, "%d, ", listWorkers[i]);
     }
-    fprintf(fw,"\n");
-    fclose(fw);
+    fprintf(fw1,"\n");
+    fclose(fw1);
+    FILE *fw2 = fopen(fileUtility, "a");
+    if (fw2 == NULL) {
+      printf("Error opening file utilities \n");
+      exit(1);
+    }
+    for (i = 0; i < NEIGHBORS; i++) {
+      fprintf(fw2, "%d, ", utility[i]);
+    }
+    fprintf(fw2,"\n");
   }
 } 
 
@@ -588,7 +606,7 @@ int W_speaking(int toWhom){ //ok-
   if (toWhom == M2NEST) { // reporting just to have the same number of lines
     sprintf(message, "T2T%dX%d", codeTam, utility[codeTam]);
     wb_emitter_send(emitter, message, strlen(message)+1);
-   //*  printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], resources[0], resources[1], resources[2]);
+   //*  printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], utility[0], utility[1], utility[2]);
    //*  printf("\n"); 
   } else if (toWhom == M2ROBOT) {
     for (i = 0; i<NEIGHBORS; i++) {
