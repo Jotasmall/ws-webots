@@ -930,7 +930,7 @@ int waiting_color(int foreground) {//ok
     cronometer(-1, 0);
     return 1; //keep waiting
   }    
-  printf("\n Intensity gets down");
+  //printf("\n Intensity gets down");
   return 0; //wait no longer
 }
 
@@ -1406,7 +1406,10 @@ int run(int steps){ //ok-
         speed[i] = -MAX_SPEED;
       }
     }
-    
+    if (flagLoad){ //reducing speed when cargo
+      speed[LEFT]*=.6;
+      speed[RIGHT]*=.6;
+    }
     wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
     wb_robot_step(TIME_STEP);
     cronometer(-1, 0); 
@@ -1428,6 +1431,10 @@ void forward(int steps){ //ok-
   speed[LEFT] = k*300; //200
   speed[RIGHT] = k*300;
   k = 0;
+  if (flagLoad){ //reducing speed when cargo
+    speed[LEFT]*=.6;
+    speed[RIGHT]*=.6;
+  }
   wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
   while (k < steps) {
     k++;
@@ -1922,8 +1929,8 @@ void cronometer(int task, int cache){//ok-
   } else {  
     timeMeasured++;
   }
-  printf("\n %s is listening", robotName);
-  printf("\n");
+  //printf("\n %s is listening", robotName);
+  //printf("\n");
   listening(); //--JUAN EDIT FILES
   if (flagFilesLIFE) {
     createDir(LIFE, 0);
