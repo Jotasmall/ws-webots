@@ -717,9 +717,19 @@ int W_speaking(int toWhom){ //ok-
       }  
     }
     if (place2Go != codeTam) {
-      sprintf(message, "T2R%dT%dX%d", codeTam, LEAVE, place2Go);
-      wb_emitter_send(emitter, message, strlen(message)+1);
-      writeMessage(1, message);
+      i = 0;
+      int j = 0;
+      while ((j < maxDif) && (i < nRobots)) {
+        int robotLeaving = listWorkers[j];
+        i++;
+        if (robotLeaving != 0){
+          j++;
+          printf("\n %s has chosen %d to leave because utility is %d and destination has %d", robotName, robotLeaving, utility[codeTam], utility[place2Go]);
+          sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
+          wb_emitter_send(emitter, message, strlen(message)+1);
+          writeMessage(1, message);
+        } 
+      }  
      //*  printf("\n %s communicates to its robots", robotName);
      //*  printf("\n");      
     }
@@ -778,6 +788,7 @@ int listening() {
           for (i = 0; i < nRobots; i++) {
             if (listWorkers[i] == 0) {
               listWorkers[i] = robot;
+              newNode = robot;
               printf("\n %s add to its list %d", robotName, robot);
               printf("\n");
               updateUtility(1);

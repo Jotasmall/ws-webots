@@ -1504,8 +1504,8 @@ int levyFlight(){
       if (index == 100){ //double-check mechanism
         return doubleCheck();
       }
-      printf("\n Shape watched on levy - Levy Aborted %d", index);
-      printf("\n");
+      //--printf("\n Shape watched on levy - Levy Aborted %d", index);
+      //--printf("\n");
       return index;  
     } 
     whereIam(1);
@@ -1541,8 +1541,8 @@ int levyFlight(){
       if (index == 100){ //double-check mechanism
         return doubleCheck(); 
       }
-      printf("\n Color watched on levy - Levy Aborted %d", index);
-      printf("\n");
+      //-- printf("\n Color watched on levy - Levy Aborted %d", index);
+      //-- printf("\n");
       return index;  
     } 
   }
@@ -2207,40 +2207,45 @@ int listening() { //ok-
       writeDecision(0, 0, TRAVELING_CALL);
       wb_receiver_next_packet(receiver);
     } else if ((data[0] == 'T') && (data[2] == 'R')) {
-      // "T2R0T77X9"
+      // "T2R0R0000T77X9"
       int place = atoi(&data[3]);
       //printf("\n %s has received %s message from %d", robotName, data, place);
       //printf("\n");
       if (place == floorColor) {
-        printf("\n %s is listening its nest location %d to say %s", robotName, place, data);
-        printf("\n");
-        writeMessage(0, data);
-        int action = atoi(&data[5]);
-        if (action == LEAVE) {
-          //-- int destination = atoi(&data[8]); 
-          //-- printf("\n %s is being requested to leave from %d to %d", robotName, place, destination);
-          //-- printf("\n");
-        } else if (action == botNumber){ 
+        int destinatary = atoi(&data[5]);
+        if (destinatary == botNumber){ 
+          printf("\n %s is listening its nest location %d to say %s", robotName, place, data);
+          printf("\n");
+          writeMessage(0, data);
           int newFriend = atoi(&data[10]);
-          int flagNew = 1, pos = nRobots; 
-          //-- printf("\n %s was introduced to %d", robotName, newFriend);
-          //-- printf("\n");
-          for (i = 0; i < nRobots; i++) { 
-            if (newFriend == listFriends[i]) {
-              flagNew = 0; // it already exists
-              break;
-            }
-            if (listFriends[i] == 0) {
-              if (pos > i) {
-                pos = i; // to fill the empty spaces
+          int suggestedDestination = atoi(&data[13]);
+          if (newFriend == LEAVE) {
+            printf("\n Nest %d is asking for %s to leave and go %d", place, robotName, suggestedDestination);
+            printf("\n");
+          } else if (newFriend == COME) {
+            printf("\n Nest %d is asking for %s to arrive", place, robotName);
+            printf("\n");
+          } else {
+            int flagNew = 1, pos = nRobots; 
+            //-- printf("\n %s was introduced to %d", robotName, newFriend);
+            //-- printf("\n");
+            for (i = 0; i < nRobots; i++) { 
+              if (newFriend == listFriends[i]) {
+                flagNew = 0; // it already exists
+                break;
+              }
+              if (listFriends[i] == 0) {
+                if (pos > i) {
+                  pos = i; // to fill the empty spaces
+                }
               }
             }
-          }
-          if (flagNew) {
-            listFriends[pos] = newFriend;
-            printf("\n %s added to its friends %d", robotName, newFriend);
-            printf("\n");
-          }
+            if (flagNew) {
+              listFriends[pos] = newFriend;
+              printf("\n %s added to its friends %d", robotName, newFriend);
+              printf("\n");
+            }
+          }  
         }    
       }
       wb_receiver_next_packet(receiver);
