@@ -50,13 +50,16 @@ WbDeviceTag emitter;
 #define ROBOT_ARRIVING 32
 #define ROBOT_UPDATING 33
 #define M2NEST 2
-
+// Destinations
+#define RED 0
+#define GREY 1
+#define BLUE 2
+// Robot data
 char robotName[8];
 int codeTam = 0;
 #define NEIGHBORS 3
 int utility[] = {nRobots,nRobots,nRobots};
 int resources[] = {0, 0, 0};
-
 #define NB_TAM 10
 #define noS 5
 int sensorSource[] = {5,6,7,8,9};
@@ -407,17 +410,17 @@ void W_reset(){
   if (strcmp("tamRed", robotName) == 0) {
     //printf("\n I am TAM with ground color RED");
     pDisable = pDisableNestRed;
-    codeTam = 0;
+    codeTam = RED;
   }
   if (strcmp("tamGrey", robotName) == 0) {
     //printf("\n I am TAM with ground color GREY");
     pDisable = pDisableNestGrey;
-    codeTam = 1;
+    codeTam = GREY;
   }
   if (strcmp("tamBlue", robotName) == 0) {
     //printf("\n I am TAM with ground color BLUE");  
     pDisable = pDisableNestBlue;
-    codeTam = 2;
+    codeTam = BLUE;
   }  
   if (flagFiles) {createFiles();}
   

@@ -283,7 +283,7 @@ void init_variables(){
   
   switch(modelTest){
     case ESSAY:
-      stateUML = TRAVEL2GREY;
+      stateUML = EXPERIMENT;//TRAVEL2GREY;
       color = CYAN;
       figura = BOX;
       break;
@@ -317,6 +317,7 @@ void executeUML(){
     switch(stateUML){
       case EXPERIMENT:
         printf("\n %d is on floorColor %d", botNumber, floorColor);
+        cronometer(1000, 0);
       break;
       case PICK_SOURCE:
         //printf("\n state PICK_SOURCE");
@@ -2222,6 +2223,22 @@ int listening() { //ok-
           if (newFriend == LEAVE) {
             printf("\n Nest %d is asking for %s to leave and go %d", place, robotName, suggestedDestination);
             printf("\n");
+            if (botNumber != 2701) {          
+              switch(suggestedDestination){
+                case RED:
+                   printf("\n %s do not wanna go RED", robotName);
+                   stateUML = TRAVEL2RED;
+                   break;
+                case GREY:
+                   printf("\n %s do not wanna go GREY", robotName);
+                   stateUML = TRAVEL2GREY;
+                   break;
+                case BLUE:
+                   printf("\n %s do not wanna go BLUE", robotName);
+                   stateUML = TRAVEL2BLUE;
+                   break;
+              }   
+            }  
           } else if (newFriend == COME) {
             printf("\n Nest %d is asking for %s to arrive", place, robotName);
             printf("\n");
