@@ -21,7 +21,7 @@
 ###
 ### ---- C Sources ----
 ### if your program uses several C source files:
-C_SOURCES = CallDuty_v1.c movement.c
+C_SOURCES = CallDuty_v1.c movement.c initBot.c
 ###
 ### ---- C++ Sources ----
 ### if your program uses several C++ source files:

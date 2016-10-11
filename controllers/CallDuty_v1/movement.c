@@ -6,10 +6,15 @@
 
 #define TIME_STEP 64
 #define NB_DIST_SENS 8
+#define SAMPLES 1
+#define THRESHOLD_DIST 150
+
 #define LEFT 0
 #define RIGHT 1
 #define MAX_SPEED 600
-
+#define TURN_90 27
+#define TURN_M90 -27
+#define SPEEDCARGO 1
 
 void forward(int steps, double *speed){ //ok-
   int k = 1;
@@ -44,20 +49,20 @@ void turnSteps(int steps, double *speed){
   while (steps > 0) {
     steps--;
     wb_robot_step(TIME_STEP);  
-    cronometer(-1, 0);
+    //c cronometer(-1, 0);
   }
   wb_differential_wheels_set_speed(0, 0);
   wb_robot_step(TIME_STEP);
 }
 
-int readSensors(int print, int *ps_value){ 
+int readSensors(int print, int *ps_value, int *ps_offset, WbDeviceTag *sensors){ 
   int flag = 0, i, k;
   // Reset values
   for(i=0; i<NB_DIST_SENS; i++){ ps_value[i] = 0;}
   //Sensor values
   for (k=0; k<SAMPLES; k++) { 
     for (i=0; i<NB_DIST_SENS; i++) {
-      ps_value[i] += (int)wb_distance_sensor_get_value(Robotps[i])-ps_offset[i];
+      ps_value[i] += (int)wb_distance_sensor_get_value(sensors[i])-ps_offset[i];
     }
     wb_robot_step(TIME_STEP); 
   }  
@@ -74,11 +79,11 @@ int readSensors(int print, int *ps_value){
   return flag;
 }
 
-int run(int steps, double *speed, int *ps_value){ //ok-
+int run(int flagLoad, int steps, double *speed, int *ps_value, int *ps_offset, WbDeviceTag *sensors){ //ok-
   int i, j;
   int matrix[8][2] = {{150,-35},{100, -15},{80, -10},{-10,-10},{-10,-10},{-10,80},{-30,100},{-20,150}};
   while(steps > 0) {  
-    readSensors(0, ps_value);
+    readSensors(0, ps_value, ps_offset, sensors);
     for (i = 0; i < 2; i++) {
       speed[i] = 0;
       for (j = 0; j < NB_DIST_SENS; j++) {
@@ -97,7 +102,7 @@ int run(int steps, double *speed, int *ps_value){ //ok-
     }
     wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
     wb_robot_step(TIME_STEP);
-    cronometer(-1, 0); 
+    //c cronometer(-1, 0); 
         
     steps--;
 // 	  Every 5 steps check ground color
@@ -108,3 +113,15 @@ int run(int steps, double *speed, int *ps_value){ //ok-
   return 1;
 }
 
+void avoidance(double *speed, int *ps_value, int *ps_offset, WbDeviceTag *sensors){ //ok
+  int sense = 1;
+  wb_differential_wheels_set_speed(0, 0);
+  wb_robot_step(TIME_STEP); 
+  readSensors(0, ps_value, ps_offset, sensors);
+  if ((ps_value[7] + ps_value[6]) < (ps_value[0] + ps_value[1])) {
+    sense = -1;
+  }
+  turnSteps(TURN_90*sense, speed);
+  forward(18, speed); //15
+  turnSteps((TURN_M90-3)*sense, speed);
+}
