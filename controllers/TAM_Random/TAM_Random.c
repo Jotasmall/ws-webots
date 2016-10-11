@@ -36,8 +36,8 @@ float pDisableNestGrey = 0.2;
 float pDisableNestBlue = 0.6;
 float pDisable = 0.0;
 #define nRobots 4
-int listWorkers[] = {0,0,0,0}; // number of robots
-int newNode = 0;
+int listWorkers[] = {0, 0, 0, 0}; // number of robots
+int lastVisitor = 0;
 // Communication flags
 int flagFiles = 1;
 int flagCom = 1;                //to enable or disable communications 
@@ -687,10 +687,10 @@ void writeMessage(int speaking, const char *msg) {
     //printf("\n %s is updating with %s", robotName, msg);
     if (speaking) {
       fprintf(file, "\n speaking, %s", msg);
-      printf("\n %s is updating with %s by speaking", robotName, msg);
+      //printf("\n %s is updating with %s by speaking", robotName, msg);
     } else {
       fprintf(file, "\n listening, %s", msg);
-      printf("\n %s is updating with %s by listening", robotName, msg);
+      //printf("\n %s is updating with %s by listening", robotName, msg);
     }
     fclose(file);
   }
@@ -707,8 +707,8 @@ int W_speaking(int toWhom){ //ok-
     sprintf(message, "T2T%dX%d", codeTam, utility[codeTam]);
     wb_emitter_send(emitter, message, strlen(message)+1);
     writeMessage(1, message);
-   //*  printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], utility[0], utility[1], utility[2]);
-   //*  printf("\n"); 
+   //printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], utility[0], utility[1], utility[2]);
+   //printf("\n"); 
   } else if (toWhom == M2ROBOT) {
     for (i = 0; i<NEIGHBORS; i++) {
       if ((i != codeTam) && (utility[i] > utility[codeTam])) {
@@ -725,26 +725,28 @@ int W_speaking(int toWhom){ //ok-
       while ((j < maxDif) && (i < nRobots)) {
         int robotLeaving = listWorkers[j];
         i++;
-        if (robotLeaving != 0){
+        if ((robotLeaving != 0) && (robotLeaving != lastVisitor)){
           j++;
-          printf("\n %s has chosen %d to leave because utility is %d and destination has %d", robotName, robotLeaving, utility[codeTam], utility[place2Go]);
+          printf("\n %s has chosen %d to leave because utility is %d and in destination %d has %d", robotName, robotLeaving, utility[codeTam], place2Go, utility[place2Go]);
+          printf("\n");
           sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
           wb_emitter_send(emitter, message, strlen(message)+1);
           writeMessage(1, message);
         } 
-      }  
+      }
+      lastVisitor = 0;  
      //*  printf("\n %s communicates to its robots", robotName);
      //*  printf("\n");      
     }
   } else {
-    printf("\n %s is introducing the new %d", robotName, newNode);
+    //printf("\n %s is introducing the new %d", robotName, lastVisitor);
     for (i = 0; i<nRobots; i++) {
-      if ((newNode != 0) && (listWorkers[i] != 0) && (listWorkers[i] != newNode)) {
-        sprintf(message, "T2R%dR%dR%d", codeTam, newNode, listWorkers[i]);
+      if ((lastVisitor != 0) && (listWorkers[i] != 0) && (listWorkers[i] != lastVisitor)) {
+        sprintf(message, "T2R%dR%dR%d", codeTam, lastVisitor, listWorkers[i]);
         wb_emitter_send(emitter, message, strlen(message)+1);
         writeMessage(1, message);
-        printf("\n %s introduces %d to %d", robotName, listWorkers[i], newNode);
-        printf("\n");
+        //printf("\n %s introduces %d to %d", robotName, listWorkers[i], lastVisitor);
+        //printf("\n");
       }
     }
   }  
@@ -761,11 +763,11 @@ int listening() {
     if ((data[0] == 'T') && (data[2] == 'T')) {
       robot = atoi(&data[3]); //Maximum 9 senders (NEST)
       value = atoi(&data[5]); //utility value
-      printf("\n %s received a message from %d Nest", robotName, robot);
-      printf("\n %s update neighbor %d utility %d", robotName, robot, value);
+      //printf("\n %s received a message from %d Nest", robotName, robot);
+      //printf("\n %s update neighbor %d utility %d", robotName, robot, value);
       utility[robot] = value;
       writeMessage(0, data); 
-      recordUtility();
+      updateUtility(0);
       wb_receiver_next_packet(receiver);
     } else if ((data[0] == 'R') && (data[2] == 'T')) {     
       //R2T0000T##X999
@@ -774,16 +776,16 @@ int listening() {
       value = atoi(&data[11]); //PLACE
       if (value == codeTam) {
         // The message is for this TAM
-        printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
-        printf("\n");
+        //printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
+        //printf("\n");
         writeMessage(0, data);
         if (action == ROBOT_LEAVING) {
           for (i = 0; i < nRobots; i++){
             if (robot == listWorkers[i]){
               // proceed to listen the information
               listWorkers[i] = 0;
-              printf("\n %s removed from its list %d", robotName, robot);
-              printf("\n");
+              //printf("\n %s removed from its list %d", robotName, robot);
+              //printf("\n");
               updateUtility(-1);
             }
           } 
@@ -791,9 +793,9 @@ int listening() {
           for (i = 0; i < nRobots; i++) {
             if (listWorkers[i] == 0) {
               listWorkers[i] = robot;
-              newNode = robot;
-              printf("\n %s add to its list %d", robotName, robot);
-              printf("\n");
+              lastVisitor = robot;
+              //printf("\n %s add to its list %d", robotName, robot);
+              //printf("\n");
               updateUtility(1);
               W_speaking(-1); //to introduce new friends
               break; //only add it once
@@ -806,8 +808,8 @@ int listening() {
           if (robot == listWorkers[i]){
             // proceed to listen the information
             writeMessage(0, data);
-            printf("\n %s has received a time of %d from %d", robotName, value, robot);
-            printf("\n");
+            //printf("\n %s has received a time of %d from %d", robotName, value, robot);
+            //printf("\n");
           }
         } 
       }  

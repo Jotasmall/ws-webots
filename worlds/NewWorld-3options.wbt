@@ -1996,7 +1996,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.04727 2.36855e-15 -0.302399
+  translation 0.41727 2.36855e-15 -0.302399
   controller "CallDuty_v1"
   name "e-puck2801"
   camera_windowPosition 0.0586907 0.193452
