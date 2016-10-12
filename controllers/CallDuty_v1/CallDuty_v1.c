@@ -76,6 +76,7 @@ int ps_offset[NB_DIST_SENS] = {35,35,35,35,35,35,35,35};
 #define CALIBRATE 50
 #define SAMPLES 1
 #include "initBot.h"
+#include "communication.h"
 //cam
 WbDeviceTag cam;
 WbDeviceTag displayExtra;
@@ -230,7 +231,6 @@ int followingLine(int colorLine);
 //int run(flagLoad, int steps);
 //void forward(int steps);
 #include "movement.h"
-
 int levyFlight();
 int speedAdjustment(int index, int delta);
 int hitWall(int front);
@@ -251,7 +251,8 @@ void updateBitacora(int codeTask, int estimations, int cache);
 void writeDecision(float boundP, float realP, int mechanism);
 // Communication functions
 int speaking(int toWhom, int codeTask, int time, int cache);//checked
-int listening();
+
+//int listening();
 void writeMessage(int speaking, const char *msg);                                //checked
 // Model functions
 int computeTraveling(int levy);
@@ -663,7 +664,6 @@ void reset(){ //ok-
   wb_differential_wheels_set_encoders(0,0);
   // get leds
   initLeds(RobotLed);
-  
   // communication module
   receiver = wb_robot_get_device("receiver");
   emitter = wb_robot_get_device("emitter");
@@ -682,17 +682,6 @@ void reset(){ //ok-
   wb_robot_step(TIME_STEP);
   // during the following n-1 simulation steps, increment the arrays
   calibrateSensors(Robotps, ps_offset);
-  //for (k = 0; k <CALIBRATE; k++){
-      //for (i=0; i<NB_DIST_SENS; i++){
-        //ps_offset[i] += (int) wb_distance_sensor_get_value(Robotps[i]);
-      //}
-      //wb_robot_step(TIME_STEP);
-  //} 
-  //printf("\n Calibration offset ");
-  //for (i=0; i<NB_DIST_SENS; i++){
-    //ps_offset[i] /= CALIBRATE-1;
-     //printf("%d ", ps_offset[i]);
-  //}
   speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
 }
 
@@ -1869,7 +1858,7 @@ void cronometer(int task, int cache){//ok-
   }
   //printf("\n %s is listening", robotName);
   //printf("\n");
-  listening(); //--JUAN EDIT FILES
+  listening(receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState); //--JUAN EDIT FILES
   if (flagFilesLIFE) {
     createDir(LIFE, 0);
     //printf("\n %s is updating in %s", robotName, fileRobot);
@@ -2100,129 +2089,6 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   }  
   wb_emitter_send(emitter, message, strlen(message)+1);
   wb_robot_step(32);
-  return 1;
-}
-
-int listening() { //ok-
-  int i;
-  while(wb_receiver_get_queue_length(receiver)>0){  
-    const char *data = wb_receiver_get_data(receiver);
-    if (data[0] == 'U') {
-      //printf("\n %s will update its state of partitioning %d", robotName, flagTravel);
-      writeDecision(0, 0, TRAVELING_CALL);
-      wb_receiver_next_packet(receiver);
-    } else if ((data[0] == 'T') && (data[2] == 'R')) {
-      // "T2R0R0000T77X9"
-      int place = atoi(&data[3]);
-      //printf("\n %s has received %s message from %d", robotName, data, place);
-      //printf("\n");
-      if (place == floorColor) {
-        int destinatary = atoi(&data[5]);
-        if (destinatary == botNumber){ 
-          printf("\n %s is listening its nest location %d to say %s", robotName, place, data);
-          printf("\n");
-          writeMessage(0, data);
-          int newFriend = atoi(&data[10]);
-          int suggestedDestination = atoi(&data[13]);
-          if (newFriend == LEAVE) {
-            printf("\n Nest %d is asking for %s to leave and go %d", place, robotName, suggestedDestination);
-            printf("\n");
-            if (botNumber != 2701) {          
-              switch(suggestedDestination){
-                case RED:
-                   printf("\n %s do not wanna go RED", robotName);
-                   stateUML = TRAVEL2RED;
-                   suggestedState = TRAVEL2RED;
-                   break;
-                case GREY:
-                   printf("\n %s do not wanna go GREY", robotName);
-                   stateUML = TRAVEL2GREY;
-                   suggestedState = TRAVEL2GREY;
-                   break;
-                case BLUE:
-                   printf("\n %s do not wanna go BLUE", robotName);
-                   stateUML = TRAVEL2BLUE;
-                   suggestedState = TRAVEL2BLUE;
-                   break;
-              }
-              printf("\n");  
-            }  
-          } else if (newFriend == COME) {
-            printf("\n Nest %d is asking for %s to arrive", place, robotName);
-            printf("\n");
-          } else {
-            int flagNew = 1, pos = nRobots; 
-            //-- printf("\n %s was introduced to %d", robotName, newFriend);
-            //-- printf("\n");
-            for (i = 0; i < nRobots; i++) { 
-              if (newFriend == listFriends[i]) {
-                flagNew = 0; // it already exists
-                break;
-              }
-              if (listFriends[i] == 0) {
-                if (pos > i) {
-                  pos = i; // to fill the empty spaces
-                }
-              }
-            }
-            if (flagNew) {
-              listFriends[pos] = newFriend;
-              //printf("\n %s added to its friends %d", robotName, newFriend);
-              //printf("\n");
-            }
-          }  
-        }    
-      }
-      wb_receiver_next_packet(receiver);
-    } else if ((data[0] == 'R') && (data[2] == 'R')) { 
-      /*  
-         A standard message R2R0000C777T9999X3
-         0000 = number of robot
-         C777 = code of task
-         T9999 = time of task
-         X3 = type of cache found //still not used
-      */
-      int name = atoi(&data[3]);
-      int codeReceived = atoi(&data[8]);
-      for (i = 0; i < nRobots; i++) {
-        if (name == listFriends[i]) {
-          writeMessage(0, data);
-          if (codeReceived == ROBOT_LEAVING) {
-            printf("\n %s bye bye %d", robotName, name);
-            printf("\n");
-            listFriends[i] = 0;
-          } else {
-            // proceed to listen the information
-            timeListened = atoi(&data[12]);
-            /* Robot codes 
-            301 TRIANGLE     100 timePickSource       106 timeStore
-            302 BOX          101 timepickCache        107 timeHarvest
-            303 CIRCLE       102 timeDropCache        201 timeImage
-            304 ALL          103 timeDropNest         202 timeCache
-            305 NOTHING      104 timeTravel2Nest      777 waiting
-            306 ROBOT        105 timeTravel2Source
-            */
-            if ((codeReceived >= 100) && (codeReceived <= 107)){	
-              //printf("\n Thanks %d buddy, %s will consider your estimations for %d of time %d", name, robotName, codeReceived, timeListened);
-              //printf("\n");
-              flagListened = 1;
-              wb_robot_step(32); // to update global values
-              updateEstimations(codeReceived, timeListened, 0);
-            }
-          }
-          break;
-        } /*else {
-          printf("\n %s receive a message from %d, but it is not for him %s", robotName, name, data);
-          printf("\n");
-        }*/
-      }
-      wb_receiver_next_packet(receiver);
-    } else {
-      //printf("\n %s receive a message no for him %s", robotName, data);
-      //printf("\n");
-      wb_receiver_next_packet(receiver);
-    }
-  }  
   return 1;
 }
 

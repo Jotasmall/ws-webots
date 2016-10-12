@@ -4,6 +4,7 @@
 #include <webots/camera.h>
 #include <webots/display.h>
 #include <webots/led.h>
+#include "initBot.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -36,10 +37,10 @@ void calibrateSensors(WbDeviceTag *sensors, int *ps_offset){
     }
     wb_robot_step(TIME_STEP);
   } 
-  printf("\n Calibration offset ");
+  //printf("\n Calibration offset ");
   for (i=0; i<NB_DIST_SENS; i++){
     ps_offset[i] /= CALIBRATE-1;
-    printf("%d ", ps_offset[i]);
+    //printf("%d ", ps_offset[i]);
   }  
 }
 
