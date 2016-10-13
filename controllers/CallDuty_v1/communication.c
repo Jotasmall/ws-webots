@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "communication.h"
+#include "headerStruct.h"
 
 #define RED 0
 #define TRAVEL2RED 104
@@ -21,7 +22,9 @@
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
 #define ROBOT_UPDATING 33
-#define nRobots 10
+#define NROBOTS 10
+#define M2ROBOT 1
+#define M2NEST 2
 
 int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState){ //ok-
   int i;
@@ -71,10 +74,10 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
             printf("\n Nest %d is asking for %d to arrive", place, botNumber);
             printf("\n");
           } else {
-            int flagNew = 1, pos = nRobots; 
+            int flagNew = 1, pos = NROBOTS; 
             //-- printf("\n %d was introduced to %d", botNumber, newFriend);
             //-- printf("\n");
-            for (i = 0; i < nRobots; i++) { 
+            for (i = 0; i < NROBOTS; i++) { 
               if (newFriend == listFriends[i]) {
                 flagNew = 0; // it already exists
                 break;
@@ -104,7 +107,7 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
       */
       int name = atoi(&data[3]);
       int codeReceived = atoi(&data[8]);
-      for (i = 0; i < nRobots; i++) {
+      for (i = 0; i < NROBOTS; i++) {
         if (name == listFriends[i]) {
           //c writeMessage(0, data);
           if (codeReceived == ROBOT_LEAVING) {
@@ -113,7 +116,7 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
             listFriends[i] = 0;
           } else {
             // proceed to listen the information
-            int timeListened = atoi(&data[12]);
+            //c int timeListened = atoi(&data[12]);
             /* Robot codes 
             301 TRIANGLE     100 timePickSource       106 timeStore
             302 BOX          101 timepickCache        107 timeHarvest
@@ -142,6 +145,56 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
       //printf("\n");
       wb_receiver_next_packet(receiver);
     }
-  }  
+  }	
   return 1;
+}
+
+int speaking(struct a *sOri, WbDeviceTag emitter, int flagCom, int botNumber, int toWhom, int codeTask, int time, int cache){ //ok-
+  if (flagCom == 0) { return 0;}
+  int floorColor = 0;
+  int estPickS = 10000;
+  int estDropN = 10000;
+  
+  char message[30];
+  printf("\n %d",sOri->i+sOri->j);
+  printf("\n");
+  // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
+  if (toWhom == M2ROBOT) {
+    if (time == -1) { // reporting just to have the same number of lines
+      sprintf(message, "U");
+    } else if (toWhom == -1){ 
+      sprintf(message, "R2R%dR%d",botNumber, ROBOT_LEAVING);
+    } else {
+      sprintf(message, "R2R%dC%dT%d",botNumber, codeTask, time);
+    }
+  } else if (toWhom == M2NEST) {
+    if (time == -1) {
+      printf("\n %d will update your estimation NEST %d", botNumber, floorColor);
+    } else {
+      if (codeTask == ROBOT_LEAVING) {
+        sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_LEAVING, floorColor);
+        printf("\n %d is leaving NEST %d", botNumber, floorColor);
+        printf(" message %s", message);
+        printf("\n");
+      } else if (codeTask == ROBOT_ARRIVING) {
+        sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_ARRIVING, floorColor);
+        printf("\n %d is arriving into NEST %d", botNumber, floorColor);
+        printf(" message %s", message);        
+        printf("\n");
+      } else if (codeTask == ROBOT_UPDATING) {
+        sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_UPDATING, estPickS + estDropN);
+        printf("\n %d is arriving into NEST %d", botNumber, floorColor);
+        printf(" message %s", message);        
+        printf("\n");
+      }
+    }
+  } 
+  if (strcmp(message, "U")) {
+    printf("\n %d updating its record of messages", botNumber);
+    //c writeMessage(1, message);
+  }  
+  wb_emitter_send(emitter, message, strlen(message)+1);
+  wb_robot_step(32);
+  return 1;
+  
 }

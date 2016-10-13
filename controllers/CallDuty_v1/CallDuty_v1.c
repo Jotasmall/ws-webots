@@ -77,6 +77,7 @@ int ps_offset[NB_DIST_SENS] = {35,35,35,35,35,35,35,35};
 #define SAMPLES 1
 #include "initBot.h"
 #include "communication.h"
+#include "headerStruct.h"
 //cam
 WbDeviceTag cam;
 WbDeviceTag displayExtra;
@@ -169,7 +170,8 @@ int estDropN = 0;
 int estTravelGrey = 0;
 int estTravelRed = 0;
 int estTravelBlue = 0;
-int lastImage = 0, timeImage = 0;
+int lastImage = 0;
+int timeImage = 0;
 int timeMeasured = 0;
 int timeListened = 0;
 // Only for UCB algorithm
@@ -250,8 +252,7 @@ void updateEstimations(int task, int value, int cache);
 void updateBitacora(int codeTask, int estimations, int cache);
 void writeDecision(float boundP, float realP, int mechanism);
 // Communication functions
-int speaking(int toWhom, int codeTask, int time, int cache);//checked
-
+//int speaking(int toWhom, int codeTask, int time, int cache);//checked
 //int listening();
 void writeMessage(int speaking, const char *msg);                                //checked
 // Model functions
@@ -261,6 +262,8 @@ char dirPath[] = "/dir-dd-hh-mm";
 time_t rawtime;
 struct tm * timeinfo;
 
+struct a sOri;
+
 int main(int argc, char **argv) {
   /* necessary to initialize webots stuff */
   wb_robot_init();
@@ -269,6 +272,8 @@ int main(int argc, char **argv) {
   sprintf(dirPath,"./%d-%d-%d",timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
   printf("\n path for directories %s", dirPath);
   printf("\n");
+  sOri.i = 10;
+  sOri.j = 5;
   
   reset(); 
   wb_robot_step(TIME_STEP);
@@ -682,7 +687,7 @@ void reset(){ //ok-
   wb_robot_step(TIME_STEP);
   // during the following n-1 simulation steps, increment the arrays
   calibrateSensors(Robotps, ps_offset);
-  speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
+  speaking(&sOri, emitter, flagCom, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0);
 }
 
 void createDir(int option, int dirBuild){
@@ -1666,7 +1671,7 @@ int whereArrive(){
       floorColor = whereIam(0);
       printf("\n %s arrived into a land of color %d", robotName, floorColor);
       printf("\n");
-      speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
+      speaking(&sOri, emitter, flagCom, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0);
     } else {
       waiting(10);
       printf("\n Waiting to have a clear ground");
@@ -1688,8 +1693,8 @@ int doorEntrance(int steps){
     return 0;
   }
   forward(steps, speed);
-  speaking(M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
-  speaking(-1, ROBOT_LEAVING, 0, 0); // To indicate friends 
+  speaking(&sOri, emitter, flagCom, botNumber, M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
+  speaking(&sOri, emitter, flagCom, botNumber, -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
   waiting(1);
   turnSteps(-10, speed);
   return 1;
@@ -1930,7 +1935,7 @@ void updateEstimations(int task, int value, int cache){ //ok-
     } else {
       //printf("\n Everybody listen, I am %s, my %d cost me %d", robotName, codeTask, value);
       //printf("\n");
-      speaking(M2ROBOT, codeTask, value, cache);
+      speaking(&sOri, emitter, flagCom, botNumber, M2ROBOT, codeTask, value, cache);
     }  
   } 
   lastImage = timeImage;
@@ -2048,7 +2053,7 @@ void writeMessage(int speaking, const char *msg) {
   }
 }
 
-int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
+/* int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   if (flagCom == 0) { return 0;}
 
   char message[30];
@@ -2090,7 +2095,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   wb_emitter_send(emitter, message, strlen(message)+1);
   wb_robot_step(32);
   return 1;
-}
+} */
 
 int computeTraveling (int levy){ 
   float Ppartitioning = 0;
@@ -2177,7 +2182,7 @@ int computeTraveling (int levy){
   } else {
     printf("\n %s do the full task", robotName);
   }
-  speaking(M2ROBOT, -1, -1, -1);
+  speaking(&sOri, emitter, flagCom, botNumber, M2ROBOT, -1, -1, -1);
   wb_robot_step(32); // to update global values
   return result;
 }

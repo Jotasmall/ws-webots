@@ -39,7 +39,7 @@ float pDisable = 0.0;
 int listWorkers[] = {0, 0, 0, 0}; // number of robots
 int lastVisitor = 0;
 // Communication flags
-int flagFiles = 1;
+int flagFiles = 0;
 int flagCom = 1;                //to enable or disable communications 
 WbDeviceTag receiver;
 WbDeviceTag emitter;
