@@ -26,6 +26,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "movement.h"
+#include "initBot.h"
+#include "communication.h"
+#include "readWriteFiles.h"
+#include "headerStruct.h"
+
 #define TIME_STEP 64
 #define SPEEDCARGO 1
 //Model -1 is for experiments, 0 is 2011, 1 is mine, 2 is UCB, 3 is Greedy 
@@ -36,14 +42,9 @@
 #define GREEDY 4
 // for different models
 int modelTest = NEVER;
-
-int flagFiles = 0;
-int flagFilesFSM = 0;
-int flagFilesEST = 0;
-int flagFilesLIFE = 0;
-int flagFilesDM = 0;
-int flagFilesPER = 0;
-int flagFilesCOM = 0;
+// Flags of control
+int flagFiles = 1;
+int flagMasterRecruiting = 0;   //1 RANDOMLY, -1 never, 0 whatever
 // Communication flags
 int flagCom = 1;                //to enable or disable communications
 int flagListened = 0;           //to know if a data was listened or by herself
@@ -55,8 +56,6 @@ int beta = 10;                  //soft adaptations
 int gammaUCB = 1000;            //in UCB-model 100/1000-Explote/Explore
 float greedy = 0.1;             //in e-Greedy 0.01/0.11-Explote/Explore
 float sParam = 1;               //in 2013 6/1-Explote/Explore
-// Flags of control
-int flagMasterRecruiting = 0;   //1 RANDOMLY, -1 never, 0 whatever
 // Other flags
 int flagReady = 0;              //to know when she ended a travel
 int flagLoad = 0;               //to know if she has a load or not
@@ -75,11 +74,8 @@ int ps_value[NB_DIST_SENS] = {0,0,0,0,0,0,0,0};
 int ps_offset[NB_DIST_SENS] = {35,35,35,35,35,35,35,35}; 
 #define CALIBRATE 50
 #define SAMPLES 1
-#include "initBot.h"
-#include "communication.h"
-#include "headerStruct.h"
 //cam
-WbDeviceTag cam;
+//WbDeviceTag cam;
 WbDeviceTag displayExtra;
 unsigned short width, height;
 const unsigned char *image;
@@ -165,19 +161,11 @@ char fileRobot[] = "DIRPATH\\dd-hh-mm\\e-puck0000-OPTION.txt";
 #define TRAVELING_LEVY 1
 #define TRAVELING_CALL 2
 //Timers
-int estPickS = 0;
-int estDropN = 0;
-int estTravelGrey = 0;
-int estTravelRed = 0;
-int estTravelBlue = 0;
-int lastImage = 0;
 int timeImage = 0;
 int timeMeasured = 0;
 int timeListened = 0;
 // Only for UCB algorithm
 #define NB_REGIONS 3
-int nPick[3] = {1, 1, 1};
-int nDrop[3] = {1, 1 ,1};
 // Main core FSM
 #define GO2IT 1
 #define LEVY 2
@@ -208,13 +196,11 @@ int moduleFSM();
 void init_variables();
 void reset();
 //void resetDisplay();
-void createDir(int option, int dirBuild);
-void createFiles();
+//void createDir(int option, int dirBuild);
+//void createFiles();
 void initEstimations();
 // Miscellaneous functions
-//int readSensors(int print);
 void pickingIndication(int on);
-int waiting(int n);
 double angle(double x, double z);
 // Image-depending functions
 int whereIam(int avoiding);
@@ -227,18 +213,11 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents);
 int whatIsee(float Eccentricity, float Extent, int squarewidth, int middleAxisH, int middleAxisV, int numImage);
 int doubleCheck();
 // Movement functions
-// void avoidance();
 int followingLine(int colorLine);
-//void turnSteps(int steps);
-//int run(flagLoad, int steps);
-//void forward(int steps);
-#include "movement.h"
 int levyFlight();
 int speedAdjustment(int index, int delta);
-int hitWall(int front);
 int hitLandmark(); 
 int whereArrive();
-int enterTam(); 
 int detectTam();
 int setRobotPosition(int colorLine);
 int doorEntrance(int steps);
@@ -250,11 +229,6 @@ void cronometer(int task, int cache);
 void countObjects();
 void updateEstimations(int task, int value, int cache);
 void updateBitacora(int codeTask, int estimations, int cache);
-void writeDecision(float boundP, float realP, int mechanism);
-// Communication functions
-//int speaking(int toWhom, int codeTask, int time, int cache);//checked
-//int listening();
-void writeMessage(int speaking, const char *msg);                                //checked
 // Model functions
 int computeTraveling(int levy);
 
@@ -262,7 +236,9 @@ char dirPath[] = "/dir-dd-hh-mm";
 time_t rawtime;
 struct tm * timeinfo;
 
-struct a sOri;
+struct robotDevices botDevices;
+struct robotEstimations botEst;
+struct flags4Files botFlagFiles = {0};
 
 int main(int argc, char **argv) {
   /* necessary to initialize webots stuff */
@@ -272,9 +248,7 @@ int main(int argc, char **argv) {
   sprintf(dirPath,"./%d-%d-%d",timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min);
   printf("\n path for directories %s", dirPath);
   printf("\n");
-  sOri.i = 10;
-  sOri.j = 5;
-  
+
   reset(); 
   wb_robot_step(TIME_STEP);
   
@@ -379,7 +353,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
   int auxShape = 0; //shapeSeen when working with different shapes
   
   if (pick_or_drop == PICKING) { pickingIndication(1);}
-  else { wb_led_set(RobotLed[8], 1);}
+  else { wb_led_set(botDevices.leds[8], 1);}
   
   if (suggestedState != NONE) {  
     return suggestedState;
@@ -403,7 +377,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
         
         flagLoad = !flag;
         if (pick_or_drop == PICKING) { pickingIndication(0);}
-        else { wb_led_set(RobotLed[8], 0);}	
+        else { wb_led_set(botDevices.leds[8], 0);}	
         break;
       }  
     }
@@ -564,12 +538,12 @@ int moduleFSM(){
           stateFSM = GO2IT; 
         }
         if (stateUML == PICK_SOURCE) {
-          wb_led_set(RobotLed[0], 1);
+          wb_led_set(botDevices.leds[0], 1);
         } else if (stateUML  == DROP_NEST){
           pickingIndication(1);
         } else {
           pickingIndication(0);
-          wb_led_set(RobotLed[0], 0);
+          wb_led_set(botDevices.leds[0], 0);
         } 
         wb_robot_step(32);
         break;  
@@ -582,9 +556,9 @@ int moduleFSM(){
           flagSureSeen = 0;
           waiting(1);
           if ((stateUML == TRAVEL2BLUE) || (stateUML == TRAVEL2RED) || (stateUML == TRAVEL2GREY)) {
-            flagInside = hitWall(0);
+            flagInside = hitWall(0, speed, &botDevices);
           } else {
-            flagInside = enterTam();
+            flagInside = enterTam(&botDevices, speed);
           }
           if (flagInside == 1) { //sucessful enter TAM or hit wall
             stateFSM = STOP;
@@ -625,7 +599,7 @@ int moduleFSM(){
       break;
     case LOST:
       printf("\n %s is lost", robotName);
-      run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);
+      run(flagLoad, 5, speed, &botDevices);
       whereIam(1);
       index = detectImage(color, figura, 0, &nComp);
       if (index >= 0) {
@@ -657,212 +631,49 @@ int moduleFSM(){
 }
 
 void reset(){ //ok-
-  int k;
-  // get distance sensors
-  initSensors(Robotps);
-  // get camera
-  initCamera(&cam, &width, &height);
+  resetDevices(&botDevices);
+  width = botDevices.width;
+  height = botDevices.height;
   // Display for user
   resetDisplay(&displayExtra, width, height);
-  // enabling encoders
-  wb_differential_wheels_enable_encoders(TIME_STEP);
-  wb_differential_wheels_set_encoders(0,0);
-  // get leds
-  initLeds(RobotLed);
-  // communication module
-  receiver = wb_robot_get_device("receiver");
-  emitter = wb_robot_get_device("emitter");
-  wb_receiver_enable(receiver,TIME_STEP);
-  // Getting data
+  // Getting data for initial state
   floorColor = whereIam(0);
   //printf("\n %s was born in region %d", wb_robot_get_name(), floorColor);
   //printf("\n");
-  if (flagFiles) { createFiles();}  
-  initEstimations();
-  strcpy(robotName, wb_robot_get_name());
-  // Random seed by the number of the robot
-  botNumber = atoi(&robotName[6]);
-  k = botNumber+timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min;
-  srand(k);
-  wb_robot_step(TIME_STEP);
-  // during the following n-1 simulation steps, increment the arrays
-  calibrateSensors(Robotps, ps_offset);
-  speaking(&sOri, emitter, flagCom, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0);
-}
-
-void createDir(int option, int dirBuild){
-  switch(option){
-    case FSM:
-      sprintf(fileRobot, "%s-FSM", dirPath);
-      //printf("\n fileRobot %s", fileRobot);
-      //printf("\n"); 
-      break;
-    case ESTIMATIONS:
-      sprintf(fileRobot, "%s-EST", dirPath); 
-      //printf("\n fileRobot %s", fileRobot);
-      //printf("\n"); 
-      break;
-    case LIFE:
-      sprintf(fileRobot, "%s-REC", dirPath);
-      //printf("\n fileRobot %s", fileRobot);
-      //printf("\n"); 
-      break;
-    case DECISIONS:
-      sprintf(fileRobot, "%s-DM", dirPath); 
-      //printf("\n fileRobot %s", fileRobot);
-      //printf("\n"); 
-      break;
-    case PERFORMANCE:
-      sprintf(fileRobot, "%s-OBJ", dirPath);
-      //printf("\n fileRobot %s", fileRobot);
-      //printf("\n"); 
-      break;
-    case COMMUNICATION:
-      sprintf(fileRobot, "%s-COM", dirPath);
-      //printf("\n fileRobot %s", fileRobot);
-      //printf("\n");
-      break;
-   }
-   
-   //if (dir){ mkdir(fileRobot,0700);} 
-   if (dirBuild){ CreateDirectory(fileRobot, NULL);} 
-    
-   strcat(fileRobot, "/");
-   strcat(fileRobot, wb_robot_get_name()); 
-   //printf("\n fileRobot %s", fileRobot);
-   //printf("\n"); 
-
-   switch(option){
-     case FSM:
-       strcat(fileRobot, "-FSM.txt");
-       //printf("\n fileRobot %s", fileRobot);
-       //printf("\n"); 
-       break;       
-     case ESTIMATIONS:
-       strcat(fileRobot, "-EST.txt");
-       //printf("\n fileRobot %s", fileRobot);
-       //printf("\n");
-       break;       
-     case LIFE:
-       strcat(fileRobot, "-REC.txt");
-       //printf("\n fileRobot %s", fileRobot);
-       //printf("\n"); 
-       break;
-     case DECISIONS:
-       strcat(fileRobot, "-DM.txt"); 
-       //printf("\n fileRobot %s", fileRobot);
-       //printf("\n"); 
-       break;
-     case PERFORMANCE:
-       strcat(fileRobot, "-OBJ.txt"); 
-       //printf("\n fileRobot %s", fileRobot);
-       //printf("\n"); 
-       break;
-     case COMMUNICATION:
-       strcat(fileRobot, "-COM.txt");
-       //printf("\n fileRobot %s", fileRobot);
-       //printf("\n");
-       break;
-  }
-  if (dirBuild){
-    //printf("\n %s is accessing to %s", robotName, fileRobot);
-  }  
-}
-
-void createFiles(){ //ok
-  // File for each cycle of FSM
-  createDir(FSM, 1); 
-  FILE *ffsm = fopen(fileRobot,"w");
-  if (ffsm == NULL) {
-    printf("Error opening file bot fsm \n");
-    printf("\n");
-    exit(1);
-  }
-  fprintf(ffsm, "StateUML, Suceess/Fail, timeMeasured \n");
-  fclose(ffsm);
-  // File for evolution of estimations
-  createDir(ESTIMATIONS, 1); 
-  FILE *fest = fopen(fileRobot, "w");
-  if (fest == NULL) {
-    printf("Error opening estimation file \n");
-    printf("\n");
-    exit(1);
-  }
-  fprintf(fest,"who, tStore, tHarvest, tPickS, tDropC,"
-               " tePickC, tDropN, WCacheDrop, WCachePick,"
-                "tImage \n");
-  fclose(fest);
-  // File for record entire life
-  createDir(LIFE, 1); 
-  FILE *flife = fopen(fileRobot, "w");
-  if (flife == NULL) {
-    printf("Error opening estimation file \n");
-    printf("\n");
-    exit(1);
-  }
-  fprintf(flife,"what, time \n");
-  fclose(flife);
-  // File for decisions
-  createDir(DECISIONS, 1); 
-  FILE *fpart = fopen(fileRobot, "w");
-  if (fpart == NULL) {
-    printf("Error opening partition file \n");
-    printf("\n");
-    exit(1);
-  }
-  fprintf(fpart, "Case, decision \n");
-  fclose(fpart);
-  // File for performance 
-  createDir(PERFORMANCE, 1);
-  FILE *fper = fopen(fileRobot, "w");
-  if (fper == NULL) {
-    printf("Error opening performance file \n");
-    printf("\n");
-    exit(1);
-  }
-  fprintf(fper, "PICK, DROP, HARVEST, STORE\n");
-  fclose(fper);
-  // File for communications
-  createDir(COMMUNICATION, 1);
-  FILE *fcom = fopen(fileRobot, "w");
-  if (fcom == NULL) {
-    printf("Error opening communication file \n");
-    printf("\n");
-    exit(1);
-  }
-  fprintf(fcom, "who, message");
-  fclose(fcom);
-}
-
-void initEstimations(){ //ok-
-  // rand() % (max_n - min_n + 1) + min_n;
-  estPickS = rand() % (500-200+1)+200; 
-  estDropN = rand() % (500-200+1)+200;
-  estTravelGrey = rand() % (1000-350+1)+350;
-  estTravelRed = rand() % (1000-350+1)+350;
-  estTravelBlue = rand() % (1000-350+1)+350;
-  timeMeasured = 0;
-  timeListened = 0;
-  lastImage = 0;
-  timeImage = 0;    
-  wb_robot_step(32);
+  // Create files, enable/disable files records
+  if (flagFiles) { 
+    botFlagFiles.flagFilesFSM = 0;
+    botFlagFiles.flagFilesEST = 0;
+    botFlagFiles.flagFilesLIFE = 0;
+    botFlagFiles.flagFilesDM = 1;
+    botFlagFiles.flagFilesPER = 0;
+    botFlagFiles.flagFilesCOM = 1;
+    createFiles(fileRobot, dirPath, &botFlagFiles);
+  } 
+  initEstimations(&botEst, NB_REGIONS);
   updateBitacora(0, ESTIMATIONS, 0);
+  // Random seed by the number of the robot
+  strcpy(robotName, wb_robot_get_name());
+  botNumber = atoi(&robotName[6]);
+  srand(botNumber+timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min);
+  wb_robot_step(TIME_STEP);
+  // Adjust sensor noise by offset
+  calibrateSensors(&botDevices);
+  /* 
+  printf("\n Calibration offset ");
+  int i;
+  for (i=0; i<NB_DIST_SENS; i++){
+    printf("%d ", botDevices.ps_offset[i]);
+  } 
+  */ 
+  botDevices.flagCom = flagCom;
+  botDevices.flagListened = flagListened;
+  speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles, fileRobot, dirPath);
 }
-
 
 void pickingIndication(int on){ //ok
-  wb_led_set(RobotLed[1], on);
-  wb_led_set(RobotLed[7], on);
-}
-
-int waiting(int n){ //ok
-  wb_differential_wheels_set_speed(0,0);
-  while (n > 0) {
-    n--;
-    wb_robot_step(TIME_STEP);
-    cronometer(-1, 0);
-  } 
-  return 1;  
+  wb_led_set(botDevices.leds[1], on);
+  wb_led_set(botDevices.leds[7], on);
 }
 
 double angle(double x, double z){ //ok
@@ -871,7 +682,7 @@ double angle(double x, double z){ //ok
 }
 
 int whereIam(int avoiding){ 
-  image = wb_camera_get_image(cam);
+  image = wb_camera_get_image(botDevices.cam);
   wb_robot_step(TIME_STEP);
   int groundDetected = GREY;
   // cronometer(IMAGE, 0); //This is a fast operation
@@ -887,9 +698,9 @@ int whereIam(int avoiding){
     float p = ((float)rand())/RAND_MAX; //-- JUAN EDITED
     if (p>0.5) {p = 1;} else { p = -1;} //-- JUAN EDITED
     turnSteps((int) p*TURN_CACHE/2, speed);    //-- JUAN EDITED
-    run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);//7
+    run(flagLoad, 5, speed, &botDevices);//7
 	whereIam(1);
-	run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);
+	run(flagLoad, 5, speed, &botDevices);
 	whereIam(1);
     //printf("\n Missing my region %s", robotName);
     //printf("\n");
@@ -909,7 +720,7 @@ int check4Robot(){//ok-
 }
 
 int waiting_color(int foreground) {//ok
-  image = wb_camera_get_image(cam);
+  image = wb_camera_get_image(botDevices.cam);
   waiting(1);
   // cronometer(IMAGE, 0); // disable because it's only one column
   int count = 0;
@@ -1061,7 +872,7 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
   int check[20];
   memset(check, 0, 20*sizeof(int));
 
-  image = wb_camera_get_image(cam);
+  image = wb_camera_get_image(botDevices.cam);
   wb_robot_step(TIME_STEP);
   cronometer(IMAGE, 0); // for image processing
 
@@ -1304,9 +1115,9 @@ int whatIsee(float Eccentricity, float Extent, int squarewidth, int middleAxisH,
 int doubleCheck(){
   int index = -1;
   int nComp;
-  run(flagLoad, 5, speed, ps_value, ps_offset, Robotps); //forward(5);
+  run(flagLoad, 5, speed, &botDevices); //forward(5);
   whereIam(1);
-  run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);
+  run(flagLoad, 5, speed, &botDevices);
   whereIam(1);
   index = detectImage(color, figura, 1, &nComp);
   if ((index == -1) || (index == 100)){
@@ -1323,16 +1134,16 @@ int followingLine(int colorLine){//ok-
   int delta = 0;
   int entering = 0;
   int flagRobot = 0;
-  readSensors(0, ps_value, ps_offset, Robotps);
-  entering = ps_value[5] > 50;
+  readSensors(0, &botDevices);
+  entering = botDevices.ps_value[5] > 50;
   while(entering) { 
-    readSensors(0, ps_value, ps_offset, Robotps);
-    if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[7] > THRESHOLD_DIST)){ 
+    readSensors(0, &botDevices);
+    if ((botDevices.ps_value[0] > THRESHOLD_DIST) || (botDevices.ps_value[7] > THRESHOLD_DIST)){ 
       waiting(20);  
       printf("\n %s something is in front of me", robotName);
       printf("\n");
     } else {
-      image = wb_camera_get_image(cam);
+      image = wb_camera_get_image(botDevices.cam);
       // cronometer(IMAGE, 0); // Disable because it is only one row
       delta = find_middle(0, colorLine);
       if ((delta > -1) && (delta < 100)) {
@@ -1371,7 +1182,7 @@ int levyFlight(){
     turnSteps(3, speed); // Blind turn
     r -= 3;
     
-    image = wb_camera_get_image(cam);
+    image = wb_camera_get_image(botDevices.cam);
     wb_robot_step(TIME_STEP);
     // cronometer(IMAGE, 0) //It is only a line
     //listening();
@@ -1402,11 +1213,11 @@ int levyFlight(){
   //printf("\n"); //-- JUAN EDIT
   wb_differential_wheels_set_encoders(0,0);
   while (r > 0) {
-    run(flagLoad, 5, speed, ps_value, ps_offset, Robotps); // Blind walk
+    run(flagLoad, 5, speed, &botDevices); // Blind walk
     r -= 5;
     whereIam(1);
 
-    image = wb_camera_get_image(cam);
+    image = wb_camera_get_image(botDevices.cam);
     wb_robot_step(TIME_STEP);
     // cronometer(IMAGE, 0) //It is only a line
     //listening();
@@ -1463,9 +1274,9 @@ int speedAdjustment(int index, int delta) { //ok
       detectImage(CYAN, BOX, 255, &iter);
       //printf("\n Difference between A-B %d", pointA-pointB);
       iter = pointA - pointB;
-      if (iter > 2) { hitWall(5);}
-      else if (iter < -2) { hitWall(-5);}
-      else { hitWall(0);}
+      if (iter > 2) { hitWall(5, speed, &botDevices);}
+      else if (iter < -2) { hitWall(-5, speed, &botDevices);}
+      else { hitWall(0, speed, &botDevices);}
    
       //printf("\n %s reached cyan landmark!", robotName);
       //printf("\n");
@@ -1481,9 +1292,9 @@ int speedAdjustment(int index, int delta) { //ok
         return 0;
       }
       forward(20, speed);
-      hitWall(1);
+      hitWall(1, speed, &botDevices);
       forward(-7, speed);
-      delta = ps_value[0] + ps_value[1] - ps_value[7] - ps_value[6];
+      delta = botDevices.ps_value[0] + botDevices.ps_value[1] - botDevices.ps_value[7] - botDevices.ps_value[6];
       if (delta > THRESHOLD_DIST) { turnSteps(3, speed);} // almost 10°
       else if (delta < THRESHOLD_DIST) { turnSteps(-3, speed);}
       /*switch(color){
@@ -1505,11 +1316,11 @@ int speedAdjustment(int index, int delta) { //ok
     }   
   } else { //before being close enough
     // printf("\n %s saw shape with height %d", robotName, count);
-    if (readSensors(0, ps_value, ps_offset, Robotps) && ((ps_value[0] > THRESHOLD_DIST) || (ps_value[1] > THRESHOLD_DIST) 
-    || (ps_value[7] > THRESHOLD_DIST) || (ps_value[6] > THRESHOLD_DIST))) { // 1 for obstacle
+    if (readSensors(0, &botDevices) && ((botDevices.ps_value[0] > THRESHOLD_DIST) || (botDevices.ps_value[1] > THRESHOLD_DIST) 
+    || (botDevices.ps_value[7] > THRESHOLD_DIST) || (botDevices.ps_value[6] > THRESHOLD_DIST))) { // 1 for obstacle
       //printf("\n %s found obstacle on the way", robotName);
       //printf("\n");
-      avoidance(speed, ps_value, ps_offset, Robotps);
+      avoidance(speed, &botDevices);
     }
     
     flagRobot = check4Robot();
@@ -1534,53 +1345,8 @@ int speedAdjustment(int index, int delta) { //ok
   return 0;
 }
 
-int hitWall(int front){ //ok
-  int hit_thres = 300, flag = 1;//200
-  int question;
-  speed[LEFT] = 300;
-  speed[RIGHT] = 300;
-  if (front == 5) { // 6 is 1.5 x K_TURN
-    speed[LEFT] = 300 + 30;//6*(pointA - pointB);//50
-  } else if (front == -5) {
-    speed[RIGHT] = 300 + 30;//6*(pointB - pointA);
-  }
-  while (flag) {
-    readSensors(0, ps_value, ps_offset, Robotps);
-    //printf("\n sensors 0 %d, 1 %d, 6 %d, 7 %d", ps_value[0], ps_value[1], ps_value[6], ps_value[7]);
-    if ((front == 0) || (abs(front) == 5)) {
-      question = (ps_value[0] > hit_thres) || (ps_value[7] > hit_thres) || (ps_value[6] > hit_thres) || (ps_value[1] > hit_thres);
-    } else {
-      question = (ps_value[0] > hit_thres) || (ps_value[7] > hit_thres);
-    }  
-    if (question) {
-      if (front == 5) {
-        speed[LEFT] = -speed[LEFT];
-        wb_robot_step(TIME_STEP);
-        wb_robot_step(TIME_STEP);
-      } else if (front == -5) {
-        speed[RIGHT] = -speed[RIGHT];
-        wb_robot_step(TIME_STEP);
-        wb_robot_step(TIME_STEP);
-      }
-      waiting(2);
-      readSensors(0, ps_value, ps_offset, Robotps);
-      if (question || (ps_value[6] > hit_thres) || (ps_value[1] > hit_thres)){
-        forward(5, speed);
-        flag = 0;
-      }
-    }    
-    wb_differential_wheels_set_speed(speed[LEFT], speed[RIGHT]);
-    wb_robot_step(TIME_STEP);
-    cronometer(-1, 0); 
-  }
-  waiting(1);
-  //printf("\n Robot %s hit against a wall...", robotName);
-  //printf("\n");
-  return 1;
-}
-
 int detectTam(){ //ok
-  image  = wb_camera_get_image(cam);
+  image  = wb_camera_get_image(botDevices.cam);
   wb_robot_step(TIME_STEP);
   // cronometer(IMAGE, 0) //It is only a line
   
@@ -1593,43 +1359,6 @@ int detectTam(){ //ok
   } 
   return 1;  
 }      
-
-int enterTam(){ //ok
-  // 1 blue, 2 red, and 3 magenta
-  int flag1stCheck = 0; 
-  //1 rigth and -1 left
-  int dir = 0;
-  if (ps_value[1] + ps_value[0] > ps_value[7] + ps_value[6]) {
-    dir = 1;
-  } else {
-    dir = -1;
-  }
-  flag1stCheck = detectTam(); 
-  if (!flag1stCheck) { 
-    turnSteps(-26*dir, speed);
-    waiting(1);
-    hitWall(1); 
-    forward(-6, speed);//8
-  }  
-  if ((ps_value[0] > THRESHOLD_DIST) && (ps_value[7] > THRESHOLD_DIST) && (ps_value[6] < THRESHOLD_DIST) && (ps_value[1] < THRESHOLD_DIST)) {
-    //printf("\n Everything is fine!!");
-    //printf("\n");
-    return 1; 
-  } else {    
-    flag1stCheck = detectTam();
-    if (!flag1stCheck) {
-      printf("\n %s am not inside TAM correctly", robotName);
-      printf("\n");
-      waiting(10);
-      return 0;
-    } else {
-      //printf("\n %s entered successfully square",robotName);
-      waiting(2);
-      return 1;  
-    }  
-  }
-  return -1;    
-}
 
 int find_middle(int wrongLine, int colorLine){ //ok 
   int i;
@@ -1667,11 +1396,11 @@ int whereArrive(){
     // To add randomness in the entrance 
     waiting(2);
     // Verify if not robot is close
-    if ((readSensors(0, ps_value, ps_offset, Robotps) == 0) && (check4Robot() == 0)) {
+    if ((readSensors(0, &botDevices) == 0) && (check4Robot() == 0)) {
       floorColor = whereIam(0);
       printf("\n %s arrived into a land of color %d", robotName, floorColor);
       printf("\n");
-      speaking(&sOri, emitter, flagCom, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0);
+      speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles, fileRobot, dirPath);
     } else {
       waiting(10);
       printf("\n Waiting to have a clear ground");
@@ -1686,15 +1415,15 @@ int doorEntrance(int steps){
   //printf("\n");
   forward(10, speed);
   turnSteps(TURN_M90, speed);
-  readSensors(0, ps_value, ps_offset, Robotps);
-  if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[7]> THRESHOLD_DIST)) {
+  readSensors(0, &botDevices);
+  if ((botDevices.ps_value[0] > THRESHOLD_DIST) || (botDevices.ps_value[7]> THRESHOLD_DIST)) {
     printf("\n %s wrong turn", robotName);
     printf("\n");
     return 0;
   }
   forward(steps, speed);
-  speaking(&sOri, emitter, flagCom, botNumber, M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
-  speaking(&sOri, emitter, flagCom, botNumber, -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
+  speaking(&botDevices, botNumber, M2NEST, ROBOT_LEAVING, 0, 0, &botFlagFiles, fileRobot, dirPath); // To indicate home-nest 
+  speaking(&botDevices, botNumber, -1, ROBOT_LEAVING, 0, 0, &botFlagFiles, fileRobot, dirPath); // To indicate friends 
   waiting(1);
   turnSteps(-10, speed);
   return 1;
@@ -1708,9 +1437,9 @@ int setRobotPosition(int colorLine){
     forward(-20, speed);
     return 0;
   }
-  readSensors(0, ps_value, ps_offset, Robotps);
+  readSensors(0, &botDevices);
   // hit by sensor 1, turn almost 20 degrees
-  if ((ps_value[0] > THRESHOLD_DIST) || (ps_value[1] > THRESHOLD_DIST)) { turnSteps(10, speed);} 
+  if ((botDevices.ps_value[0] > THRESHOLD_DIST) || (botDevices.ps_value[1] > THRESHOLD_DIST)) { turnSteps(10, speed);} 
   speed[LEFT] = 100;
   speed[RIGHT] = -100;
   int notReady = 1;
@@ -1720,9 +1449,9 @@ int setRobotPosition(int colorLine){
   //printf("\n");
   while(notReady) { 
     wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);      
-    readSensors(0, ps_value, ps_offset, Robotps);
+    readSensors(0, &botDevices);
     counter++;
-    if (ps_value[5]> 300) {
+    if (botDevices.ps_value[5]> 300) {
       notReady = find_middle(0, colorLine) < 0; // returns the index -1 if not
       wrongDoor = find_middle(1, colorLine) > 0; // return 100 if it found it
       flagRobot = check4Robot();
@@ -1773,7 +1502,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
   if (endTask == -1) { // found no line
     //while(!run(flagLoad, 50)); //60
 	for (i = 0; i<10; i++) {
-		run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);
+		run(flagLoad, 5, speed, &botDevices);
 		whereIam(1);
 	}
     return 0;
@@ -1781,7 +1510,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
     turnSteps(15, speed);
     //while(!run(flagLoad, 60));
 	for (i = 0; i<12; i++) {
-		run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);
+		run(flagLoad, 5, speed, &botDevices);
 		whereIam(1);
 	}
     return 0;
@@ -1796,9 +1525,9 @@ int going2Region(int colorLine, int colorDestination){ //ok
       return 0;
     }
     whereArrive();
-    run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);
+    run(flagLoad, 5, speed, &botDevices);
 	whereIam(1);
-	run(flagLoad, 5, speed, ps_value, ps_offset, Robotps);
+	run(flagLoad, 5, speed, &botDevices);
 	whereIam(1);
     if (floorColor == colorDestination) {
       //printf("\n Excellent entrance, %s is on desired region", robotName);
@@ -1818,7 +1547,7 @@ int going2it(int index){//ok
   int i = 0, index2 = 0, delta = 0;
   int count = 0;
 
-  image = wb_camera_get_image(cam);
+  image = wb_camera_get_image(botDevices.cam);
   wb_robot_step(TIME_STEP);
   cronometer(IMAGE, 0);
   
@@ -1863,9 +1592,9 @@ void cronometer(int task, int cache){//ok-
   }
   //printf("\n %s is listening", robotName);
   //printf("\n");
-  listening(receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState); //--JUAN EDIT FILES
-  if (flagFilesLIFE) {
-    createDir(LIFE, 0);
+  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlagFiles, fileRobot, dirPath); //--JUAN EDIT FILES
+  if (botFlagFiles.flagFilesLIFE) {
+    createDir(LIFE, 0, fileRobot, dirPath);
     //printf("\n %s is updating in %s", robotName, fileRobot);
     //printf("\n");
     FILE *flife = fopen(fileRobot,"a+");
@@ -1881,18 +1610,20 @@ void cronometer(int task, int cache){//ok-
 void countObjects(){
   switch(stateUML){
     case DROP_NEST:
-      nDrop[floorColor]++; break;
+      botEst.nDrop[floorColor]++; break;
     case PICK_SOURCE:
-      nPick[floorColor]++; break;
+      botEst.nPick[floorColor]++; break;
   }
-  if (flagFilesPER) {
-    createDir(PERFORMANCE, 0);
+  printf("\n We have %d objects picked", botEst.nPick[floorColor]);
+  printf("\n");
+  if (botFlagFiles.flagFilesPER) {
+    createDir(PERFORMANCE, 0, fileRobot, dirPath);
     //printf("\n %s is counting objects in %s", robotName, fileRobot);
     //printf("\n");
     FILE *fper = fopen(fileRobot, "a+");
     int i;
     for (i=0; i<NB_REGIONS; i++){ 
-      fprintf(fper, "%d, %d, ", nPick[i], nDrop[i]);
+      fprintf(fper, "%d, %d, ", botEst.nPick[i], botEst.nDrop[i]);
     }
     fprintf(fper, "\n");  
     fclose(fper); //-- JUAN EDIT FILES
@@ -1911,19 +1642,19 @@ void updateEstimations(int task, int value, int cache){ //ok-
 
   switch(task){
     case PICK_SOURCE:
-      estPickS = (estPickS * (100 - alpha) + value * alpha + (estPickS - value) * beta) / 100;
+      botEst.estPickS = (botEst.estPickS * (100 - alpha) + value * alpha + (botEst.estPickS - value) * beta) / 100;
       break;
     case DROP_NEST:
-      estDropN = (estDropN * (100 - alpha) + value * alpha + (estDropN - value) * beta ) / 100;
+      botEst.estDropN = (botEst.estDropN * (100 - alpha) + value * alpha + (botEst.estDropN - value) * beta ) / 100;
       break;
     case TRAVEL2GREY:
-      estTravelGrey = (estTravelGrey  * (100 - alpha) + value * alpha + (estTravelGrey  - value) * beta ) / 100;
+      botEst.estTravelGrey = (botEst.estTravelGrey  * (100 - alpha) + value * alpha + (botEst.estTravelGrey  - value) * beta ) / 100;
       break;
     case TRAVEL2BLUE:
-      estTravelBlue = (estTravelBlue  * (100 - alpha) + value * alpha + (estTravelBlue  - value) * beta ) / 100;
+      botEst.estTravelBlue = (botEst.estTravelBlue  * (100 - alpha) + value * alpha + (botEst.estTravelBlue  - value) * beta ) / 100;
       break;
     case TRAVEL2RED:
-      estTravelRed = (estTravelRed  * (100 - alpha) + value * alpha + (estTravelRed  - value) * beta ) / 100;
+      botEst.estTravelRed = (botEst.estTravelRed  * (100 - alpha) + value * alpha + (botEst.estTravelRed  - value) * beta ) / 100;
       break;
   }
   cache = 0; // comment when working with shapes
@@ -1933,12 +1664,12 @@ void updateEstimations(int task, int value, int cache){ //ok-
     if (flagListened) {
       flagListened = 0;
     } else {
-      //printf("\n Everybody listen, I am %s, my %d cost me %d", robotName, codeTask, value);
-      //printf("\n");
-      speaking(&sOri, emitter, flagCom, botNumber, M2ROBOT, codeTask, value, cache);
+      printf("\n Everybody listen, I am %s, my %d cost me %d", robotName, codeTask, value);
+      printf("\n");
+      speaking(&botDevices, botNumber, M2ROBOT, codeTask, value, cache, &botFlagFiles, fileRobot, dirPath);
     }  
   } 
-  lastImage = timeImage;
+  botEst.lastImage = timeImage;
   timeImage = 0;  
   timeMeasured = 0;
   timeListened = 0;
@@ -1947,8 +1678,8 @@ void updateEstimations(int task, int value, int cache){ //ok-
 
 void updateBitacora(int codeTask, int estimations, int cache){ //ok-
   if (estimations == ESTIMATIONS) { 
-    if (flagFilesEST) { 
-      createDir(ESTIMATIONS, 0); 
+    if (botFlagFiles.flagFilesEST) { 
+      createDir(ESTIMATIONS, 0, fileRobot, dirPath); 
       //printf("\n %s is estimating times in %s", robotName, fileRobot);
       //printf("\n");
       FILE *fbot = fopen(fileRobot, "a+");
@@ -1960,16 +1691,18 @@ void updateBitacora(int codeTask, int estimations, int cache){ //ok-
       
       if (flagListened == 1) {
         fprintf(fbot, "Update after heard for cache %d, %d, %d, %d, %d, %d \n", 
-                   estPickS, estDropN, estTravelGrey, estTravelBlue, estTravelRed, lastImage);
+                   botEst.estPickS, botEst.estDropN, botEst.estTravelGrey, 
+                   botEst.estTravelBlue, botEst.estTravelRed, botEst.lastImage);
       } else {
         fprintf(fbot, "Update after finish for cache %d, %d, %d, %d, %d, %d \n", 
-                   estPickS, estDropN, estTravelGrey, estTravelBlue, estTravelRed, lastImage);
+                   botEst.estPickS, botEst.estDropN, botEst.estTravelGrey, 
+                   botEst.estTravelBlue, botEst.estTravelRed, botEst.lastImage);
       }             
       fclose(fbot); //-- JUAN EDIT FILES
       }
   } else {    
-    if (flagFilesFSM) {
-      createDir(FSM, 0); 
+    if (botFlagFiles.flagFilesFSM) {
+      createDir(FSM, 0, fileRobot, dirPath); 
       //printf("\n %s is on state machine times in %s", robotName, fileRobot);
       //printf("\n");
       FILE *fbot = fopen(fileRobot, "a+");    
@@ -2005,98 +1738,6 @@ void updateBitacora(int codeTask, int estimations, int cache){ //ok-
   } 
 }
 
-void writeDecision(float boundP, float realP, int mechanism){ //ok-
-  if (flagFilesDM) {
-    // File for decisions
-    createDir(DECISIONS, 0);
-    //printf("\n %s is registering its decision in %s", robotName, fileRobot);
-    //printf("\n");	
-    FILE *file = fopen(fileRobot, "a+");
-    if (file==NULL) {
-      printf("Error opening file of estimations bot\n");
-      printf("\n");
-      exit(1);
-    }
-  
-    if (mechanism == TRAVELING_AGREE) {
-      fprintf(file, "\n Partitioning %d, %.2f, %.2f", boundP>realP, boundP, realP);
-    } else if (mechanism == TRAVELING_LEVY){
-      fprintf(file, "\n Partitioning-Levy %d, %.2f, %.2f", boundP>realP, boundP, realP);
-    } else if (mechanism == TRAVELING_CALL){
-      fprintf(file, "\n Partitioning by hearing %d, 99, 99", flagTravel);
-    }
-    fclose(file); //-- JUAN EDIT FILES
-  }
-}
-
-void writeMessage(int speaking, const char *msg) {
-  if (flagFilesCOM) {
-      // File for decisions
-    createDir(COMMUNICATION, 0);
-    //printf("\n %s is registering its messages in %s", robotName, fileRobot);
-    //printf("\n");	
-    FILE *file = fopen(fileRobot, "a+");
-    if (file == NULL) {
-      printf("Error opening file of communications\n");
-      printf("\n");
-      exit(1);
-    }
-    //printf("\n %s is updating with %s", robotName, msg);
-    if (speaking) {
-      fprintf(file, "\n speaking, %s", msg);
-      //printf("\n %s is updating with %s by speaking", robotName, msg);
-    } else {
-      fprintf(file, "\n listening, %s", msg);
-      //printf("\n %s is updating with %s by listening", robotName, msg);
-    }
-    fclose(file);
-  }
-}
-
-/* int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
-  if (flagCom == 0) { return 0;}
-
-  char message[30];
-  // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
-  if (toWhom == M2ROBOT) {
-    if (time == -1) { // reporting just to have the same number of lines
-      sprintf(message, "U");
-    } else if (toWhom == -1){ 
-      sprintf(message, "R2R%dR%d",botNumber, ROBOT_LEAVING);
-    } else {
-      sprintf(message, "R2R%dC%dT%d",botNumber, codeTask, time);
-    }
-  } else if (toWhom == M2NEST) {
-    if (time == -1) {
-      printf("\n %s will update your estimation NEST %d", robotName, floorColor);
-    } else {
-      if (codeTask == ROBOT_LEAVING) {
-        sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_LEAVING, floorColor);
-        printf("\n %s is leaving NEST %d", robotName, floorColor);
-        printf(" message %s", message);
-        printf("\n");
-      } else if (codeTask == ROBOT_ARRIVING) {
-        sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_ARRIVING, floorColor);
-        printf("\n %s is arriving into NEST %d", robotName, floorColor);
-        printf(" message %s", message);        
-        printf("\n");
-      } else if (codeTask == ROBOT_UPDATING) {
-        sprintf(message,"R2T%dT%dX%d",botNumber, ROBOT_UPDATING, estPickS + estDropN);
-        printf("\n %s is arriving into NEST %d", robotName, floorColor);
-        printf(" message %s", message);        
-        printf("\n");
-      }
-    }
-  }
-  if (strcmp(message, "U")) {
-    //printf("\n %s updating its record of messages", robotName);
-    writeMessage(1, message);
-  }  
-  wb_emitter_send(emitter, message, strlen(message)+1);
-  wb_robot_step(32);
-  return 1;
-} */
-
 int computeTraveling (int levy){ 
   float Ppartitioning = 0;
   float p = 0;
@@ -2105,19 +1746,19 @@ int computeTraveling (int levy){
   // task1 = {Pick-source, Drop-Cache}
   // task2 = {Pick-cache, Drop-Nest}
 
-  tFull = estPickS + estDropN;
+  tFull = botEst.estPickS + botEst.estDropN;
   if (tFull == 0) { tFull = 1;}
 
-  tPart = estPickS + estDropN;  
+  tPart = botEst.estPickS + botEst.estDropN;  
   if (tPart == 0) { tPart = 1;}
   
   switch(modelTest){
     case RANDOMLY:
-      writeDecision(1.01, 0.01, TRAVELING_AGREE);
+      writeDecision(1.01, 0.01, TRAVELING_AGREE, flagTravel, &botFlagFiles, fileRobot, dirPath);
       return 1;
     break;
     case NEVER:
-      writeDecision(0.01, 1.01, TRAVELING_AGREE);
+      writeDecision(0.01, 1.01, TRAVELING_AGREE, flagTravel, &botFlagFiles, fileRobot, dirPath);
       return 0;
     break; 
     case GREEDY: 
@@ -2139,11 +1780,11 @@ int computeTraveling (int levy){
         switch(stateUML){
           case PICK_SOURCE:
             //printf("\n %s levy pick_source", robotName);
-            tPart = timeMeasured + estDropN; 
+            tPart = timeMeasured + botEst.estDropN; 
           break;
           case DROP_NEST:
             //printf("\n %s levy drop_nest", robotName);
-            tPart = estPickS + timeMeasured;
+            tPart = botEst.estPickS + timeMeasured;
           break;                 
           case TRAVEL2GREY:
           case TRAVEL2BLUE:
@@ -2151,11 +1792,11 @@ int computeTraveling (int levy){
             switch(statePrevious){
               case PICK_SOURCE:
                 //printf("\n %s levy travel from pick-source", robotName);
-                tPart = timeMeasured + estDropN;
+                tPart = timeMeasured + botEst.estDropN;
               break;
              case DROP_NEST:
                 //printf("\n %s levy travel from drop-nest", robotName);
-                tPart = estPickS + timeMeasured; 
+                tPart = botEst.estPickS + timeMeasured; 
               break;
           } break;
       }   
@@ -2171,9 +1812,9 @@ int computeTraveling (int levy){
   
   //printf("\n Robot %s Ppartitioning is %.2f my chance is %.2f and timeFull is %.1f timePart is %.1f",robotName, Ppartitioning, p, tFull, tPart);
   if (levy) {
-    writeDecision(Ppartitioning, p, TRAVELING_LEVY);
+    writeDecision(Ppartitioning, p, TRAVELING_LEVY, flagTravel, &botFlagFiles, fileRobot, dirPath);
   } else {
-    writeDecision(Ppartitioning, p, TRAVELING_AGREE);
+    writeDecision(Ppartitioning, p, TRAVELING_AGREE, flagTravel, &botFlagFiles, fileRobot, dirPath);
   }
   
   int result = Ppartitioning > p;
@@ -2182,7 +1823,7 @@ int computeTraveling (int levy){
   } else {
     printf("\n %s do the full task", robotName);
   }
-  speaking(&sOri, emitter, flagCom, botNumber, M2ROBOT, -1, -1, -1);
+  speaking(&botDevices, botNumber, M2ROBOT, -1, -1, -1, &botFlagFiles, fileRobot, dirPath);
   wb_robot_step(32); // to update global values
   return result;
 }

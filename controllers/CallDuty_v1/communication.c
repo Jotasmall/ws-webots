@@ -1,14 +1,4 @@
-#include <webots/robot.h>
-#include <webots/receiver.h>
-#include <webots/emitter.h>
-
-#include <string.h>
-#include <stdio.h>
-#include <math.h>
-#include <stdlib.h>
-
 #include "communication.h"
-#include "headerStruct.h"
 
 #define RED 0
 #define TRAVEL2RED 104
@@ -26,7 +16,7 @@
 #define M2ROBOT 1
 #define M2NEST 2
 
-int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState){ //ok-
+int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *flagFiles, char *fileRobot, char *dirPath){ //ok-
   int i;
   while(wb_receiver_get_queue_length(receiver)>0){  
     const char *data = wb_receiver_get_data(receiver);
@@ -44,7 +34,7 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
         if (destinatary == botNumber){ 
           printf("\n %d is listening its nest location %d to say %s", botNumber, place, data);
           printf("\n");
-          //c writeMessage(0, data);
+          writeMessage(0, data, flagFiles, fileRobot, dirPath);
           int newFriend = atoi(&data[10]);
           int suggestedDestination = atoi(&data[13]);
           if (newFriend == LEAVE) {
@@ -149,15 +139,13 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
   return 1;
 }
 
-int speaking(struct a *sOri, WbDeviceTag emitter, int flagCom, int botNumber, int toWhom, int codeTask, int time, int cache){ //ok-
-  if (flagCom == 0) { return 0;}
+int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *flagFiles, char *fileRobot, char *dirPath){ //ok-
+  if (bot->flagCom == 0) { return 0;}
   int floorColor = 0;
   int estPickS = 10000;
-  int estDropN = 10000;
-  
+  int estDropN = 10000; 
   char message[30];
-  printf("\n %d",sOri->i+sOri->j);
-  printf("\n");
+
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
   if (toWhom == M2ROBOT) {
     if (time == -1) { // reporting just to have the same number of lines
@@ -191,9 +179,9 @@ int speaking(struct a *sOri, WbDeviceTag emitter, int flagCom, int botNumber, in
   } 
   if (strcmp(message, "U")) {
     printf("\n %d updating its record of messages", botNumber);
-    //c writeMessage(1, message);
+    writeMessage(1, message, flagFiles, fileRobot, dirPath);
   }  
-  wb_emitter_send(emitter, message, strlen(message)+1);
+  wb_emitter_send(bot->emitter, message, strlen(message)+1);
   wb_robot_step(32);
   return 1;
   
