@@ -16,7 +16,8 @@
 #define M2ROBOT 1
 #define M2NEST 2
 
-int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *flagFiles, char *fileRobot, char *dirPath){ //ok-
+//int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *botFlags, char *fileRobot, char *dirPath){ //ok-
+int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *botFlags){ //ok-
   int i;
   while(wb_receiver_get_queue_length(receiver)>0){  
     const char *data = wb_receiver_get_data(receiver);
@@ -34,7 +35,7 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
         if (destinatary == botNumber){ 
           printf("\n %d is listening its nest location %d to say %s", botNumber, place, data);
           printf("\n");
-          writeMessage(0, data, flagFiles, fileRobot, dirPath);
+          writeMessage(0, data, botFlags);
           int newFriend = atoi(&data[10]);
           int suggestedDestination = atoi(&data[13]);
           if (newFriend == LEAVE) {
@@ -99,7 +100,7 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
       int codeReceived = atoi(&data[8]);
       for (i = 0; i < NROBOTS; i++) {
         if (name == listFriends[i]) {
-          //c writeMessage(0, data);
+          writeMessage(0, data, botFlags);
           if (codeReceived == ROBOT_LEAVING) {
             printf("\n %d bye bye %d", botNumber, name);
             printf("\n");
@@ -139,7 +140,8 @@ int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFrie
   return 1;
 }
 
-int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *flagFiles, char *fileRobot, char *dirPath){ //ok-
+//int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *botFlags, char *fileRobot, char *dirPath){ //ok-
+int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *botFlags){ //ok-
   if (bot->flagCom == 0) { return 0;}
   int floorColor = 0;
   int estPickS = 10000;
@@ -179,7 +181,7 @@ int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, 
   } 
   if (strcmp(message, "U")) {
     printf("\n %d updating its record of messages", botNumber);
-    writeMessage(1, message, flagFiles, fileRobot, dirPath);
+    writeMessage(1, message, botFlags);
   }  
   wb_emitter_send(bot->emitter, message, strlen(message)+1);
   wb_robot_step(32);

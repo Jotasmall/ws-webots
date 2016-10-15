@@ -196,8 +196,6 @@ int moduleFSM();
 void init_variables();
 void reset();
 //void resetDisplay();
-//void createDir(int option, int dirBuild);
-//void createFiles();
 void initEstimations();
 // Miscellaneous functions
 void pickingIndication(int on);
@@ -641,14 +639,16 @@ void reset(){ //ok-
   //printf("\n %s was born in region %d", wb_robot_get_name(), floorColor);
   //printf("\n");
   // Create files, enable/disable files records
+  botFlagFiles.fileRobot = fileRobot;
+  botFlagFiles.dirPath = dirPath; 
   if (flagFiles) { 
     botFlagFiles.flagFilesFSM = 0;
     botFlagFiles.flagFilesEST = 0;
-    botFlagFiles.flagFilesLIFE = 0;
-    botFlagFiles.flagFilesDM = 1;
+    botFlagFiles.flagFilesLIFE = 1;
+    botFlagFiles.flagFilesDM = 0;
     botFlagFiles.flagFilesPER = 0;
-    botFlagFiles.flagFilesCOM = 1;
-    createFiles(fileRobot, dirPath, &botFlagFiles);
+    botFlagFiles.flagFilesCOM = 0;
+    createFiles(&botFlagFiles);
   } 
   initEstimations(&botEst, NB_REGIONS);
   updateBitacora(0, ESTIMATIONS, 0);
@@ -668,7 +668,7 @@ void reset(){ //ok-
   */ 
   botDevices.flagCom = flagCom;
   botDevices.flagListened = flagListened;
-  speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles, fileRobot, dirPath);
+  speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles);
 }
 
 void pickingIndication(int on){ //ok
@@ -1400,7 +1400,7 @@ int whereArrive(){
       floorColor = whereIam(0);
       printf("\n %s arrived into a land of color %d", robotName, floorColor);
       printf("\n");
-      speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles, fileRobot, dirPath);
+      speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles);
     } else {
       waiting(10);
       printf("\n Waiting to have a clear ground");
@@ -1422,8 +1422,8 @@ int doorEntrance(int steps){
     return 0;
   }
   forward(steps, speed);
-  speaking(&botDevices, botNumber, M2NEST, ROBOT_LEAVING, 0, 0, &botFlagFiles, fileRobot, dirPath); // To indicate home-nest 
-  speaking(&botDevices, botNumber, -1, ROBOT_LEAVING, 0, 0, &botFlagFiles, fileRobot, dirPath); // To indicate friends 
+  speaking(&botDevices, botNumber, M2NEST, ROBOT_LEAVING, 0, 0, &botFlagFiles); // To indicate home-nest 
+  speaking(&botDevices, botNumber, -1, ROBOT_LEAVING, 0, 0, &botFlagFiles); // To indicate friends 
   waiting(1);
   turnSteps(-10, speed);
   return 1;
@@ -1592,9 +1592,9 @@ void cronometer(int task, int cache){//ok-
   }
   //printf("\n %s is listening", robotName);
   //printf("\n");
-  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlagFiles, fileRobot, dirPath); //--JUAN EDIT FILES
+  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlagFiles); //--JUAN EDIT FILES
   if (botFlagFiles.flagFilesLIFE) {
-    createDir(LIFE, 0, fileRobot, dirPath);
+    createDir(LIFE, 0, &botFlagFiles);
     //printf("\n %s is updating in %s", robotName, fileRobot);
     //printf("\n");
     FILE *flife = fopen(fileRobot,"a+");
@@ -1617,7 +1617,7 @@ void countObjects(){
   printf("\n We have %d objects picked", botEst.nPick[floorColor]);
   printf("\n");
   if (botFlagFiles.flagFilesPER) {
-    createDir(PERFORMANCE, 0, fileRobot, dirPath);
+    createDir(PERFORMANCE, 0, &botFlagFiles);
     //printf("\n %s is counting objects in %s", robotName, fileRobot);
     //printf("\n");
     FILE *fper = fopen(fileRobot, "a+");
@@ -1666,7 +1666,7 @@ void updateEstimations(int task, int value, int cache){ //ok-
     } else {
       printf("\n Everybody listen, I am %s, my %d cost me %d", robotName, codeTask, value);
       printf("\n");
-      speaking(&botDevices, botNumber, M2ROBOT, codeTask, value, cache, &botFlagFiles, fileRobot, dirPath);
+      speaking(&botDevices, botNumber, M2ROBOT, codeTask, value, cache, &botFlagFiles);
     }  
   } 
   botEst.lastImage = timeImage;
@@ -1679,7 +1679,7 @@ void updateEstimations(int task, int value, int cache){ //ok-
 void updateBitacora(int codeTask, int estimations, int cache){ //ok-
   if (estimations == ESTIMATIONS) { 
     if (botFlagFiles.flagFilesEST) { 
-      createDir(ESTIMATIONS, 0, fileRobot, dirPath); 
+      createDir(ESTIMATIONS, 0, &botFlagFiles); 
       //printf("\n %s is estimating times in %s", robotName, fileRobot);
       //printf("\n");
       FILE *fbot = fopen(fileRobot, "a+");
@@ -1702,7 +1702,7 @@ void updateBitacora(int codeTask, int estimations, int cache){ //ok-
       }
   } else {    
     if (botFlagFiles.flagFilesFSM) {
-      createDir(FSM, 0, fileRobot, dirPath); 
+      createDir(FSM, 0, &botFlagFiles); 
       //printf("\n %s is on state machine times in %s", robotName, fileRobot);
       //printf("\n");
       FILE *fbot = fopen(fileRobot, "a+");    
@@ -1754,11 +1754,11 @@ int computeTraveling (int levy){
   
   switch(modelTest){
     case RANDOMLY:
-      writeDecision(1.01, 0.01, TRAVELING_AGREE, flagTravel, &botFlagFiles, fileRobot, dirPath);
+      writeDecision(1.01, 0.01, TRAVELING_AGREE, flagTravel, &botFlagFiles);
       return 1;
     break;
     case NEVER:
-      writeDecision(0.01, 1.01, TRAVELING_AGREE, flagTravel, &botFlagFiles, fileRobot, dirPath);
+      writeDecision(0.01, 1.01, TRAVELING_AGREE, flagTravel, &botFlagFiles);
       return 0;
     break; 
     case GREEDY: 
@@ -1812,9 +1812,9 @@ int computeTraveling (int levy){
   
   //printf("\n Robot %s Ppartitioning is %.2f my chance is %.2f and timeFull is %.1f timePart is %.1f",robotName, Ppartitioning, p, tFull, tPart);
   if (levy) {
-    writeDecision(Ppartitioning, p, TRAVELING_LEVY, flagTravel, &botFlagFiles, fileRobot, dirPath);
+    writeDecision(Ppartitioning, p, TRAVELING_LEVY, flagTravel, &botFlagFiles);
   } else {
-    writeDecision(Ppartitioning, p, TRAVELING_AGREE, flagTravel, &botFlagFiles, fileRobot, dirPath);
+    writeDecision(Ppartitioning, p, TRAVELING_AGREE, flagTravel, &botFlagFiles);
   }
   
   int result = Ppartitioning > p;
@@ -1823,7 +1823,7 @@ int computeTraveling (int levy){
   } else {
     printf("\n %s do the full task", robotName);
   }
-  speaking(&botDevices, botNumber, M2ROBOT, -1, -1, -1, &botFlagFiles, fileRobot, dirPath);
+  speaking(&botDevices, botNumber, M2ROBOT, -1, -1, -1, &botFlagFiles);
   wb_robot_step(32); // to update global values
   return result;
 }

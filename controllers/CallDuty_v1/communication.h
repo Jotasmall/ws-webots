@@ -13,7 +13,9 @@
 #include "readWriteFiles.h"
 #include "headerStruct.h"
 
-int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *flagFiles, char *fileRobot, char *dirPath);
-int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *flagFiles, char *fileRobot, char *dirPath);
+//int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *botFlags, char *fileRobot, char *dirPath);
+int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *botFlags);
+//int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *botFlags, char *fileRobot, char *dirPath);
+int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *botFlags);
 
 #endif
