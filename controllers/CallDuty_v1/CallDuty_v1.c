@@ -269,7 +269,7 @@ void init_variables(){
   switch(modelTest){
     case ESSAY:
       stateUML = EXPERIMENT;//TRAVEL2GREY;
-	  botState.currentState = EXPERIMENT;
+      botState.currentState = EXPERIMENT;
       color = CYAN;
       figura = BOX;
       break;
@@ -1505,7 +1505,9 @@ void cronometer(int task, int cache){//ok-
   }
   //printf("\n %s is listening", robotName);
   //printf("\n");
-  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlagFiles); //--JUAN EDIT FILES
+//juan  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlagFiles); //--JUAN EDIT FILES
+  listening(botDevices.receiver, floorColor, botNumber, listFriends, &botState.currentState, &suggestedState, &botFlagFiles); //--JUAN EDIT FILES
+
   if (botFlagFiles.flagFilesLIFE) {
     createDir(LIFE, 0, &botFlagFiles);
     //printf("\n %s is updating in %s", robotName, fileRobot);
