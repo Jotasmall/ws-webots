@@ -633,14 +633,14 @@ int moduleFSM(){
 
 void reset(){ //ok-
   resetDevices(&botDevices);
-  width = botDevices.width;
-  height = botDevices.height;
+  //width = botDevices.width;
+  //height = botDevices.height;
   //working on these
-  botCam.width = width;
-  botCam.height = height;
+  botCam.width = botDevices.width;
+  botCam.height = botDevices.height;
   botCam.image = wb_camera_get_image(botDevices.cam);
   // Display for user
-  resetDisplay(&displayExtra, width, height);
+  resetDisplay(&displayExtra, botCam.width, botCam.height);
   // Getting data for initial state
   floorColor = whereIam(0);
   botState.floorColor = whereIam(0);
@@ -759,18 +759,18 @@ int cont_height_figure(int indexP){ //ok
   int count=0;
   int maxCount = 0;
   int beginY = 0;
-  int endX = width-1;
+  int endX = botCam.width-1;
   int foreground = color;
   int i, j;
   switch (indexP){
     case -22:
-      beginY = height - 5;
+      beginY = botCam.height - 5;
       foreground = GREY; break;
     case -21: // checking red-nest ground color
-      beginY = height - 5;
+      beginY = botCam.height - 5;
       foreground = RED; break;
     case -20: // checking blue-source ground color
-      beginY = height - 5;
+      beginY = botCam.height - 5;
       foreground = BLUE; break;
     case -11: // looking for landmark
       foreground = MAGENTA; // nest TAM
@@ -797,16 +797,16 @@ int cont_height_figure(int indexP){ //ok
         }
       } break;
     default:  // Normal processing
-      if ((indexP >= 0) && (indexP < width)) { endX = 0;}
+      if ((indexP >= 0) && (indexP < botCam.width)) { endX = 0;}
   } 
 
   for (i = 0; i <= endX; i++) {
     if (endX == 0) { i = indexP;} // Only that point
-    for (j = beginY; j < height; j++) {
+    for (j = beginY; j < botCam.height; j++) {
       count += compareColorPixel(&botCam, image, i, j, foreground, &botState);  
     } 
     if (count > maxCount) { maxCount = count;}
-    if (beginY != (height - 5)) { count = 0;}
+    if (beginY != (botCam.height - 5)) { count = 0;}
   } 
   // printf("\n count value %d index %d", maxCount, i);
   return maxCount;
@@ -871,10 +871,10 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
   int realComp = 0;
   int i, j, k;
   int left, up;
-  int minV = height, maxV = 0, minH = width, maxH = 0, area = 0;
+  int minV = botCam.height, maxV = 0, minH = botCam.width, maxH = 0, area = 0;
   
-  int imaComp[width][height];
-  memset(imaComp, -1, width*height*sizeof(int));
+  int imaComp[botCam.width][botCam.height];
+  memset(imaComp, -1, botCam.width*botCam.height*sizeof(int));
   int relations[40];
   memset(relations, 0, 40*sizeof(int));
   int check[20];
@@ -885,8 +885,8 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
   cronometer(IMAGE, 0); // for image processing
 
   // Segmentation process
-  for (i = 0; i < width; i++) {
-    for (j = 0; j < height; j++) {
+  for (i = 0; i < botCam.width; i++) {
+    for (j = 0; j < botCam.height; j++) {
       aux = compareColorPixel(&botCam, image, i, j, foreground, &botState); 
       if (aux){    
         // Identifying component through a N-neighborhood strategy
@@ -921,8 +921,8 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
   aux = 0;
   for (k = comp; 0 < k; k--) {
     if (relations[k] != k) {
-      for (i = 0; i < width; i++) {
-        for (j = 0; j < height; j++) {
+      for (i = 0; i < botCam.width; i++) {
+        for (j = 0; j < botCam.height; j++) {
           if (imaComp[i][j] == k) {
             imaComp[i][j] = relations[k];
           }
@@ -939,9 +939,9 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
   //  FILE *fp4 = fopen("image_descritors_4n.csv","a");  
   for (k = 0; k < comp; k++) {
     // reset values to find them in a new component
-    minV = height; maxV = 0; minH = width; maxH = 0; area = 0; 
-    for (i = 0; i < width; i++) {
-      for (j = 0; j < height; j++) {
+    minV = botCam.height; maxV = 0; minH = botCam.width; maxH = 0; area = 0; 
+    for (i = 0; i < botCam.width; i++) {
+      for (j = 0; j < botCam.height; j++) {
         // If the pixel has the same component
         if (imaComp[i][j] == check[k]) {
           area++;
@@ -994,7 +994,7 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
       wb_display_set_color(displayExtra, HEXYELLOW);
       wb_display_draw_rectangle(displayExtra, minH, minV, squarewidth+1, squareHeight+1);
       // return the horizontal position as delta value
-      distMiddle = abs(width/2-x);
+      distMiddle = abs(botCam.width/2-x);
       realComp++;
       *numberComponents = realComp;
       // A great enough region
@@ -1155,7 +1155,7 @@ int followingLine(int colorLine){//ok-
       // cronometer(IMAGE, 0); // Disable because it is only one row
       delta = find_middle(0, colorLine);
       if ((delta > -1) && (delta < 100)) {
-        delta = delta - width/2;
+        delta = delta - botCam.width/2;
         speed[LEFT] = 220 - K_TURN*abs(delta);
         speed[RIGHT] = 220 - K_TURN*abs(delta);
         
@@ -1259,16 +1259,16 @@ int speedAdjustment(int index, int delta) { //ok
   int count = cont_height_figure(index);
   //printf("\n According to direction defined %d by %s the height is %d", index, robotName, count);
   int iter=0;
-  if ((index >= 0) && (index < height)) {
+  if ((index >= 0) && (index < botCam.height)) {
     iter = count-6;
   } else {
-    iter = (MAX_SPEED*height)/(MAX_SPEED+BACKWARD_SPEED);
+    iter = (MAX_SPEED*botCam.height)/(MAX_SPEED+BACKWARD_SPEED);
   } // increase by 1.25 max_speed
-  speed[LEFT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/height;
-  speed[RIGHT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/height;
+  speed[LEFT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/botCam.height;
+  speed[RIGHT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/botCam.height;
   // The robot is close enough to the object, i.e., > 75%  
   if (count > PROXIMITY_COLOR) {
-    resetDisplay(&displayExtra, width, height);
+    resetDisplay(&displayExtra, botCam.width, botCam.height);
     flagRobot = check4Robot();
 
     if (color == CYAN){   
@@ -1380,8 +1380,8 @@ int find_middle(int wrongLine, int colorLine){ //ok
     }
   }
   // new world
-  for (i = 0; i<width; i++){
-    aux = compareColorPixel(&botCam, image, i, height-1, foreground, &botState);
+  for (i = 0; i<botCam.width; i++){
+    aux = compareColorPixel(&botCam, image, i, botCam.height-1, foreground, &botState);
     if (aux == 1) {
       if (index1 == -1) { // the 1st time see the color
         index1 = i;
@@ -1504,7 +1504,7 @@ int setRobotPosition(int colorLine){
 
 int going2Region(int colorLine, int colorDestination){ //ok
   int endTask = 0, i;
-  resetDisplay(&displayExtra, width, height);
+  resetDisplay(&displayExtra, botCam.width, botCam.height);
   //printf("\n %s getting in position destination %d by line of color %d", robotName, colorDestination, colorLine);
   //printf("\n");
   endTask = setRobotPosition(colorLine);
@@ -1552,7 +1552,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
 }
 
 int going2it(int index){//ok
-  int intensity[width]; //int *intensity = (int *)malloc(sizeof(int)*width);
+  int intensity[botCam.width]; //int *intensity = (int *)malloc(sizeof(int)*width);
   int i = 0, index2 = 0, delta = 0;
   int count = 0;
 
@@ -1561,10 +1561,10 @@ int going2it(int index){//ok
   cronometer(IMAGE, 0);
   
   if (index == 100) {
-    for (i = 0; i < width; i++) {
+    for (i = 0; i < botCam.width; i++) {
       intensity[i] = cont_height_figure(i);
     }
-    for (i = 0; i < width; i++) {
+    for (i = 0; i < botCam.width; i++) {
       if (count < intensity[i]) {
         count = intensity[i];
         index = i;
@@ -1576,14 +1576,14 @@ int going2it(int index){//ok
       }
     }
     if (index2 > index) {
-      delta = index + (index2-index)/2 - (width/2);
-      index = (width/2) + delta;
+      delta = index + (index2-index)/2 - (botCam.width/2);
+      index = (botCam.width/2) + delta;
     } else {
 
-      delta = index - (width/2);
+      delta = index - (botCam.width/2);
     }  
-  } else if ((index >= 0) && (index < width)) {
-    delta = index-(width/2);
+  } else if ((index >= 0) && (index < botCam.width)) {
+    delta = index-(botCam.width/2);
   } else {
     printf("\n no direction defined %s", robotName);
     printf("\n");
