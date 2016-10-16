@@ -7,6 +7,7 @@
 
 
 int compareColorPixel(struct robotCamera *botCam, const unsigned char *image, int pixelX, int pixelY, int foreground, struct robotState *bot);
+int cont_height_figure(int indexP, int color, struct robotCamera *botCam, struct robotState *botState);
 
 //int cont_height_figure(int indexP);
 /*

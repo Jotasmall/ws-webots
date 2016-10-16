@@ -206,7 +206,7 @@ int whereIam(int avoiding);
 int find_middle(int wrongLine, int colorLine);
 int check4Robot();
 int waiting_color(int foreground);
-int cont_height_figure(int indexP);
+//int cont_height_figure(int indexP);
 //int compareColorPixel(int pixelX, int pixelY, int foreground);
 int detectImage(int foreground, int shape, int numImage, int *numberComponents);
 int whatIsee(float Eccentricity, float Extent, int squarewidth, int middleAxisH, int middleAxisV, int numImage);
@@ -269,12 +269,14 @@ void init_variables(){
   switch(modelTest){
     case ESSAY:
       stateUML = EXPERIMENT;//TRAVEL2GREY;
+	  botState.currentState = EXPERIMENT;
       color = CYAN;
       figura = BOX;
       break;
     case NEVER:
       flagMasterRecruiting = -1;
       stateUML = PICK_SOURCE;
+	  botState.currentState = PICK_SOURCE;
       output = STOP;
       color = RED;
       figura = BOX;
@@ -287,6 +289,7 @@ void init_variables(){
     case MODEL:
     case GREEDY:
       stateUML = PICK_SOURCE;
+	  botState.currentState = PICK_SOURCE;
       output = STOP;
       color = RED;
       figura = BOX;
@@ -299,7 +302,7 @@ void init_variables(){
 
 void executeUML(){
   while (wb_robot_step(TIME_STEP) != -1) {
-    switch(stateUML){
+    switch(botState.currentState){
       case EXPERIMENT:
         //printf("\n %d is on floorColor %d", botNumber, floorColor);
         cronometer(1000, 0);
@@ -308,20 +311,23 @@ void executeUML(){
         //printf("\n state PICK_SOURCE");
         //printf("\n");
         stateUML = moduleUML(RED, BOX, PICKING, DROP_NEST, travelDestination, 0);
-        //printf("\n pass 2 state %d", stateUML); 
+        botState.currentState = stateUML;
+		//printf("\n pass 2 state %d", stateUML); 
         //printf("\n");
         break;
       case DROP_NEST:
         //printf("\n state DROP_NEST");
         //printf("\n");
         stateUML = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, travelDestination, 1);
-        //printf("\n pass 2 state %d", stateUML);
+        botState.currentState = stateUML;
+		//printf("\n pass 2 state %d", stateUML);
         //printf("\n");
       break;
       case TRAVEL2GREY:
         //printf("\n state TRAVEL2NEST");
         //printf("\n");
         stateUML = moduleTravel();
+		botState.currentState = stateUML;
         //printf("\n pass 2 state %d", stateUML);
         //printf("\n");
       break;      
@@ -329,6 +335,7 @@ void executeUML(){
         //printf("\n state TRAVEL2SOURCE");
         //printf("\n");
         stateUML = moduleTravel();
+		botState.currentState = stateUML;
         //printf("\n pass 2 state %d", stateUML);
         //printf("\n");
       break;
@@ -336,6 +343,7 @@ void executeUML(){
         //printf("\n state TRAVEL2SOURCE");
         //printf("\n");
         stateUML = moduleTravel();
+		botState.currentState = stateUML;
         //printf("\n pass 2 state %d", stateUML);
         //printf("\n");
       break;
@@ -348,9 +356,9 @@ void executeUML(){
 int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int stateTravel, int flag) {
 
   color = foreground;
-  if ((floorColor == RED) && (stateUML == PICK_SOURCE)) { color = BLUE;}
+  if ((floorColor == RED) && (botState.currentState == PICK_SOURCE)) { color = BLUE;}
   figura = shape;
-  statePrevious = stateUML;
+  statePrevious = botState.currentState;
   int auxShape = 0; //shapeSeen when working with different shapes
   
   if (pick_or_drop == PICKING) { pickingIndication(1);}
@@ -374,7 +382,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
         forward(-120, speed);     
         turnSteps(TURN_CACHE, speed);
         //waiting(100);  
-        updateEstimations(stateUML, timeMeasured, auxShape);
+        updateEstimations(botState.currentState, timeMeasured, auxShape);
         
         flagLoad = !flag;
         if (pick_or_drop == PICKING) { pickingIndication(0);}
@@ -406,15 +414,15 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
 }
 
 int moduleTravel(){
-  int auxUML = stateUML; 
+  int auxUML = botState.currentState; 
   color = CYAN;
   figura = BOX;
   output = moduleFSM();
   //updateEstimations(IMAGE, timeImage, 0);
   if (output == STOP){  
-    printf("\n %s is on region %d desiring to go to %d", robotName, floorColor, stateUML);
+    printf("\n %s is on region %d desiring to go to %d", robotName, floorColor, botState.currentState);
     printf("\n");
-    if (stateUML  == TRAVEL2GREY) {
+    if (botState.currentState  == TRAVEL2GREY) {
       if (floorColor == BLUE) {
         flagReady = going2Region(RED, GREY);
       } else if (floorColor ==  GREY) {
@@ -422,7 +430,7 @@ int moduleTravel(){
       }  else {
         flagReady = going2Region(BLUE, GREY);
       }  
-    } else if (stateUML == TRAVEL2BLUE)  {
+    } else if (botState.currentState == TRAVEL2BLUE)  {
       if (floorColor == GREY){
         flagReady = going2Region(RED, BLUE);
       } else if (floorColor == BLUE) {
@@ -430,7 +438,7 @@ int moduleTravel(){
       } else {
         flagReady = going2Region(BLUE, BLUE);
       }
-    } else if (stateUML == TRAVEL2RED) {
+    } else if (botState.currentState == TRAVEL2RED) {
       if (floorColor == GREY){
         flagReady = going2Region(BLUE, RED);
       } else if (floorColor == RED) {
@@ -461,7 +469,7 @@ int moduleTravel(){
           auxUML = TRAVEL2RED;
         }
       }*/
-      updateEstimations(stateUML, timeMeasured, 0);
+      updateEstimations(botState.currentState, timeMeasured, 0);
     }    
   } else {
     /*flagTravel = computeTraveling(1);
@@ -504,7 +512,7 @@ int moduleFSM(){
           contLevy++;
           //printf("\n %s is thinking about her decision", robotName);
           //printf("\n");
-          switch(stateUML){
+          switch(botState.currentState){
            /* case TRAVEL2GREY:
             case TRAVEL2BLUE:
             case TRAVEL2RED:
@@ -538,9 +546,9 @@ int moduleFSM(){
           updateBitacora(LEVY, FSM, 0);
           stateFSM = GO2IT; 
         }
-        if (stateUML == PICK_SOURCE) {
+        if (botState.currentState == PICK_SOURCE) {
           wb_led_set(botDevices.leds[0], 1);
-        } else if (stateUML  == DROP_NEST){
+        } else if (botState.currentState  == DROP_NEST){
           pickingIndication(1);
         } else {
           pickingIndication(0);
@@ -556,7 +564,7 @@ int moduleFSM(){
           flagProximity = 0;
           flagSureSeen = 0;
           waiting(1);
-          if ((stateUML == TRAVEL2BLUE) || (stateUML == TRAVEL2RED) || (stateUML == TRAVEL2GREY)) {
+          if ((botState.currentState == TRAVEL2BLUE) || (botState.currentState == TRAVEL2RED) || (botState.currentState == TRAVEL2GREY)) {
             flagInside = hitWall(0, speed, &botDevices);
           } else {
             flagInside = enterTam(&botDevices, speed);
@@ -695,11 +703,11 @@ int whereIam(int avoiding){
   int groundDetected = GREY;
   // cronometer(IMAGE, 0); //This is a fast operation
   
-  if (cont_height_figure(-20) > 104 ) { 
+  if (cont_height_figure(-20, color, &botCam, &botState    ) > 104 ) { 
     groundDetected = BLUE;
-  } else if (cont_height_figure(-21) > 104 ) {
+  } else if (cont_height_figure(-21, color, &botCam, &botState    ) > 104 ) {
     groundDetected = RED;
-  } else if (cont_height_figure(-22) > 104) {
+  } else if (cont_height_figure(-22, color, &botCam, &botState    ) > 104) {
     groundDetected = GREY;
   }
   if ((avoiding) && (groundDetected != floorColor)) {
@@ -732,9 +740,9 @@ int waiting_color(int foreground) {//ok
   waiting(1);
   // cronometer(IMAGE, 0); // disable because it's only one column
   int count = 0;
-  count = cont_height_figure(101);
+  count = cont_height_figure(101, color, &botCam, &botState    );
   int countArriving = 0;
-  countArriving = cont_height_figure(102);
+  countArriving = cont_height_figure(102, color, &botCam, &botState    );
   if (flagPrint1) {
     if (count > countArriving) {
       //printf("\n Intensity %d half line", count);
@@ -745,7 +753,7 @@ int waiting_color(int foreground) {//ok
     flagPrint1 = 0;
   } 
   if ((count > 26) || (countArriving > 26)) {
-    if (stateUML == PICK_SOURCE) {
+    if (botState.currentState == PICK_SOURCE) {
       cronometer(WAITING, 0); //shapeSeen); //when using different shapes
     } 
     cronometer(-1, 0);
@@ -755,110 +763,6 @@ int waiting_color(int foreground) {//ok
   return 0; //wait no longer
 }
 
-int cont_height_figure(int indexP){ //ok
-  int count=0;
-  int maxCount = 0;
-  int beginY = 0;
-  int endX = botCam.width-1;
-  int foreground = color;
-  int i, j;
-  switch (indexP){
-    case -22:
-      beginY = botCam.height - 5;
-      foreground = GREY; break;
-    case -21: // checking red-nest ground color
-      beginY = botCam.height - 5;
-      foreground = RED; break;
-    case -20: // checking blue-source ground color
-      beginY = botCam.height - 5;
-      foreground = BLUE; break;
-    case -11: // looking for landmark
-      foreground = MAGENTA; // nest TAM
-      break; 
-    case -10: // On levy avoid colors 18 
-      foreground = MAGENTA;
-      if (stateUML == DROP_NEST) { 
-        foreground = RED; // source TAM
-        if (floorColor == RED) { foreground = BLUE;} // source TAM
-      } break; 
-    case 100: // checking tam_wall color
-      foreground = TAM_WALL; break;
-    case 101: // waiting on TAM 
-      if ((stateUML == TRAVEL2BLUE) || (stateUML == TRAVEL2RED) || (stateUML == TRAVEL2GREY)){
-        foreground = CYAN;
-      } else {
-        if (foreground != BLACK) { foreground = WHITE;}
-      } break;
-    case 102: // checking for sources 
-      if (stateUML == PICK_SOURCE) {
-        foreground = RED;
-        if (floorColor == RED) {
-          foreground = BLUE;
-        }
-      } break;
-    default:  // Normal processing
-      if ((indexP >= 0) && (indexP < botCam.width)) { endX = 0;}
-  } 
-
-  for (i = 0; i <= endX; i++) {
-    if (endX == 0) { i = indexP;} // Only that point
-    for (j = beginY; j < botCam.height; j++) {
-      count += compareColorPixel(&botCam, image, i, j, foreground, &botState);  
-    } 
-    if (count > maxCount) { maxCount = count;}
-    if (beginY != (botCam.height - 5)) { count = 0;}
-  } 
-  // printf("\n count value %d index %d", maxCount, i);
-  return maxCount;
-}
-/*
-int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
-  int auxColor = 0;
-  int low = 38, lowdark = 34, high = 200;  //38 - 30 - 200
-  int pixelR = wb_camera_image_get_red(image, width, pixelX, pixelY);
-  int pixelG = wb_camera_image_get_green(image, width, pixelX, pixelY);
-  int pixelB = wb_camera_image_get_blue(image, width, pixelX, pixelY);
-  if ((foreground == CYAN) && (floorColor == GREY)) { foreground = WHITE;}
-  switch(foreground){
-    case RED:
-      auxColor = (pixelR > COLOR_THRES) && (pixelB < 20) && (pixelG < 20); //only red
-      break;
-    case GREEN:
-      auxColor = (pixelG > COLOR_THRES) && (pixelB < LOW_THRES) && (pixelR < LOW_THRES); //only green
-      break;  
-    case BLUE:
-      auxColor = (pixelB > COLOR_THRES) && (pixelR < LOW_THRES) && (pixelG < LOW_THRES); //only blue  
-      break;
-    case CYAN:     // green+blue
-      auxColor = (pixelG > LOW_THRES) && (pixelB > LOW_THRES) && (pixelR < 20);
-      break;
-    case MAGENTA:  // red+blue
-      auxColor = (pixelR > COMP_COLOR) && (pixelB > COMP_COLOR) && (pixelG < LOW_THRES);
-      break;
-    case BLACK:
-      auxColor = (pixelR < BLACK_THRES) && (pixelG < BLACK_THRES) && (pixelB < BLACK_THRES);
-      break;
-    case ROBOT_COLOR:  
-      auxColor = (pixelR < low) && (pixelG < low) && (pixelB < low); 
-      auxColor = auxColor && ((pixelR > lowdark) && (pixelG > lowdark) && (pixelB > lowdark));
-      auxColor = auxColor || ((pixelR > ROBOT_THRES) && (pixelR < high) && (pixelG > ROBOT_THRES) && (pixelG < high) && (pixelB > ROBOT_THRES) &&  (pixelB < high));
-      break;
-    case GREY:
-      auxColor = (pixelR < COMP_COLOR) && (pixelG < COMP_COLOR) && (pixelB < COMP_COLOR);
-      auxColor = auxColor && ((pixelR > BLACK_THRES) && (pixelG > BLACK_THRES) && (pixelB > BLACK_THRES));	  
-      break;	
-    case WHITE:
-      auxColor = (pixelR > COLOR_THRES) && (pixelB > COLOR_THRES) && (pixelG > COLOR_THRES);  
-      break;
-    case TAM_WALL:
-      auxColor = (pixelR < LOW_THRES) && (pixelG < LOW_THRES) && (pixelB < LOW_THRES); 
-      break;  
-    default:
-      auxColor =  0;
-  }
-  return auxColor;
-}
-*/
 int detectImage(int foreground, int shape, int numImage, int *numberComponents){ //ok
   int flagSeen = -1;
   int middleH = -1;
@@ -954,8 +858,8 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
       }
     }
     if ((numImage == 255) && (color == CYAN)) {
-      pointA = cont_height_figure(minH+1); 
-      pointB = cont_height_figure(maxH-1);
+      pointA = cont_height_figure(minH+1, color, &botCam, &botState    ); 
+      pointB = cont_height_figure(maxH-1, color, &botCam, &botState    );
       //printf("\n %s really close and sure it is not a robot, go for the center", robotName);
       //printf("\n");
       return 100;
@@ -1195,13 +1099,13 @@ int levyFlight(){
     // cronometer(IMAGE, 0) //It is only a line
     //listening();
     
-    if (cont_height_figure(-10) > 15) {//18
+    if (cont_height_figure(-10, color, &botCam, &botState    ) > 15) {//18
       printf("\n Backward invading useful region on turn");
       printf("\n");
       forward(-30, speed); //70
     }
-    if ((color == CYAN) && (cont_height_figure(-11) > 22)) { //25
-      printf("\n Backward invading on turn %d",cont_height_figure(-11));
+    if ((color == CYAN) && (cont_height_figure(-11, color, &botCam, &botState    ) > 22)) { //25
+      printf("\n Backward invading on turn %d",cont_height_figure(-11, color, &botCam, &botState    ));
       printf("\n");
       forward(-30, speed); //70
     }
@@ -1230,13 +1134,13 @@ int levyFlight(){
     // cronometer(IMAGE, 0) //It is only a line
     //listening();
     
-    if (cont_height_figure(-10) > 15) { //18
+    if (cont_height_figure(-10, color, &botCam, &botState    ) > 15) { //18
       //printf("\n Backward invading useful region on walk");
       //printf("\n");
       forward(-20, speed); //30
       turnSteps(TURN_CACHE, speed);
     }   
-    if ((color == CYAN) && (cont_height_figure(-11) > 22)) {
+    if ((color == CYAN) && (cont_height_figure(-11, color, &botCam, &botState    ) > 22)) {
       //printf("\n Backward invading on walk %d", cont_height_figure(-11));
       //printf("\n");
       forward(-20, speed); //70
@@ -1256,7 +1160,7 @@ int levyFlight(){
 }
 
 int speedAdjustment(int index, int delta) { //ok
-  int count = cont_height_figure(index);
+  int count = cont_height_figure(index, color, &botCam, &botState    );
   //printf("\n According to direction defined %d by %s the height is %d", index, robotName, count);
   int iter=0;
   if ((index >= 0) && (index < botCam.height)) {
@@ -1359,7 +1263,7 @@ int detectTam(){ //ok
   // cronometer(IMAGE, 0) //It is only a line
   
   waiting(1); 
-  if ((cont_height_figure(101) < 35) && (cont_height_figure(102) < 35)){ //30 checking wall tam
+  if ((cont_height_figure(101, color, &botCam, &botState    ) < 35) && (cont_height_figure(102, color, &botCam, &botState    ) < 35)){ //30 checking wall tam
     printf("\n Something went wrong entering");
     printf("\n");
     waiting(1);
@@ -1562,7 +1466,7 @@ int going2it(int index){//ok
   
   if (index == 100) {
     for (i = 0; i < botCam.width; i++) {
-      intensity[i] = cont_height_figure(i);
+      intensity[i] = cont_height_figure(i, color, &botCam, &botState    );
     }
     for (i = 0; i < botCam.width; i++) {
       if (count < intensity[i]) {
@@ -1610,14 +1514,14 @@ void cronometer(int task, int cache){//ok-
     if (task == IMAGE) { 
       fprintf(flife, "image, %d \n", timeImage);
     } else {  
-     fprintf(flife, "state %d, %d\n", stateUML, timeMeasured);
+     fprintf(flife, "state %d, %d\n", botState.currentState, timeMeasured);
     }
     fclose(flife); //-- JUAN EDIT FILES 
   } 
 }
 
 void countObjects(){
-  switch(stateUML){
+  switch(botState.currentState){
     case DROP_NEST:
       botEst.nDrop[floorColor]++; break;
     case PICK_SOURCE:
@@ -1722,7 +1626,7 @@ void updateBitacora(int codeTask, int estimations, int cache){ //ok-
       }
       
       char stringState[] = "SEARCHING SOMETHING";
-      int innerState = stateUML;
+      int innerState = botState.currentState;
       if (flagListened) { innerState = codeTask;}
       
       switch(innerState){
@@ -1786,7 +1690,7 @@ int computeTraveling (int levy){
       } break;
     case MODEL:
       if ((levy) && (modelTest == MODEL)) {
-        switch(stateUML){
+        switch(botState.currentState){
           case PICK_SOURCE:
             //printf("\n %s levy pick_source", robotName);
             tPart = timeMeasured + botEst.estDropN; 
