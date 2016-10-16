@@ -16,6 +16,7 @@ int compareColorPixel(struct robotCamera *botCam, const unsigned char *image, in
 int cont_height_figure(int indexP, int color, struct robotCamera *botCam, struct robotState *botState);
 int whereIam(int avoiding, int color, double *speed, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState);
 int whereArrive(int color, double *speed, struct robotDevices *botDevices, struct robotCamera *botCam, struct robotState *botState, struct flags4Files *botFlags);
+int find_middle(int wrongLine, int colorLine, struct robotCamera *botCam, struct robotState *botState);
 
 /*
 int detectTam();

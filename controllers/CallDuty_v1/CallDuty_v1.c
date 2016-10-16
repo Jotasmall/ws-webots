@@ -203,7 +203,7 @@ void pickingIndication(int on);
 double angle(double x, double z);
 // Image-depending functions
 //int whereIam(int avoiding);
-int find_middle(int wrongLine, int colorLine);
+//int find_middle(int wrongLine, int colorLine);
 int check4Robot();
 int waiting_color(int foreground);
 //int cont_height_figure(int indexP);
@@ -1033,7 +1033,7 @@ int followingLine(int colorLine){//ok-
     } else {
       image = wb_camera_get_image(botDevices.cam);
       // cronometer(IMAGE, 0); // Disable because it is only one row
-      delta = find_middle(0, colorLine);
+      delta = find_middle(0, colorLine, &botCam, &botState);
       if ((delta > -1) && (delta < 100)) {
         delta = delta - botCam.width/2;
         speed[LEFT] = 220 - K_TURN*abs(delta);
@@ -1248,57 +1248,6 @@ int detectTam(){ //ok
   return 1;  
 }      
 
-int find_middle(int wrongLine, int colorLine){ //ok 
-  int i;
-  int aux, index1 = -1, index2 = -1;
-  int foreground = colorLine;
-  if (wrongLine) { 
-    if (foreground == BLUE) {
-      foreground = RED;
-    } else {
-      foreground = BLUE;
-    }
-  }
-  // new world
-  for (i = 0; i<botCam.width; i++){
-    aux = compareColorPixel(&botCam, image, i, botCam.height-1, foreground, &botState);
-    if (aux == 1) {
-      if (index1 == -1) { // the 1st time see the color
-        index1 = i;
-      } else { // the final index where the color is seen
-        index2 = i;
-      }  
-    }
-  }  
-  if (index1 == -1) { return -1;} // followLine
-  aux = (index2-index1)/2+index1;
-  if (wrongLine) {
-    aux = 100;
-    printf("\n %s had found a wrong line color", robotName);
-    printf("\n");
-  }
-  return aux;    
-}
-/*
-int whereArrive(){
-    // To add randomness in the entrance 
-    waiting(2);
-    // Verify if not robot is close
-    if ((readSensors(0, &botDevices) == 0) && (check4Robot() == 0)) {
-      floorColor = whereIam(0, color, speed, &botCam, &botDevices, &botState);
-      botState.floorColor = whereIam(0, color, speed, &botCam, &botDevices, &botState);
-      printf("\n %s arrived into a land of color %d", robotName, floorColor);
-      printf("\n");
-      speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlags);
-    } else {
-      waiting(10);
-      printf("\n Waiting to have a clear ground");
-      printf("\n");
-      return whereArrive();
-    }
-    return 1;
-}
-*/
 int doorEntrance(int steps){
   //printf("\n %s is entering a new region", robotName);
   //printf("\n");
@@ -1341,8 +1290,8 @@ int setRobotPosition(int colorLine){
     readSensors(0, &botDevices);
     counter++;
     if (botDevices.ps_value[5]> 300) {
-      notReady = find_middle(0, colorLine) < 0; // returns the index -1 if not
-      wrongDoor = find_middle(1, colorLine) > 0; // return 100 if it found it
+      notReady = find_middle(0, colorLine, &botCam, &botState) < 0; // returns the index -1 if not
+      wrongDoor = find_middle(1, colorLine, &botCam, &botState) > 0; // return 100 if it found it
       flagRobot = check4Robot();
       aux = counter;
       while (flagRobot) {

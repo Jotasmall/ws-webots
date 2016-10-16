@@ -183,3 +183,36 @@ int whereArrive(int color, double *speed, struct robotDevices *botDevices, struc
     return 1;
 }
 
+
+int find_middle(int wrongLine, int colorLine, struct robotCamera *botCam, struct robotState *botState){ //ok 
+  int i;
+  int aux, index1 = -1, index2 = -1;
+  int foreground = colorLine;
+  if (wrongLine) { 
+    if (foreground == BLUE) {
+      foreground = RED;
+    } else {
+      foreground = BLUE;
+    }
+  }
+  // new world
+  for (i = 0; i<botCam->width; i++){
+    aux = compareColorPixel(botCam, botCam->image, i, botCam->height-1, foreground, botState);
+    if (aux == 1) {
+      if (index1 == -1) { // the 1st time see the color
+        index1 = i;
+      } else { // the final index where the color is seen
+        index2 = i;
+      }  
+    }
+  }  
+  if (index1 == -1) { return -1;} // followLine
+  aux = (index2-index1)/2+index1;
+  if (wrongLine) {
+    aux = 100;
+    printf("\n %d had found a wrong line color", botState->botNumber);
+    printf("\n");
+  }
+  return aux;    
+}
+
