@@ -18,6 +18,12 @@ struct robotDevices{
   WbDeviceTag leds[NB_LEDS];
 };
 
+struct robotCamera{
+  unsigned short width;
+  unsigned short height;
+  const unsigned char *image;
+};
+
 struct robotState{
   int robotNumber;
   int currentState;

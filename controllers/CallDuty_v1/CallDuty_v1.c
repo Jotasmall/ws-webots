@@ -31,6 +31,7 @@
 #include "communication.h"
 #include "readWriteFiles.h"
 #include "headerStruct.h"
+#include "dsp.h"
 
 #define TIME_STEP 64
 #define SPEEDCARGO 1
@@ -43,7 +44,7 @@
 // for different models
 int modelTest = NEVER;
 // Flags of control
-int flagFiles = 1;
+int flagFiles = 0;
 int flagMasterRecruiting = 0;   //1 RANDOMLY, -1 never, 0 whatever
 // Communication flags
 int flagCom = 1;                //to enable or disable communications
@@ -206,7 +207,7 @@ int find_middle(int wrongLine, int colorLine);
 int check4Robot();
 int waiting_color(int foreground);
 int cont_height_figure(int indexP);
-int compareColorPixel(int pixelX, int pixelY, int foreground);
+//int compareColorPixel(int pixelX, int pixelY, int foreground);
 int detectImage(int foreground, int shape, int numImage, int *numberComponents);
 int whatIsee(float Eccentricity, float Extent, int squarewidth, int middleAxisH, int middleAxisV, int numImage);
 int doubleCheck();
@@ -237,6 +238,8 @@ struct tm * timeinfo;
 struct robotDevices botDevices;
 struct robotEstimations botEst;
 struct flags4Files botFlagFiles = {0};
+struct robotCamera botCam;
+struct robotState botState = {0};
 
 int main(int argc, char **argv) {
   /* necessary to initialize webots stuff */
@@ -632,10 +635,15 @@ void reset(){ //ok-
   resetDevices(&botDevices);
   width = botDevices.width;
   height = botDevices.height;
+  //working on these
+  botCam.width = width;
+  botCam.height = height;
+  botCam.image = wb_camera_get_image(botDevices.cam);
   // Display for user
   resetDisplay(&displayExtra, width, height);
   // Getting data for initial state
   floorColor = whereIam(0);
+  botState.floorColor = whereIam(0);
   //printf("\n %s was born in region %d", wb_robot_get_name(), floorColor);
   //printf("\n");
   // Create files, enable/disable files records
@@ -795,7 +803,7 @@ int cont_height_figure(int indexP){ //ok
   for (i = 0; i <= endX; i++) {
     if (endX == 0) { i = indexP;} // Only that point
     for (j = beginY; j < height; j++) {
-      count += compareColorPixel(i, j, foreground);  
+      count += compareColorPixel(&botCam, image, i, j, foreground, &botState);  
     } 
     if (count > maxCount) { maxCount = count;}
     if (beginY != (height - 5)) { count = 0;}
@@ -803,7 +811,7 @@ int cont_height_figure(int indexP){ //ok
   // printf("\n count value %d index %d", maxCount, i);
   return maxCount;
 }
-
+/*
 int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
   int auxColor = 0;
   int low = 38, lowdark = 34, high = 200;  //38 - 30 - 200
@@ -850,7 +858,7 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
   }
   return auxColor;
 }
-
+*/
 int detectImage(int foreground, int shape, int numImage, int *numberComponents){ //ok
   int flagSeen = -1;
   int middleH = -1;
@@ -879,7 +887,7 @@ int detectImage(int foreground, int shape, int numImage, int *numberComponents){
   // Segmentation process
   for (i = 0; i < width; i++) {
     for (j = 0; j < height; j++) {
-      aux = compareColorPixel(i, j, foreground); 
+      aux = compareColorPixel(&botCam, image, i, j, foreground, &botState); 
       if (aux){    
         // Identifying component through a N-neighborhood strategy
         left = i-1; 
@@ -1373,7 +1381,7 @@ int find_middle(int wrongLine, int colorLine){ //ok
   }
   // new world
   for (i = 0; i<width; i++){
-    aux = compareColorPixel(i, height-1, foreground);
+    aux = compareColorPixel(&botCam, image, i, height-1, foreground, &botState);
     if (aux == 1) {
       if (index1 == -1) { // the 1st time see the color
         index1 = i;
@@ -1398,6 +1406,7 @@ int whereArrive(){
     // Verify if not robot is close
     if ((readSensors(0, &botDevices) == 0) && (check4Robot() == 0)) {
       floorColor = whereIam(0);
+      botState.floorColor = whereIam(0);
       printf("\n %s arrived into a land of color %d", robotName, floorColor);
       printf("\n");
       speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles);
