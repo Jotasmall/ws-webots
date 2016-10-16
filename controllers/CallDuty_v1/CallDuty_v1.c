@@ -216,7 +216,7 @@ int followingLine(int colorLine);
 int levyFlight();
 int speedAdjustment(int index, int delta);
 int hitLandmark(); 
-int whereArrive();
+//int whereArrive();
 int detectTam();
 int setRobotPosition(int colorLine);
 int doorEntrance(int steps);
@@ -673,6 +673,7 @@ void reset(){ //ok-
   // Random seed by the number of the robot
   strcpy(robotName, wb_robot_get_name());
   botNumber = atoi(&robotName[6]);
+  botState.botNumber = botNumber;
   srand(botNumber+timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min);
   wb_robot_step(TIME_STEP);
   // Adjust sensor noise by offset
@@ -698,34 +699,7 @@ double angle(double x, double z){ //ok
   double theta = atan(z/x);
   return 180*theta/PI;
 }
-/*
-int whereIam(int avoiding){ 
-  image = wb_camera_get_image(botDevices.cam);
-  wb_robot_step(TIME_STEP);
-  int groundDetected = GREY;
-  // cronometer(IMAGE, 0); //This is a fast operation
-  
-  if (cont_height_figure(-20, color, &botCam, &botState    ) > 104 ) { 
-    groundDetected = BLUE;
-  } else if (cont_height_figure(-21, color, &botCam, &botState    ) > 104 ) {
-    groundDetected = RED;
-  } else if (cont_height_figure(-22, color, &botCam, &botState    ) > 104) {
-    groundDetected = GREY;
-  }
-  if ((avoiding) && (groundDetected != floorColor)) {
-    float p = ((float)rand())/RAND_MAX; //-- JUAN EDITED
-    if (p>0.5) {p = 1;} else { p = -1;} //-- JUAN EDITED
-    turnSteps((int) p*TURN_CACHE/2, speed);    //-- JUAN EDITED
-    run(flagLoad, 5, speed, &botDevices);//7
-	whereIam(1);
-	run(flagLoad, 5, speed, &botDevices);
-	whereIam(1);
-    //printf("\n Missing my region %s", robotName);
-    //printf("\n");
-  }    
-  return groundDetected;
-} 
-*/
+
 int check4Robot(){//ok-
   int nComp, sizeRobot = 0;
 
@@ -1305,7 +1279,7 @@ int find_middle(int wrongLine, int colorLine){ //ok
   }
   return aux;    
 }
-
+/*
 int whereArrive(){
     // To add randomness in the entrance 
     waiting(2);
@@ -1324,7 +1298,7 @@ int whereArrive(){
     }
     return 1;
 }
-
+*/
 int doorEntrance(int steps){
   //printf("\n %s is entering a new region", robotName);
   //printf("\n");
@@ -1439,7 +1413,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
       forward(-20, speed);
       return 0;
     }
-    whereArrive();
+    whereArrive(color, speed, &botDevices, &botCam, &botState, &botFlags);
     run(flagLoad, 5, speed, &botDevices);
 	whereIam(1, color, speed, &botCam, &botDevices, &botState);
 	run(flagLoad, 5, speed, &botDevices);

@@ -30,6 +30,10 @@
 #define COMP_LOWDARK 34
 #define COMP_HIGH 200
 
+#define M2NEST 2
+#define ROBOT_LEAVING 31
+#define ROBOT_ARRIVING 32
+
 int compareColorPixel(struct robotCamera *botCam, const unsigned char *image, int pixelX, int pixelY, int foreground, struct robotState *botState){ //ok-
   int auxColor = 0;
   //int width = botCam->width;
@@ -163,4 +167,19 @@ int whereIam(int avoiding, int color, double *speed, struct robotCamera *botCam,
   return groundDetected;
 } 
 
+int whereArrive(int color, double *speed, struct robotDevices *botDevices, struct robotCamera *botCam, struct robotState *botState, struct flags4Files *botFlags){
+    // Verify if not robot is close
+    if ((readSensors(0, botDevices) == 0)) {//check && (check4Robot() == 0)) {
+      botState->floorColor = whereIam(0, color, speed, botCam, botDevices, botState);
+      printf("\n %d arrived into a land of color %d", botState->botNumber, botState->floorColor);
+      printf("\n");
+      speaking(botDevices, botState->botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, botFlags);
+    } else {
+      waiting(10);
+      printf("\n Waiting to have a clear ground");
+      printf("\n");
+      return whereArrive(color, speed, botDevices, botCam, botState, botFlags);
+    }
+    return 1;
+}
 
