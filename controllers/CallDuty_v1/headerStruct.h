@@ -25,7 +25,7 @@ struct robotCamera{
 };
 
 struct robotState{
-  int robotNumber;
+  int botNumber;
   int currentState;
   int suggestedState;
   int flagLoad;

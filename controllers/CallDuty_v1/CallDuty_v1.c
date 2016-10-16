@@ -202,7 +202,7 @@ void initEstimations();
 void pickingIndication(int on);
 double angle(double x, double z);
 // Image-depending functions
-int whereIam(int avoiding);
+//int whereIam(int avoiding);
 int find_middle(int wrongLine, int colorLine);
 int check4Robot();
 int waiting_color(int foreground);
@@ -237,7 +237,7 @@ struct tm * timeinfo;
 
 struct robotDevices botDevices;
 struct robotEstimations botEst;
-struct flags4Files botFlagFiles = {0};
+struct flags4Files botFlags = {0};
 struct robotCamera botCam;
 struct robotState botState = {0};
 
@@ -276,7 +276,7 @@ void init_variables(){
     case NEVER:
       flagMasterRecruiting = -1;
       stateUML = PICK_SOURCE;
-	  botState.currentState = PICK_SOURCE;
+      botState.currentState = PICK_SOURCE;
       output = STOP;
       color = RED;
       figura = BOX;
@@ -289,7 +289,7 @@ void init_variables(){
     case MODEL:
     case GREEDY:
       stateUML = PICK_SOURCE;
-	  botState.currentState = PICK_SOURCE;
+      botState.currentState = PICK_SOURCE;
       output = STOP;
       color = RED;
       figura = BOX;
@@ -372,7 +372,8 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
   //updateEstimations(IMAGE, timeImage, 0);
   int nextState = stateRemain;
   int flagWait = 1;
-  flagLoad = flag; 
+  flagLoad = flag;
+  botState.flagLoad = flag; 
   if (output == STOP) {
     while(flagWait) {
       flagWait = waiting_color(color);	
@@ -385,6 +386,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
         updateEstimations(botState.currentState, timeMeasured, auxShape);
         
         flagLoad = !flag;
+        botState.flagLoad = !flag;
         if (pick_or_drop == PICKING) { pickingIndication(0);}
         else { wb_led_set(botDevices.leds[8], 0);}	
         break;
@@ -609,7 +611,7 @@ int moduleFSM(){
     case LOST:
       printf("\n %s is lost", robotName);
       run(flagLoad, 5, speed, &botDevices);
-      whereIam(1);
+      whereIam(1, color, speed, &botCam, &botDevices, &botState);
       index = detectImage(color, figura, 0, &nComp);
       if (index >= 0) {
         contLost = 0;
@@ -650,21 +652,21 @@ void reset(){ //ok-
   // Display for user
   resetDisplay(&displayExtra, botCam.width, botCam.height);
   // Getting data for initial state
-  floorColor = whereIam(0);
-  botState.floorColor = whereIam(0);
+  floorColor = whereIam(0, color, speed, &botCam, &botDevices, &botState);
+  botState.floorColor = whereIam(0, color, speed, &botCam, &botDevices, &botState);
   //printf("\n %s was born in region %d", wb_robot_get_name(), floorColor);
   //printf("\n");
   // Create files, enable/disable files records
-  botFlagFiles.fileRobot = fileRobot;
-  botFlagFiles.dirPath = dirPath; 
+  botFlags.fileRobot = fileRobot;
+  botFlags.dirPath = dirPath; 
   if (flagFiles) { 
-    botFlagFiles.flagFilesFSM = 0;
-    botFlagFiles.flagFilesEST = 0;
-    botFlagFiles.flagFilesLIFE = 1;
-    botFlagFiles.flagFilesDM = 0;
-    botFlagFiles.flagFilesPER = 0;
-    botFlagFiles.flagFilesCOM = 0;
-    createFiles(&botFlagFiles);
+    botFlags.flagFilesFSM = 0;
+    botFlags.flagFilesEST = 0;
+    botFlags.flagFilesLIFE = 1;
+    botFlags.flagFilesDM = 0;
+    botFlags.flagFilesPER = 0;
+    botFlags.flagFilesCOM = 0;
+    createFiles(&botFlags);
   } 
   initEstimations(&botEst, NB_REGIONS);
   updateBitacora(0, ESTIMATIONS, 0);
@@ -684,7 +686,7 @@ void reset(){ //ok-
   */ 
   botDevices.flagCom = flagCom;
   botDevices.flagListened = flagListened;
-  speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles);
+  speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlags);
 }
 
 void pickingIndication(int on){ //ok
@@ -696,7 +698,7 @@ double angle(double x, double z){ //ok
   double theta = atan(z/x);
   return 180*theta/PI;
 }
-
+/*
 int whereIam(int avoiding){ 
   image = wb_camera_get_image(botDevices.cam);
   wb_robot_step(TIME_STEP);
@@ -723,7 +725,7 @@ int whereIam(int avoiding){
   }    
   return groundDetected;
 } 
-
+*/
 int check4Robot(){//ok-
   int nComp, sizeRobot = 0;
 
@@ -1028,9 +1030,9 @@ int doubleCheck(){
   int index = -1;
   int nComp;
   run(flagLoad, 5, speed, &botDevices); //forward(5);
-  whereIam(1);
+  whereIam(1, color, speed, &botCam, &botDevices, &botState);
   run(flagLoad, 5, speed, &botDevices);
-  whereIam(1);
+  whereIam(1, color, speed, &botCam, &botDevices, &botState);
   index = detectImage(color, figura, 1, &nComp);
   if ((index == -1) || (index == 100)){
     printf("\n False alarm %d - %s continue searching", index, robotName);
@@ -1118,7 +1120,7 @@ int levyFlight(){
       //--printf("\n");
       return index;  
     } 
-    whereIam(1);
+    whereIam(1, color, speed, &botCam, &botDevices, &botState);
   } 
   r = rand()%(100-40)+41; // walk forward between 100 to 40 steps
   //printf("\n %s Walking forward %d", robotName, r); //-- JUAN EDIT
@@ -1127,7 +1129,7 @@ int levyFlight(){
   while (r > 0) {
     run(flagLoad, 5, speed, &botDevices); // Blind walk
     r -= 5;
-    whereIam(1);
+    whereIam(1, color, speed, &botCam, &botDevices, &botState);
 
     image = wb_camera_get_image(botDevices.cam);
     wb_robot_step(TIME_STEP);
@@ -1309,11 +1311,11 @@ int whereArrive(){
     waiting(2);
     // Verify if not robot is close
     if ((readSensors(0, &botDevices) == 0) && (check4Robot() == 0)) {
-      floorColor = whereIam(0);
-      botState.floorColor = whereIam(0);
+      floorColor = whereIam(0, color, speed, &botCam, &botDevices, &botState);
+      botState.floorColor = whereIam(0, color, speed, &botCam, &botDevices, &botState);
       printf("\n %s arrived into a land of color %d", robotName, floorColor);
       printf("\n");
-      speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlagFiles);
+      speaking(&botDevices, botNumber, M2NEST, ROBOT_ARRIVING, 0, 0, &botFlags);
     } else {
       waiting(10);
       printf("\n Waiting to have a clear ground");
@@ -1335,8 +1337,8 @@ int doorEntrance(int steps){
     return 0;
   }
   forward(steps, speed);
-  speaking(&botDevices, botNumber, M2NEST, ROBOT_LEAVING, 0, 0, &botFlagFiles); // To indicate home-nest 
-  speaking(&botDevices, botNumber, -1, ROBOT_LEAVING, 0, 0, &botFlagFiles); // To indicate friends 
+  speaking(&botDevices, botNumber, M2NEST, ROBOT_LEAVING, 0, 0, &botFlags); // To indicate home-nest 
+  speaking(&botDevices, botNumber, -1, ROBOT_LEAVING, 0, 0, &botFlags); // To indicate friends 
   waiting(1);
   turnSteps(-10, speed);
   return 1;
@@ -1416,7 +1418,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
     //while(!run(flagLoad, 50)); //60
 	for (i = 0; i<10; i++) {
 		run(flagLoad, 5, speed, &botDevices);
-		whereIam(1);
+		whereIam(1, color, speed, &botCam, &botDevices, &botState);
 	}
     return 0;
   } else if (endTask == -2) { //found another color
@@ -1424,7 +1426,7 @@ int going2Region(int colorLine, int colorDestination){ //ok
     //while(!run(flagLoad, 60));
 	for (i = 0; i<12; i++) {
 		run(flagLoad, 5, speed, &botDevices);
-		whereIam(1);
+		whereIam(1, color, speed, &botCam, &botDevices, &botState);
 	}
     return 0;
   }
@@ -1439,9 +1441,9 @@ int going2Region(int colorLine, int colorDestination){ //ok
     }
     whereArrive();
     run(flagLoad, 5, speed, &botDevices);
-	whereIam(1);
+	whereIam(1, color, speed, &botCam, &botDevices, &botState);
 	run(flagLoad, 5, speed, &botDevices);
-	whereIam(1);
+	whereIam(1, color, speed, &botCam, &botDevices, &botState);
     if (floorColor == colorDestination) {
       //printf("\n Excellent entrance, %s is on desired region", robotName);
       //printf("\n");
@@ -1505,11 +1507,11 @@ void cronometer(int task, int cache){//ok-
   }
   //printf("\n %s is listening", robotName);
   //printf("\n");
-//juan  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlagFiles); //--JUAN EDIT FILES
-  listening(botDevices.receiver, floorColor, botNumber, listFriends, &botState.currentState, &suggestedState, &botFlagFiles); //--JUAN EDIT FILES
+//juan  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlags); //--JUAN EDIT FILES
+  listening(botDevices.receiver, floorColor, botNumber, listFriends, &botState.currentState, &suggestedState, &botFlags); //--JUAN EDIT FILES
 
-  if (botFlagFiles.flagFilesLIFE) {
-    createDir(LIFE, 0, &botFlagFiles);
+  if (botFlags.flagFilesLIFE) {
+    createDir(LIFE, 0, &botFlags);
     //printf("\n %s is updating in %s", robotName, fileRobot);
     //printf("\n");
     FILE *flife = fopen(fileRobot,"a+");
@@ -1531,8 +1533,8 @@ void countObjects(){
   }
   printf("\n We have %d objects picked", botEst.nPick[floorColor]);
   printf("\n");
-  if (botFlagFiles.flagFilesPER) {
-    createDir(PERFORMANCE, 0, &botFlagFiles);
+  if (botFlags.flagFilesPER) {
+    createDir(PERFORMANCE, 0, &botFlags);
     //printf("\n %s is counting objects in %s", robotName, fileRobot);
     //printf("\n");
     FILE *fper = fopen(fileRobot, "a+");
@@ -1581,7 +1583,7 @@ void updateEstimations(int task, int value, int cache){ //ok-
     } else {
       printf("\n Everybody listen, I am %s, my %d cost me %d", robotName, codeTask, value);
       printf("\n");
-      speaking(&botDevices, botNumber, M2ROBOT, codeTask, value, cache, &botFlagFiles);
+      speaking(&botDevices, botNumber, M2ROBOT, codeTask, value, cache, &botFlags);
     }  
   } 
   botEst.lastImage = timeImage;
@@ -1593,8 +1595,8 @@ void updateEstimations(int task, int value, int cache){ //ok-
 
 void updateBitacora(int codeTask, int estimations, int cache){ //ok-
   if (estimations == ESTIMATIONS) { 
-    if (botFlagFiles.flagFilesEST) { 
-      createDir(ESTIMATIONS, 0, &botFlagFiles); 
+    if (botFlags.flagFilesEST) { 
+      createDir(ESTIMATIONS, 0, &botFlags); 
       //printf("\n %s is estimating times in %s", robotName, fileRobot);
       //printf("\n");
       FILE *fbot = fopen(fileRobot, "a+");
@@ -1616,8 +1618,8 @@ void updateBitacora(int codeTask, int estimations, int cache){ //ok-
       fclose(fbot); //-- JUAN EDIT FILES
       }
   } else {    
-    if (botFlagFiles.flagFilesFSM) {
-      createDir(FSM, 0, &botFlagFiles); 
+    if (botFlags.flagFilesFSM) {
+      createDir(FSM, 0, &botFlags); 
       //printf("\n %s is on state machine times in %s", robotName, fileRobot);
       //printf("\n");
       FILE *fbot = fopen(fileRobot, "a+");    
@@ -1669,11 +1671,11 @@ int computeTraveling (int levy){
   
   switch(modelTest){
     case RANDOMLY:
-      writeDecision(1.01, 0.01, TRAVELING_AGREE, flagTravel, &botFlagFiles);
+      writeDecision(1.01, 0.01, TRAVELING_AGREE, flagTravel, &botFlags);
       return 1;
     break;
     case NEVER:
-      writeDecision(0.01, 1.01, TRAVELING_AGREE, flagTravel, &botFlagFiles);
+      writeDecision(0.01, 1.01, TRAVELING_AGREE, flagTravel, &botFlags);
       return 0;
     break; 
     case GREEDY: 
@@ -1727,9 +1729,9 @@ int computeTraveling (int levy){
   
   //printf("\n Robot %s Ppartitioning is %.2f my chance is %.2f and timeFull is %.1f timePart is %.1f",robotName, Ppartitioning, p, tFull, tPart);
   if (levy) {
-    writeDecision(Ppartitioning, p, TRAVELING_LEVY, flagTravel, &botFlagFiles);
+    writeDecision(Ppartitioning, p, TRAVELING_LEVY, flagTravel, &botFlags);
   } else {
-    writeDecision(Ppartitioning, p, TRAVELING_AGREE, flagTravel, &botFlagFiles);
+    writeDecision(Ppartitioning, p, TRAVELING_AGREE, flagTravel, &botFlags);
   }
   
   int result = Ppartitioning > p;
@@ -1738,7 +1740,7 @@ int computeTraveling (int levy){
   } else {
     printf("\n %s do the full task", robotName);
   }
-  speaking(&botDevices, botNumber, M2ROBOT, -1, -1, -1, &botFlagFiles);
+  speaking(&botDevices, botNumber, M2ROBOT, -1, -1, -1, &botFlags);
   wb_robot_step(32); // to update global values
   return result;
 }

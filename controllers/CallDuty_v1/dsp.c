@@ -1,4 +1,7 @@
 #include "dsp.h"
+
+#define TIME_STEP 64
+#define TURN_CACHE -52
 // Colors
 #define RED 0
 #define GREY 1
@@ -132,5 +135,32 @@ int cont_height_figure(int indexP, int color, struct robotCamera *botCam, struct
   // printf("\n count value %d index %d", maxCount, i);
   return maxCount;
 }
+
+int whereIam(int avoiding, int color, double *speed, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState){ 
+  botCam->image = wb_camera_get_image(botDevices->cam);
+  wb_robot_step(TIME_STEP);
+  int groundDetected = GREY;
+  // cronometer(IMAGE, 0); //This is a fast operation
+  
+  if (cont_height_figure(-20, color, botCam, botState) > 104 ) { 
+    groundDetected = BLUE;
+  } else if (cont_height_figure(-21, color, botCam, botState) > 104 ) {
+    groundDetected = RED;
+  } else if (cont_height_figure(-22, color, botCam, botState) > 104) {
+    groundDetected = GREY;
+  }
+  if ((avoiding) && (groundDetected != botState->floorColor)) {
+    float p = ((float)rand())/RAND_MAX; //-- JUAN EDITED
+    if (p>0.5) {p = 1;} else { p = -1;} //-- JUAN EDITED
+    turnSteps((int) p*TURN_CACHE/2, speed);    //-- JUAN EDITED
+    run(botState->flagLoad, 5, speed, botDevices);//7
+	whereIam(1, color, speed, botCam, botDevices, botState);
+	run(botState->flagLoad, 5, speed, botDevices);
+	whereIam(1, color, speed, botCam, botDevices, botState);
+    //printf("\n Missing my region %s", robotName);
+    //printf("\n");
+  }    
+  return groundDetected;
+} 
 
 
