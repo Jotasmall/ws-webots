@@ -216,3 +216,30 @@ int find_middle(int wrongLine, int colorLine, struct robotCamera *botCam, struct
   return aux;    
 }
 
+int waiting_color(int foreground, int color, struct robotState *botState, struct robotCamera *botCam, struct robotDevices *botDevices) {//ok
+  botCam->image = wb_camera_get_image(botDevices->cam);
+  waiting(1);
+  int count = 0;
+  count = cont_height_figure(101, color, botCam, botState);
+  int countArriving = 0;
+  int flagPrint1=0;
+  countArriving = cont_height_figure(102, color, botCam, botState);
+  if (flagPrint1) {
+    if (count > countArriving) {
+      //printf("\n Intensity %d half line", count);
+    } else {
+      //printf("\n Intensity %d half line", countArriving);  
+    }
+  
+    flagPrint1 = 0;
+  } 
+  if ((count > 26) || (countArriving > 26)) {
+    if (botState->currentState == PICK_SOURCE) {
+      //check cronometer(WAITING, 0); //shapeSeen); //when using different shapes
+    } 
+    //check cronometer(-1, 0);
+    return 1; //keep waiting
+  }    
+  //printf("\n Intensity gets down");
+  return 0; //wait no longer
+}

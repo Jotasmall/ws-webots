@@ -17,6 +17,7 @@ int cont_height_figure(int indexP, int color, struct robotCamera *botCam, struct
 int whereIam(int avoiding, int color, double *speed, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState);
 int whereArrive(int color, double *speed, struct robotDevices *botDevices, struct robotCamera *botCam, struct robotState *botState, struct flags4Files *botFlags);
 int find_middle(int wrongLine, int colorLine, struct robotCamera *botCam, struct robotState *botState);
+int waiting_color(int foreground, int color, struct robotState *botState, struct robotCamera *botCam, struct robotDevices *botDevices);
 
 /*
 int detectTam();

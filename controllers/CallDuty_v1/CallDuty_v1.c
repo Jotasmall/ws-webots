@@ -70,13 +70,11 @@ int flagInside = 0;             //to know if a robot entered a TAM
 #define THRESHOLD_DIST 150
 #define LOW_S5 300
 #define HIGH_S5 1400
-WbDeviceTag Robotps[NB_DIST_SENS];	
-int ps_value[NB_DIST_SENS] = {0,0,0,0,0,0,0,0};
-int ps_offset[NB_DIST_SENS] = {35,35,35,35,35,35,35,35}; 
+//int ps_value[NB_DIST_SENS] = {0,0,0,0,0,0,0,0};
+//int ps_offset[NB_DIST_SENS] = {35,35,35,35,35,35,35,35}; 
 #define CALIBRATE 50
 #define SAMPLES 1
 //cam
-//WbDeviceTag cam;
 WbDeviceTag displayExtra;
 unsigned short width, height;
 const unsigned char *image;
@@ -118,7 +116,6 @@ int pointB = 0;
 #define LOW_THRES 50
 // leds
 #define NB_LEDS 10 
-WbDeviceTag RobotLed[NB_LEDS];
 // Movement and oddometry constants
 double speed[2];
 #define LEFT 0
@@ -196,18 +193,13 @@ int moduleFSM();
 // Initialization functions
 void init_variables();
 void reset();
-//void resetDisplay();
 void initEstimations();
 // Miscellaneous functions
 void pickingIndication(int on);
 double angle(double x, double z);
 // Image-depending functions
-//int whereIam(int avoiding);
-//int find_middle(int wrongLine, int colorLine);
 int check4Robot();
-int waiting_color(int foreground);
-//int cont_height_figure(int indexP);
-//int compareColorPixel(int pixelX, int pixelY, int foreground);
+//int waiting_color(int foreground);
 int detectImage(int foreground, int shape, int numImage, int *numberComponents);
 int whatIsee(float Eccentricity, float Extent, int squarewidth, int middleAxisH, int middleAxisV, int numImage);
 int doubleCheck();
@@ -216,7 +208,6 @@ int followingLine(int colorLine);
 int levyFlight();
 int speedAdjustment(int index, int delta);
 int hitLandmark(); 
-//int whereArrive();
 int detectTam();
 int setRobotPosition(int colorLine);
 int doorEntrance(int steps);
@@ -376,7 +367,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
   botState.flagLoad = flag; 
   if (output == STOP) {
     while(flagWait) {
-      flagWait = waiting_color(color);	
+      flagWait = waiting_color(color, color, &botState, &botCam, &botDevices);	
       if (flagWait == 0) {
         // Count only works with UCB
         countObjects();
@@ -709,34 +700,6 @@ int check4Robot(){//ok-
     return 1;
   }
   return 0;
-}
-
-int waiting_color(int foreground) {//ok
-  image = wb_camera_get_image(botDevices.cam);
-  waiting(1);
-  // cronometer(IMAGE, 0); // disable because it's only one column
-  int count = 0;
-  count = cont_height_figure(101, color, &botCam, &botState    );
-  int countArriving = 0;
-  countArriving = cont_height_figure(102, color, &botCam, &botState    );
-  if (flagPrint1) {
-    if (count > countArriving) {
-      //printf("\n Intensity %d half line", count);
-    } else {
-      //printf("\n Intensity %d half line", countArriving);  
-    }
-  
-    flagPrint1 = 0;
-  } 
-  if ((count > 26) || (countArriving > 26)) {
-    if (botState.currentState == PICK_SOURCE) {
-      cronometer(WAITING, 0); //shapeSeen); //when using different shapes
-    } 
-    cronometer(-1, 0);
-    return 1; //keep waiting
-  }    
-  //printf("\n Intensity gets down");
-  return 0; //wait no longer
 }
 
 int detectImage(int foreground, int shape, int numImage, int *numberComponents){ //ok
