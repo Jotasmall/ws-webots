@@ -816,7 +816,7 @@ void cronometer(int task, int cache, int *suggestedState, int *timeImage, int *t
   //printf("\n %s is listening", robotName);
   //printf("\n");
 //juan  listening(botDevices.receiver, floorColor, botNumber, listFriends, &stateUML, &suggestedState, &botFlagFiles); //--JUAN EDIT FILES
-  listening(botDevices->receiver, floorColor, botNumber, listFriends, &botState->currentState, suggestedState, botFlags); //--JUAN EDIT FILES
+  listening(botDevices->receiver, botState->floorColor, botState->botNumber, botState->listFriends, &botState->currentState, &botState->suggestedState, botFlags); //--JUAN EDIT FILES
 
   if (botFlags->flagFilesLIFE) {
     createDir(LIFE, 0, botFlags);
