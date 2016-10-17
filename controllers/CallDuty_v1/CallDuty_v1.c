@@ -34,7 +34,7 @@
 #include "dsp.h"
 #include "complexMovements.h"
 #include "registers.h"
-//void cronometer(int task, int cache, int *suggestedState, int *timeImage, int *timeMeasured, struct robotDevices *botDevices, struct robotState *botState, struct flags4Files *botFlags);
+void cronometer(int task, int cache, int *suggestedState, int *timeImage, int *timeMeasured, struct robotDevices *botDevices, struct robotState *botState, struct flags4Files *botFlags);
 
 
 
@@ -802,14 +802,14 @@ int computeTraveling (int levy){
   wb_robot_step(32); // to update global values
   return result;
 }
-/*
+
 //void cronometer(int task, int cache){//ok-
 void cronometer(int task, int cache, int *suggestedState, int *timeImage, int *timeMeasured, struct robotDevices *botDevices, struct robotState *botState, struct flags4Files *botFlags){//ok-
   
   if (task == IMAGE) { 
     (*timeImage)++;
-    printf("\n Time images %d", *timeImage);
-    printf("\n");
+    /*printf("\n Time images %d", *timeImage);
+    printf("\n");*/
   } else {  
     (*timeMeasured)++;
   }
@@ -831,4 +831,3 @@ void cronometer(int task, int cache, int *suggestedState, int *timeImage, int *t
     fclose(flife); //-- JUAN EDIT FILES 
   } 
 }
-*/
