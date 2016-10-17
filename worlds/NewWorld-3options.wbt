@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.00153701 0.765862 0.643004 3.13793
-  position 0.0367029 2.57423 -0.798705
+  orientation -0.00151862 0.772253 0.635313 3.1379
+  position 0.0369439 2.56385 -0.849116
 }
 Background {
   skyColor [
@@ -1979,7 +1979,7 @@ DEF Blue DifferentialWheels {
   controller "TAM_Random"
 }
 E-puck {
-  translation 0.533116 2.50841e-15 -0.308173
+  translation 0.533116 2.50841e-15 -0.158173
   rotation 0 -1 0 3.14159
   controller "CallDuty_v1"
   name "e-puck2701"
@@ -1996,7 +1996,8 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.41727 2.36855e-15 -0.302399
+  translation 0.59727 2.36855e-15 -0.302399
+  rotation 0 1 0 1.5708
   controller "CallDuty_v1"
   name "e-puck2801"
   camera_windowPosition 0.0586907 0.193452
