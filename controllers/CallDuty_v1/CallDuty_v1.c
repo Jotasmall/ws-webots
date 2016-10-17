@@ -32,6 +32,7 @@
 #include "readWriteFiles.h"
 #include "headerStruct.h"
 #include "dsp.h"
+#include "complexMovements.h"
 
 #define TIME_STEP 64
 #define SPEEDCARGO 1
@@ -197,10 +198,7 @@ void initEstimations();
 // Miscellaneous functions
 void pickingIndication(int on);
 double angle(double x, double z);
-// Image-depending functions
-
 // Movement functions
-int followingLine(int colorLine);
 int levyFlight();
 int speedAdjustment(int index, int delta);
 int hitLandmark(); 
@@ -686,46 +684,6 @@ double angle(double x, double z){ //ok
   return 180*theta/PI;
 }
 
-int followingLine(int colorLine){//ok-
-  int delta = 0;
-  int entering = 0;
-  int flagRobot = 0;
-  int nComp;
-  readSensors(0, &botDevices);
-  entering = botDevices.ps_value[5] > 50;
-  while(entering) { 
-    readSensors(0, &botDevices);
-    if ((botDevices.ps_value[0] > THRESHOLD_DIST) || (botDevices.ps_value[7] > THRESHOLD_DIST)){ 
-      waiting(20);  
-      printf("\n %s something is in front of me", robotName);
-      printf("\n");
-    } else {
-      image = wb_camera_get_image(botDevices.cam);
-      // cronometer(IMAGE, 0); // Disable because it is only one row
-      delta = find_middle(0, colorLine, &botCam, &botState);
-      if ((delta > -1) && (delta < 100)) {
-        delta = delta - botCam.width/2;
-        speed[LEFT] = 220 - K_TURN*abs(delta);
-        speed[RIGHT] = 220 - K_TURN*abs(delta);
-        
-        wb_differential_wheels_set_speed(speed[LEFT]+K_TURN*delta,speed[RIGHT]-K_TURN*delta);
-        wb_robot_step(TIME_STEP);
-        cronometer(-1, 0); 
-      } else {
-        flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB, color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
-        if (flagRobot) {
-          waiting(30);//20
-        } else {
-          //printf("\n %s is lost from the line", robotName);
-          //printf("\n");
-          return -1; // End of travel
-        }  
-      }
-    }  
-  }  
-  return 1;  
-}
-
 int levyFlight(){
 
   int index = -1;
@@ -912,7 +870,9 @@ int going2Region(int colorLine, int colorDestination){ //ok
 	}
     return 0;
   }
-  endTask = followingLine(colorLine);
+//  endTask = followingLine(colorLine);
+  endTask = followingLine(speed, &displayExtra, &shapeSeen, &pointA, &pointB, colorLine, &botState, &botCam, &botDevices);
+
   if (endTask == -1) { //End of travel
     //printf("\n Robot %s going inside", robotName);
     //printf("\n");
