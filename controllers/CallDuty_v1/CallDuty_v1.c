@@ -539,7 +539,7 @@ int moduleFSM(){
       case GO2IT:
         //printf("\n %s found something and goes to get it", robotName);
         //printf("\n");
-        flagProximity = going2it(index);
+        flagProximity = going2it(index, color, speed, &displayExtra, &shapeSeen, &pointA, &pointB, &botCam, &botDevices, &botState);
         if (flagProximity){
           flagProximity = 0;
           flagSureSeen = 0;

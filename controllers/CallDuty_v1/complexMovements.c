@@ -6,10 +6,36 @@
 #define TURN_CACHE -52
 #define TURN_90 27
 #define TURN_M90 -27
+#define SPEEDCARGO 1
 
 #define THRESHOLD_DIST 150
 #define LEFT 0
 #define RIGHT 1
+#define MAX_SPEED 600
+#define BACKWARD_SPEED 200
+// Colors
+#define RED 0
+#define GREY 1
+#define BLUE 2
+#define CYAN 3
+#define MAGENTA 4
+#define BLACK 6
+#define GREEN 7
+#define WHITE 8
+// Figures
+#define BOX 301
+#define TRIANGLE 302
+#define CIRCLE 303
+#define ALL 304
+#define NOTHING 305
+#define ROBOT 306
+// Special variables
+#define IMAGE 201
+#define PICKING 0
+#define DROPPING 1
+#define NEST 5
+#define SOURCE 10
+#define PROXIMITY_COLOR 28
 
 #define M2ROBOT 1
 #define ROBOT_LEAVING 31
@@ -147,7 +173,7 @@ int setRobotPosition(int colorLine, double *speed, WbDeviceTag *displayExtra, in
 int going2region(int color, int colorLine, int colorDestination, double *speed, WbDeviceTag *displayExtra, struct robotCamera *botCam, int *shapeSeen, int *pointA, int *pointB, struct robotDevices *botDevices, struct robotState *botState, struct flags4Files *botFlags){ //ok
   int endTask = 0, i;
   resetDisplay(displayExtra, botCam->width, botCam->height);
-  //printf("\n %s getting in position destination %d by line of color %d", robotName, colorDestination, colorLine);
+  //printf("\n %s getting in position destination %d by line of color %d", botState->botNumber, colorDestination, colorLine);
   //printf("\n");
   endTask = setRobotPosition(colorLine, speed, displayExtra, shapeSeen, pointA, pointB, botCam, botDevices, botState);
   if (endTask == -1) { // found no line
@@ -170,7 +196,7 @@ int going2region(int color, int colorLine, int colorDestination, double *speed, 
   endTask = followingLine(speed, displayExtra, shapeSeen, pointA, pointB, colorLine, botState, botCam, botDevices);
 
   if (endTask == -1) { //End of travel
-    //printf("\n Robot %s going inside", robotName);
+    //printf("\n Robot %s going inside", botState->botNumber);
     //printf("\n");
     endTask = doorEntrance(speed, 60, botDevices, botFlags, botState); 
     if (endTask == 0) {
@@ -183,11 +209,11 @@ int going2region(int color, int colorLine, int colorDestination, double *speed, 
 	run(botState->flagLoad, 5, speed, botDevices);
 	whereIam(1, color, speed, botCam, botDevices, botState);
     if (botState->floorColor == colorDestination) {
-      //printf("\n Excellent entrance, %s is on desired region", robotName);
+      //printf("\n Excellent entrance, %s is on desired region", botState->botNumber);
       //printf("\n");
       return 1;
     } else {
-      //printf("\n Something went wrong, please %s recheck color destination %d", robotName, colorDestination);
+      //printf("\n Something went wrong, please %s recheck color destination %d", botState->botNumber, colorDestination);
       //printf("\n");
       return 0;
     } 
@@ -195,20 +221,21 @@ int going2region(int color, int colorLine, int colorDestination, double *speed, 
   return 1000;  
 }
 
-int going2it(int index){//ok
-  int intensity[botCam.width]; //int *intensity = (int *)malloc(sizeof(int)*width);
+int going2it(int index,int color, double *speed, WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState){//ok
+  int intensity[botCam->width]; //int *intensity = (int *)malloc(sizeof(int)*width);
   int i = 0, index2 = 0, delta = 0;
   int count = 0;
+  int flagRobot = 0;
 
-  image = wb_camera_get_image(botDevices.cam);
+  botCam->image = wb_camera_get_image(botDevices->cam);
   wb_robot_step(TIME_STEP);
-  cronometer(IMAGE, 0);
+  //c cronometer(IMAGE, 0);
   
   if (index == 100) {
-    for (i = 0; i < botCam.width; i++) {
-      intensity[i] = cont_height_figure(i, color, &botCam, &botState    );
+    for (i = 0; i < botCam->width; i++) {
+      intensity[i] = cont_height_figure(i, color, botCam, botState);
     }
-    for (i = 0; i < botCam.width; i++) {
+    for (i = 0; i < botCam->width; i++) {
       if (count < intensity[i]) {
         count = intensity[i];
         index = i;
@@ -220,97 +247,97 @@ int going2it(int index){//ok
       }
     }
     if (index2 > index) {
-      delta = index + (index2-index)/2 - (botCam.width/2);
-      index = (botCam.width/2) + delta;
+      delta = index + (index2-index)/2 - (botCam->width/2);
+      index = (botCam->width/2) + delta;
     } else {
 
-      delta = index - (botCam.width/2);
+      delta = index - (botCam->width/2);
     }  
-  } else if ((index >= 0) && (index < botCam.width)) {
-    delta = index-(botCam.width/2);
+  } else if ((index >= 0) && (index < botCam->width)) {
+    delta = index-(botCam->width/2);
   } else {
-    printf("\n no direction defined %s", robotName);
+    printf("\n no direction defined for %d", botState->botNumber);
     printf("\n");
     return 0;
   }
-  int count = cont_height_figure(index, color, &botCam, &botState    );
-  //printf("\n According to direction defined %d by %s the height is %d", index, robotName, count);
+  count = cont_height_figure(index, color, botCam, botState);
+  //printf("\n According to direction defined %d by %s the height is %d", index, botState->botNumber, count);
   int iter=0;
-  if ((index >= 0) && (index < botCam.height)) {
+  if ((index >= 0) && (index < botCam->height)) {
     iter = count-6;
   } else {
-    iter = (MAX_SPEED*botCam.height)/(MAX_SPEED+BACKWARD_SPEED);
+    iter = (MAX_SPEED*botCam->height)/(MAX_SPEED+BACKWARD_SPEED);
   } // increase by 1.25 max_speed
-  speed[LEFT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/botCam.height;
-  speed[RIGHT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/botCam.height;
+  speed[LEFT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/botCam->height;
+  speed[RIGHT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/botCam->height;
   // The robot is close enough to the object, i.e., > 75%  
   if (count > PROXIMITY_COLOR) {
-    resetDisplay(&displayExtra, botCam.width, botCam.height);
-    flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &iter, &botCam, &botDevices, &botState);
+    resetDisplay(displayExtra, botCam->width, botCam->height);
+    flagRobot = check4Robot(displayExtra, shapeSeen, pointA, pointB,   color, ROBOT_COLOR, ROBOT, 0, &iter, botCam, botDevices, botState);
 
     if (color == CYAN){   
       if (flagRobot) { 
         forward(-15, speed);
-        // printf("\n %s found a robot when going to Landmark", robotName); //-- JUAN EDIT
+        // printf("\n %d found a robot when going to Landmark", botState->botNumber); //-- JUAN EDIT
         waiting(10);
         flagRobot = 0;
         return 0;
       }
-      detectImage(&displayExtra, &shapeSeen, &pointA, &pointB, color, CYAN, BOX, 255, &iter, &botCam, &botDevices, &botState);
+      detectImage(displayExtra, shapeSeen, pointA, pointB, color, CYAN, BOX, 255, &iter, botCam, botDevices, botState);
       //printf("\n Difference between A-B %d", pointA-pointB);
       iter = pointA - pointB;
-      if (iter > 2) { hitWall(5, speed, &botDevices);}
-      else if (iter < -2) { hitWall(-5, speed, &botDevices);}
-      else { hitWall(0, speed, &botDevices);}
+      if (iter > 2) { hitWall(5, speed, botDevices);}
+      else if (iter < -2) { hitWall(-5, speed, botDevices);}
+      else { hitWall(0, speed, botDevices);}
    
-      //printf("\n %s reached cyan landmark!", robotName);
+      //printf("\n %d reached cyan landmark!", botState->botNumber);
       //printf("\n");
       waiting(1);      
       return 1;
     } else {
-      //printf("\n Robot %s is near but...", robotName);
+      //printf("\n Robot %d is near but...", botState->botNumber);
       if (flagRobot) {
-        //printf("\n %s found another robot there", robotName);
+        //printf("\n %d found another robot there", botState->botNumber);
         forward(-5, speed);       
         waiting(10);
         flagRobot = 0;
         return 0;
       }
       forward(20, speed);
-      hitWall(1, speed, &botDevices);
+      hitWall(1, speed, botDevices);
       forward(-7, speed);
-      delta = botDevices.ps_value[0] + botDevices.ps_value[1] - botDevices.ps_value[7] - botDevices.ps_value[6];
+      delta = botDevices->ps_value[0] + botDevices->ps_value[1] - botDevices->ps_value[7] - botDevices->ps_value[6];
       if (delta > THRESHOLD_DIST) { turnSteps(3, speed);} // almost 10°
       else if (delta < THRESHOLD_DIST) { turnSteps(-3, speed);}
       /*switch(color){
         case BLUE:
-          printf("\n Robot %s is by color BLUE", robotName);
+          printf("\n Robot %d is by color BLUE", botState->botNumber);
           printf("\n"); break;
         case RED: 
-          printf("\n Robot %s is by color RED", robotName); 
+          printf("\n Robot %d is by color RED", botState->botNumber); 
           printf("\n"); break;
         case MAGENTA: 
-          printf("\n Robot %s is by color MAGENTA", robotName); 
+          printf("\n Robot %d is by color MAGENTA", botState->botNumber); 
           printf("\n"); break;
         case BLACK: 
-          printf("\n Robot %s is by color BLACK", robotName); 
+          printf("\n Robot %d is by color BLACK", botState->botNumber); 
           printf("\n"); break;   
       }*/
       waiting(1);
       return 1;
     }   
   } else { //before being close enough
-    // printf("\n %s saw shape with height %d", robotName, count);
-    if (readSensors(0, &botDevices) && ((botDevices.ps_value[0] > THRESHOLD_DIST) || (botDevices.ps_value[1] > THRESHOLD_DIST) 
-    || (botDevices.ps_value[7] > THRESHOLD_DIST) || (botDevices.ps_value[6] > THRESHOLD_DIST))) { // 1 for obstacle
-      //printf("\n %s found obstacle on the way", robotName);
+    // printf("\n %d saw shape with height %d", botState->botNumber, count);
+    if (readSensors(0, botDevices) && ((botDevices->ps_value[0] > THRESHOLD_DIST) || (botDevices->ps_value[1] > THRESHOLD_DIST) 
+    || (botDevices->ps_value[7] > THRESHOLD_DIST) || (botDevices->ps_value[6] > THRESHOLD_DIST))) { // 1 for obstacle
+      //printf("\n %d found obstacle on the way", botState->botNumber);
       //printf("\n");
-      avoidance(speed, &botDevices);
+      avoidance(speed, botDevices);
     }
     
-    flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &iter, &botCam, &botDevices, &botState);
+    flagRobot = check4Robot(displayExtra, shapeSeen, pointA, pointB,  ROBOT_COLOR, ROBOT_COLOR, ROBOT, 0, &iter, botCam, botDevices, botState);
     if (flagRobot) {
-      //printf("\n I %s found another robot there", robotName);
+      //printf("\n I %d found another robot there", botState->botNumber);
       // rand() % (max_n - min_n + 1) + min_n;
       if (rand()%100 > 50) { waiting(10);}
       else { turnSteps(6, speed);}
@@ -318,14 +345,14 @@ int going2it(int index){//ok
     }
     speed[LEFT] = speed[LEFT]+K_TURN*delta;
     speed[RIGHT] = speed[RIGHT]-K_TURN*delta;
-    if (flagLoad){ //reducing speed when cargo
+    if (botState->flagLoad){ //reducing speed when cargo
       speed[LEFT]=speed[LEFT]*SPEEDCARGO;
       speed[RIGHT]=speed[RIGHT]*SPEEDCARGO;
     }
     wb_differential_wheels_set_speed(speed[LEFT]+K_TURN*delta,
                                      speed[RIGHT]-K_TURN*delta);
     wb_robot_step(TIME_STEP); 
-    cronometer(-1, 0); //-1 for movements
+    //c cronometer(-1, 0); //-1 for movements
   }
   return 0;
 } 

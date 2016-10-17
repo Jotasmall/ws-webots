@@ -13,5 +13,6 @@ int followingLine(double *speed, WbDeviceTag *displayExtra, int *shapeSeen, int 
 int doorEntrance(double *speed, int steps, struct robotDevices *botDevices, struct flags4Files *botFlags, struct robotState *botState);
 int setRobotPosition(int colorLine, double *speed, WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState);
 int going2region(int color, int colorLine, int colorDestination, double *speed, WbDeviceTag *displayExtra, struct robotCamera *botCam, int *shapeSeen, int *pointA, int *pointB, struct robotDevices *botDevices, struct robotState *botState, struct flags4Files *botFlags);
+int going2it(int index,int color, double *speed, WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState);
 
 #endif
