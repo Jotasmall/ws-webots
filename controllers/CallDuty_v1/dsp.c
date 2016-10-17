@@ -325,6 +325,34 @@ int whatIsee(int color, float Eccentricity, float Extent, int squarewidth, int m
     return shapeFound;
 }
 
+int doubleCheck(double *speed, WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB, int color, int foreground, int shape, int numImage, int *numberComponents, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState){
+  int index = -1;
+  int nComp;
+  run(botState->flagLoad, 5, speed, botDevices); //forward(5);
+  whereIam(1, color, speed, botCam, botDevices, botState);
+  run(botState->flagLoad, 5, speed, botDevices);
+  whereIam(1, color, speed, botCam, botDevices, botState);
+  index = detectImage(displayExtra, shapeSeen, pointA, pointB, color, color, shape, 1, &nComp, botCam, botDevices, botState);
+  if ((index == -1) || (index == 100)){
+    printf("\n False alarm %d - %d continue searching", index, botState->botNumber);
+    printf("\n");
+    return -1;
+  } 
+  //printf("\n Shape %d watched on 2check", figura);
+  //printf("\n");
+  return index; 
+}
+
+int check4Robot(WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB, int color, int foreground, int shape, int numImage, int *numberComponents, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState){ //ok
+  int nComp, sizeRobot = 0;
+  sizeRobot = detectImage(displayExtra, shapeSeen, pointA, pointB, color, ROBOT_COLOR, ROBOT, 0, &nComp, botCam, botDevices, botState);
+  if (((sizeRobot > 9) && (nComp > 1)) || ((sizeRobot > 4) && (nComp > 3))) {//4 3
+    printf("\n %d sees a robot of height %d components %d", botState->botNumber, sizeRobot, nComp);
+    return 1;
+  }
+  return 0;
+}
+
 
 int detectImage(WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB, int color, int foreground, int shape, int numImage, int *numberComponents, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState){ //ok
   int flagSeen = -1;

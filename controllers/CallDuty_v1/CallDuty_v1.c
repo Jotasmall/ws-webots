@@ -198,8 +198,7 @@ void initEstimations();
 void pickingIndication(int on);
 double angle(double x, double z);
 // Image-depending functions
-int check4Robot();
-int doubleCheck();
+
 // Movement functions
 int followingLine(int colorLine);
 int levyFlight();
@@ -568,7 +567,7 @@ int moduleFSM(){
         } else { //it is yet far
           newIndex = detectImage(&displayExtra, &shapeSeen, &pointA, &pointB,   color, color, figura, 0, &nComp, &botCam, &botDevices, &botState);
           if (newIndex == -1) {
-            flagRobot = check4Robot();
+            flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
             if (flagRobot) {
               printf("\n %s saw a robot in path to target", robotName);
               printf("\n");
@@ -687,40 +686,11 @@ double angle(double x, double z){ //ok
   return 180*theta/PI;
 }
 
-int check4Robot(){//ok-
-  int nComp, sizeRobot = 0;
-
-  sizeRobot = detectImage(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
-  if (((sizeRobot > 9) && (nComp > 1)) || ((sizeRobot > 4) && (nComp > 3))) {//4 3
-    printf("\n %s sees a robot of height %d components %d", robotName, sizeRobot, nComp);
-    return 1;
-  }
-  return 0;
-}
-
-
-int doubleCheck(){
-  int index = -1;
-  int nComp;
-  run(flagLoad, 5, speed, &botDevices); //forward(5);
-  whereIam(1, color, speed, &botCam, &botDevices, &botState);
-  run(flagLoad, 5, speed, &botDevices);
-  whereIam(1, color, speed, &botCam, &botDevices, &botState);
-  index = detectImage(&displayExtra, &shapeSeen, &pointA, &pointB,   color, color, figura, 1, &nComp, &botCam, &botDevices, &botState);
-  if ((index == -1) || (index == 100)){
-    printf("\n False alarm %d - %s continue searching", index, robotName);
-    printf("\n");
-    return -1;
-  } 
-  //printf("\n Shape %d watched on 2check", figura);
-  //printf("\n");
-  return index; 
-}
-
 int followingLine(int colorLine){//ok-
   int delta = 0;
   int entering = 0;
   int flagRobot = 0;
+  int nComp;
   readSensors(0, &botDevices);
   entering = botDevices.ps_value[5] > 50;
   while(entering) { 
@@ -742,7 +712,7 @@ int followingLine(int colorLine){//ok-
         wb_robot_step(TIME_STEP);
         cronometer(-1, 0); 
       } else {
-        flagRobot = check4Robot();
+        flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB, color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
         if (flagRobot) {
           waiting(30);//20
         } else {
@@ -784,10 +754,10 @@ int levyFlight(){
       printf("\n");
       forward(-30, speed); //70
     }
-    index = detectImage(&displayExtra, &shapeSeen, &pointA, &pointB,   color, color, figura, 0, &nComp, &botCam, &botDevices, &botState); // Open her eyes
+    index = detectImage(&displayExtra, &shapeSeen, &pointA, &pointB, color, color, figura, 0, &nComp, &botCam, &botDevices, &botState); // Open her eyes
     if (index != -1) {
       if (index == 100){ //double-check mechanism
-        return doubleCheck();
+        return doubleCheck(speed, &displayExtra, &shapeSeen, &pointA, &pointB, color, color, figura, 0, &nComp, &botCam, &botDevices, &botState);
       }
       //--printf("\n Shape watched on levy - Levy Aborted %d", index);
       //--printf("\n");
@@ -824,7 +794,7 @@ int levyFlight(){
     index = detectImage(&displayExtra, &shapeSeen, &pointA, &pointB,   color, color, figura, 0, &nComp, &botCam, &botDevices, &botState); // Open her eyes
     if (index != -1) {
       if (index == 100){ //double-check mechanism
-        return doubleCheck(); 
+        return doubleCheck(speed, &displayExtra, &shapeSeen, &pointA, &pointB, color, color, figura, 0, &nComp, &botCam, &botDevices, &botState); 
       }
       //-- printf("\n Color watched on levy - Levy Aborted %d", index);
       //-- printf("\n");
@@ -856,7 +826,8 @@ int doorEntrance(int steps){
 }
 
 int setRobotPosition(int colorLine){
-  int flagRobot = check4Robot();
+  int nComp;
+  int flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB, color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
   // She saw a robot or not Cyan color in front
   if (flagRobot) {
     //printf("\n False Cyan landmark, %s", robotName);
@@ -880,10 +851,10 @@ int setRobotPosition(int colorLine){
     if (botDevices.ps_value[5]> 300) {
       notReady = find_middle(0, colorLine, &botCam, &botState) < 0; // returns the index -1 if not
       wrongDoor = find_middle(1, colorLine, &botCam, &botState) > 0; // return 100 if it found it
-      flagRobot = check4Robot();
+      flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
       aux = counter;
       while (flagRobot) {
-        flagRobot = check4Robot();
+        flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
         printf("\n %s waiting for another robot to leave", robotName);
         printf("\n");
         waiting(20);
@@ -902,7 +873,7 @@ int setRobotPosition(int colorLine){
         return -2;
       } 
     } else {
-      flagRobot = check4Robot();
+      flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &nComp, &botCam, &botDevices, &botState);
       if (flagRobot) {
         printf("\n %s find another robot here",robotName);
         printf("\n");
@@ -1024,7 +995,7 @@ int speedAdjustment(int index, int delta) { //ok
   // The robot is close enough to the object, i.e., > 75%  
   if (count > PROXIMITY_COLOR) {
     resetDisplay(&displayExtra, botCam.width, botCam.height);
-    flagRobot = check4Robot();
+    flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &iter, &botCam, &botDevices, &botState);
 
     if (color == CYAN){   
       if (flagRobot) { 
@@ -1086,7 +1057,7 @@ int speedAdjustment(int index, int delta) { //ok
       avoidance(speed, &botDevices);
     }
     
-    flagRobot = check4Robot();
+    flagRobot = check4Robot(&displayExtra, &shapeSeen, &pointA, &pointB,   color, ROBOT_COLOR, ROBOT, 0, &iter, &botCam, &botDevices, &botState);
     if (flagRobot) {
       //printf("\n I %s found another robot there", robotName);
       // rand() % (max_n - min_n + 1) + min_n;
