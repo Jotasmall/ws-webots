@@ -16,7 +16,6 @@
 #define M2ROBOT 1
 #define M2NEST 2
 
-//int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *botFlags, char *fileRobot, char *dirPath){ //ok-
 int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *botFlags){ //ok-
   int i;
   while(wb_receiver_get_queue_length(receiver)>0){  

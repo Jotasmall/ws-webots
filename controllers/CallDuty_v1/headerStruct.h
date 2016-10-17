@@ -45,6 +45,15 @@ struct robotEstimations{
   int nDrop[3];
 };
 
+struct modelParam{
+  int alpha;                 //in percentage
+  int flagMomento;            //to enable soft changes
+  int beta;                  //soft adaptations
+  int gammaUCB;            //in UCB-model 100/1000-Explote/Explore
+  float greedy;             //in e-Greedy 0.01/0.11-Explote/Explore
+  float sParam; 
+};
+
 struct message{
  int source;
  int destination;

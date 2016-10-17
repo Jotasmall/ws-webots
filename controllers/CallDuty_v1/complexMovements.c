@@ -356,3 +356,81 @@ int going2it(int index,int color, double *speed, WbDeviceTag *displayExtra, int 
   }
   return 0;
 } 
+
+int levyFlight(int figura, int color, double *speed, struct robotDevices *botDevices, struct robotCamera *botCam, struct robotState *botState, WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB){
+
+  int index = -1;
+  int nComp;
+  // rand() % (max_n - min_n + 1) + min_n;
+  int r = rand()%(54-27+1)+27; 
+  // Robot needs about 7 steps at 200 speed to have a new image
+  //printf("\n Robot %s turning random %d", robotName, r); //-- JUAN EDIT
+  //printf("\n"); //-- JUAN EDIT
+  while (r > 0) {
+    turnSteps(3, speed); // Blind turn
+    r -= 3;
+    
+    botCam->image = wb_camera_get_image(botDevices->cam);
+    wb_robot_step(TIME_STEP);
+    // cronometer(IMAGE, 0) //It is only a line
+        
+    if (cont_height_figure(-10, color, botCam, botState) > 15) {//18
+      printf("\n Backward invading useful region on turn");
+      printf("\n");
+      forward(-30, speed); //70
+    }
+    if ((color == CYAN) && (cont_height_figure(-11, color, botCam, botState) > 22)) { //25
+      printf("\n Backward invading on turn %d",cont_height_figure(-11, color, botCam, botState));
+      printf("\n");
+      forward(-30, speed); //70
+    }
+    index = detectImage(displayExtra, shapeSeen, pointA, pointB, color, color, figura, 0, &nComp, botCam, botDevices, botState); // Open her eyes
+    if (index != -1) {
+      if (index == 100){ //double-check mechanism
+        return doubleCheck(speed, displayExtra, shapeSeen, pointA, pointB, color, color, figura, 0, &nComp, botCam, botDevices, botState);
+      }
+      //--printf("\n Shape watched on levy - Levy Aborted %d", index);
+      //--printf("\n");
+      return index;  
+    } 
+    whereIam(1, color, speed, botCam, botDevices, botState);
+  } 
+  r = rand()%(100-40)+41; // walk forward between 100 to 40 steps
+  //printf("\n %s Walking forward %d", robotName, r); //-- JUAN EDIT
+  //printf("\n"); //-- JUAN EDIT
+  wb_differential_wheels_set_encoders(0,0);
+  while (r > 0) {
+    run(botState->flagLoad, 5, speed, botDevices); // Blind walk
+    r -= 5;
+    whereIam(1, color, speed, botCam, botDevices, botState);
+
+    botCam->image = wb_camera_get_image(botDevices->cam);
+    wb_robot_step(TIME_STEP);
+    // cronometer(IMAGE, 0) //It is only a line
+        
+    if (cont_height_figure(-10, color, botCam, botState    ) > 15) { //18
+      //printf("\n Backward invading useful region on walk");
+      //printf("\n");
+      forward(-20, speed); //30
+      turnSteps(TURN_CACHE, speed);
+    }   
+    if ((color == CYAN) && (cont_height_figure(-11, color, botCam, botState    ) > 22)) {
+      //printf("\n Backward invading on walk %d", cont_height_figure(-11));
+      //printf("\n");
+      forward(-20, speed); //70
+      turnSteps(TURN_CACHE/2, speed);
+    } 
+    index = detectImage(displayExtra, shapeSeen, pointA, pointB,   color, color, figura, 0, &nComp, botCam, botDevices, botState); // Open her eyes
+    if (index != -1) {
+      if (index == 100){ //double-check mechanism
+        return doubleCheck(speed, displayExtra, shapeSeen, pointA, pointB, color, color, figura, 0, &nComp, botCam, botDevices, botState); 
+      }
+      //-- printf("\n Color watched on levy - Levy Aborted %d", index);
+      //-- printf("\n");
+      return index;  
+    } 
+  }
+  return index;
+}
+
+
