@@ -13,23 +13,35 @@
 #define WHITE 8
 #define TAM_WALL 9
 #define ROBOT_COLOR 10
-
+// display Colors
+#define HEXRED 0xFF0000
+#define HEXWHITE 0xFFFFFF
+#define HEXBLACK 0x000000
+#define HEXYELLOW 0xFFFF00
+#define HEXGREEN 0x2AE246
+// Color thresholds
 #define COLOR_THRES 150
 #define COMP_COLOR 80
+#define COMP_LOW 38
+#define COMP_LOWDARK 34
+#define COMP_HIGH 200
 #define ROBOT_THRES 100
 #define BLACK_THRES 10
 #define LOW_THRES 50
-
+// Figures
+#define BOX 301
+#define TRIANGLE 302
+#define CIRCLE 303
+#define ALL 304
+#define NOTHING 305
+#define ROBOT 306
+// Activities
 #define PICK_SOURCE 100
 #define DROP_NEST 103
 #define TRAVEL2RED 104
 #define TRAVEL2GREY 105
 #define TRAVEL2BLUE 106
-
-#define COMP_LOW 38
-#define COMP_LOWDARK 34
-#define COMP_HIGH 200
-
+// Messages
 #define M2NEST 2
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
@@ -243,3 +255,265 @@ int waiting_color(int foreground, int color, struct robotState *botState, struct
   //printf("\n Intensity gets down");
   return 0; //wait no longer
 }
+
+int whatIsee(int color, float Eccentricity, float Extent, int squarewidth, int middleAxisH, int middleAxisV, int numImage){
+    // 1 Triangle, 2 Box, 3 Circle, 4 Nothing, 5 All, 6 Robot, -1 ReallyNothing
+    int shapeFound = -1; // Weka 3rd generation 16feb16
+    if (Eccentricity <= 1.2) {
+      if (Extent <= 0.889) {
+        if (Extent <= 0.711) {
+          if (squarewidth <= 11) {
+            //printf("\n Circle (4.0/1.0)");
+            shapeFound = CIRCLE;
+          } else {
+            //printf("\n Robot (176.0)");
+            shapeFound = ROBOT;
+          }
+        } else {
+          if (Eccentricity <= 0.818) {
+            //printf("\n Robot (6.0)");
+            shapeFound = ROBOT;
+          } else {
+            //printf("\n Circle (135.0/1.0)");
+            shapeFound = CIRCLE;
+          }
+        }
+      } else {
+        //printf("\n Box (132.0)");
+        shapeFound = BOX;
+      }
+    } else {
+      if (Extent <= 0.708) { 
+        if (Extent <= 0.474) {
+          //printf("\n Robot (20.0/1.0)");
+          shapeFound = ROBOT;
+        } else {
+          if (Eccentricity <= 2.455) {
+            if (Extent <= 0.613) {
+              if (middleAxisH <= 3) {
+                //printf("\n No triangle (4.0)");
+                shapeFound = NOTHING;
+              } else {
+                //printf("\n Triangle (99.0/3.0)");
+                shapeFound = TRIANGLE;
+              } 
+            } else {
+              if (squarewidth <= 7) {
+                if (middleAxisV <= 7) {
+                  //printf("\n Triangle (15.0)");
+                  shapeFound = TRIANGLE;
+                } else {
+                  //printf("\n No circle (5.0)");
+                  shapeFound = NOTHING;
+                }
+              } else {
+                //printf("\n No triangle (34.0)");
+                shapeFound = NOTHING;
+              }
+            }
+          } else {
+            //printf("\n No triangle (35.0/1.0)");
+            shapeFound = NOTHING;
+          }
+        }
+      } else {
+        //printf("\n No circle (105.0)");
+        shapeFound = NOTHING;
+        if (color == CYAN ){ shapeFound = BOX;}
+      }    
+    }  
+    return shapeFound;
+}
+
+
+int detectImage(WbDeviceTag *displayExtra, int *shapeSeen, int *pointA, int *pointB, int color, int foreground, int shape, int numImage, int *numberComponents, struct robotCamera *botCam, struct robotDevices *botDevices, struct robotState *botState){ //ok
+  int flagSeen = -1;
+  int middleH = -1;
+  int aux = 0;
+  int newShapeSeen = 0;
+  int distMiddle = 0;
+  int maxProx = 0;
+  int comp = 1;
+  int nearest = 100;
+  int realComp = 0;
+  int i, j, k;
+  int left, up;
+  int minV = botCam->height, maxV = 0, minH = botCam->width, maxH = 0, area = 0;
+  
+  int imaComp[botCam->width][botCam->height];
+  memset(imaComp, -1, botCam->width*botCam->height*sizeof(int));
+  int relations[40];
+  memset(relations, 0, 40*sizeof(int));
+  int check[20];
+  memset(check, 0, 20*sizeof(int));
+
+  botCam->image = wb_camera_get_image(botDevices->cam);
+  wb_robot_step(TIME_STEP);
+  //check cronometer(IMAGE, 0); // for image processing
+
+  // Segmentation process
+  for (i = 0; i < botCam->width; i++) {
+    for (j = 0; j < botCam->height; j++) {
+      aux = compareColorPixel(botCam, botCam->image, i, j, foreground, botState); 
+      if (aux){    
+        // Identifying component through a N-neighborhood strategy
+        left = i-1; 
+        if (left < 0) { left = 0;}      
+        up = j-1;
+        if (up < 0) { up = 0;}
+        // Case 1 - new 
+        if ((imaComp[i][up] == -1) && (imaComp[left][j] == -1)){
+          imaComp[i][j] = comp;
+          relations[comp] = comp;
+          comp++;
+        } else {
+          if (imaComp[left][j] > 0) {
+            imaComp[i][j] = imaComp[left][j]; //Case 2
+            if (imaComp[i][up] > 0) {
+              relations[imaComp[i][up]] = imaComp[left][j];
+              imaComp[i][up] = imaComp[left][j]; // save E2 = E1
+            }
+          } else {
+            imaComp[i][j] = imaComp[i][up]; //Case 2
+          }
+        }
+        wb_display_set_color((WbDeviceTag)*displayExtra, HEXWHITE);
+      } else {
+        wb_display_set_color((WbDeviceTag)*displayExtra, HEXBLACK);
+      }
+      wb_display_draw_pixel((WbDeviceTag)*displayExtra, i, j);
+    }
+  }
+  // Replacing overlapping in components
+  aux = 0;
+  for (k = comp; 0 < k; k--) {
+    if (relations[k] != k) {
+      for (i = 0; i < botCam->width; i++) {
+        for (j = 0; j < botCam->height; j++) {
+          if (imaComp[i][j] == k) {
+            imaComp[i][j] = relations[k];
+          }
+        }
+      }
+      comp--;
+    } else {
+      check[aux]=relations[k];
+      aux++;
+    }  
+  }
+  comp = aux;
+  //  *numberComponents = comp; 
+  //  FILE *fp4 = fopen("image_descritors_4n.csv","a");  
+  for (k = 0; k < comp; k++) {
+    // reset values to find them in a new component
+    minV = botCam->height; maxV = 0; minH = botCam->width; maxH = 0; area = 0; 
+    for (i = 0; i < botCam->width; i++) {
+      for (j = 0; j < botCam->height; j++) {
+        // If the pixel has the same component
+        if (imaComp[i][j] == check[k]) {
+          area++;
+          // Checking boundaries
+          if (maxH < i) { maxH = i;}
+          if (minH > i) { minH = i;}
+          if (maxV < j) { maxV = j;}
+          if (minV > j) { minV = j;}
+        } 
+      }
+    }
+    if ((numImage == 255) && (color == CYAN)) {
+      *pointA = cont_height_figure(minH+1, color, botCam, botState); 
+      *pointB = cont_height_figure(maxH-1, color, botCam, botState);
+      //printf("\n %s really close and sure it is not a robot, go for the center", robotName);
+      //printf("\n");
+      return 100;
+    }
+//    if (((area > 10) && (foreground != CYAN)) || ((foreground == CYAN) && (area > 15))) { 
+    if (((area > 10) && (foreground != CYAN)) || ((foreground == CYAN) && (area > 25))) { 
+      int squarewidth = maxH-minH+1;
+      int squareHeight = maxV-minV+1;  
+      // Middle axis width within the square
+      int middleAxisH = 0;
+      aux = (int)squareHeight/2+minV;
+      for (i = minH; i <= maxH; i++) {
+        if (imaComp[i][aux] > 0) {
+          middleAxisH++;  
+        } 
+      }
+      wb_display_set_color((WbDeviceTag)*displayExtra, HEXRED);
+      wb_display_draw_line((WbDeviceTag)*displayExtra, minH, aux, maxH, aux); 
+      // Middle axis height within the square
+      int middleAxisV = 0;
+      aux = (int)squarewidth/2+minH;
+      for (i = minV; i <= maxV; i++) {
+        if (imaComp[aux][i] > 0) {
+          middleAxisV++;
+        }
+      }
+      wb_display_set_color((WbDeviceTag)*displayExtra, HEXRED);
+      wb_display_draw_line((WbDeviceTag)*displayExtra, aux, minV, aux, maxV); 
+      int x = aux; //middle index horizontal 
+      int areaSquare = squarewidth * squareHeight;   
+      float extent = (float) area/areaSquare;
+      float eccentricity = (float) middleAxisV/middleAxisH;
+      // Increase padding of 1 for window of component
+      if (minV > 0) { minV--;}
+      if (minH > 0) { minH--;}
+      wb_display_set_color((WbDeviceTag)*displayExtra, HEXYELLOW);
+      wb_display_draw_rectangle((WbDeviceTag)*displayExtra, minH, minV, squarewidth+1, squareHeight+1);
+      // return the horizontal position as delta value
+      distMiddle = abs(botCam->width/2-x);
+      realComp++;
+      *numberComponents = realComp;
+      // A great enough region
+      if ((squarewidth >= 4) && (squareHeight >= 4)) {
+        //1 Triangle, 2 Box, 3 Circle, 4 Nothing, 0 ReallyNothing, 5 All, 6 Robot
+         newShapeSeen = whatIsee(color, eccentricity, extent, squarewidth, middleAxisH, middleAxisV, numImage);
+         if (shape == ROBOT){
+           if (newShapeSeen == ROBOT) {
+             if ((x > 23) && (x < 29) && (areaSquare > 600)) { waiting(15);} 
+             return squareHeight; //only returned when checkRobot is used  
+           } 
+         } else {
+           switch(newShapeSeen){
+             case NOTHING:
+               //last value to check and nothing was seen clearly
+               if ((flagSeen == -1) && (k == comp-1) && (squareHeight < 15)) { 
+                 *numberComponents = 1; 
+                 return 100;
+               } break;
+             case TRIANGLE:
+             case CIRCLE:
+             case BOX:
+               if ((shape == ALL) || (shape == newShapeSeen)) { 
+                 flagSeen = 1;
+               } else if (k == comp-1){
+                 return 100;
+               }
+               //if in k component was seen, then check if it is better
+               if (flagSeen == 1) { 
+                 if (maxProx < middleAxisH) {
+                   nearest = distMiddle;
+                   maxProx = middleAxisH;
+                   middleH = x;
+                   *shapeSeen = newShapeSeen;
+                   //printf("\n Robot %s found a new shape %d higher %d and closer to the middle %d", robotName, newShapeSeen, maxProx, middleH);
+                 } else if (maxProx == middleAxisH) {
+                   if (nearest > distMiddle) {
+                     nearest = distMiddle;
+                     middleH = x;
+                     *shapeSeen = newShapeSeen;
+                     //printf("\n Robot %s found a new shape %d just closer to the middle %d", robotName, newShapeSeen, middleH);
+                   }
+                 }
+                 flagSeen = 0;
+               }              
+               *numberComponents = realComp; 
+               break;
+           }  
+        }
+      }
+    }  
+  }
+  *numberComponents = realComp;
+  return middleH; 
+}      
