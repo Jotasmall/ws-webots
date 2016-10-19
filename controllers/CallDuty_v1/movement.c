@@ -12,7 +12,7 @@
 #define TURN_M90 -27
 #define SPEEDCARGO 1
 
-void forward(int steps, double *speed){ //ok-
+void forward(int steps, double *speed, struct robot *bot){ //ok-
   int k = 1;
   if (steps < 0) {
     k = -1;
@@ -24,12 +24,13 @@ void forward(int steps, double *speed){ //ok-
   wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
   while (k < steps) {
     k++;
-    wb_robot_step(TIME_STEP); 
+    wb_robot_step(TIME_STEP);
+    cronometer(-1, 0, bot); 
   }
-  waiting(1);
+  waiting(1, bot);
 }
 
-void turnSteps(int steps, double *speed){ 
+void turnSteps(int steps, double *speed, struct robot *bot){ 
   // In simulations 360 degrees 106 required steps on encoder at 200 timeStep 64
   if (steps < 0) {
     // Turn upon the same position
@@ -44,12 +45,12 @@ void turnSteps(int steps, double *speed){
   while (steps > 0) {
     steps--;
     wb_robot_step(TIME_STEP);  
-    //c cronometer(-1, 0);
+    cronometer(-1, 0, bot);
   }
-  waiting(1);
+  waiting(1, bot);
 }
 
-void avoidance(double *speed, struct robotDevices *bot){ //ok
+void avoidance(double *speed, struct robot *bot){ //ok
   int sense = 1;
   wb_differential_wheels_set_speed(0, 0);
   wb_robot_step(TIME_STEP); 
@@ -57,19 +58,19 @@ void avoidance(double *speed, struct robotDevices *bot){ //ok
   if ((bot->ps_value[7] + bot->ps_value[6]) < (bot->ps_value[0] + bot->ps_value[1])) {
     sense = -1;
   }
-  turnSteps(TURN_90*sense, speed);
-  forward(18, speed); //15
-  turnSteps((TURN_M90-3)*sense, speed);
+  turnSteps(TURN_90*sense, speed, bot);
+  forward(18, speed, bot); //15
+  turnSteps((TURN_M90-3)*sense, speed, bot);
 }
 
-int readSensors(int print, struct robotDevices *bot){ 
+int readSensors(int print, struct robot *bot){ 
   int flag = 0, i, k;
   // Reset values
   for(i=0; i<NB_DIST_SENS; i++){ bot->ps_value[i] = 0;}
-  //Sensor values
+  
   for (k=0; k<SAMPLES; k++) { 
     for (i=0; i<NB_DIST_SENS; i++) {
-      bot->ps_value[i] += (int)wb_distance_sensor_get_value(bot->sensors[i])-bot->ps_offset[i];
+      bot->ps_value[i] += (int)wb_distance_sensor_get_value(bot->sensors[i]) - bot->ps_offset[i];
     }
     wb_robot_step(TIME_STEP); 
   }  
@@ -86,7 +87,7 @@ int readSensors(int print, struct robotDevices *bot){
   return flag;
 }
 
-int run(int flagLoad, int steps, double *speed, struct robotDevices *bot){ //ok-
+int run(int steps, double *speed, struct robot *bot){ //ok-
   int i, j;
   int matrix[8][2] = {{150,-35},{100, -15},{80, -10},{-10,-10},{-10,-10},{-10,80},{-30,100},{-20,150}};
   while(steps > 0) {  
@@ -103,23 +104,22 @@ int run(int flagLoad, int steps, double *speed, struct robotDevices *bot){ //ok-
         speed[i] = -MAX_SPEED;
       }
     }
-    if (flagLoad){ //reducing speed when cargo
+    if (bot->flagLoad){ //reducing speed when cargo
       speed[LEFT]=speed[LEFT]*SPEEDCARGO;
       speed[RIGHT]=speed[RIGHT]*SPEEDCARGO;
     }
-    wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
-    wb_robot_step(TIME_STEP);
-    //c cronometer(-1, 0); 
-        
     steps--;
-// 	  Every 5 steps check ground color
-//c    if(steps%5 == 0){ whereIam(1);}
+	wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
+    wb_robot_step(TIME_STEP);
+    cronometer(-1, 0, bot); 
+    //Every 5 steps check ground color
+	if(steps%5 == 0){ whereIam(1, speed, bot);}
   } 
-  waiting(1);
+  waiting(1, bot);
   return 1;
 }
 
-int hitWall(int front, double *speed, struct robotDevices *bot){ //ok
+int hitWall(int front, double *speed, struct robot *bot){ //ok
   int hit_thres = 300, flag = 1;//200
   int question;
   speed[LEFT] = 300;
@@ -136,75 +136,73 @@ int hitWall(int front, double *speed, struct robotDevices *bot){ //ok
       question = (bot->ps_value[0] > hit_thres) || (bot->ps_value[7] > hit_thres) || (bot->ps_value[6] > hit_thres) || (bot->ps_value[1] > hit_thres);
     } else {
       question = (bot->ps_value[0] > hit_thres) || (bot->ps_value[7] > hit_thres);
-    }  
-    if (question) {
-      if (front == 5) {
-        speed[LEFT] = -speed[LEFT];
-        wb_robot_step(TIME_STEP);
-        wb_robot_step(TIME_STEP);
-      } else if (front == -5) {
-        speed[RIGHT] = -speed[RIGHT];
-        wb_robot_step(TIME_STEP);
-        wb_robot_step(TIME_STEP);
-      }
-      //c waiting(2);
-      readSensors(0, bot);
-      if (question || (bot->ps_value[6] > hit_thres) || (bot->ps_value[1] > hit_thres)){
-        forward(5, speed);
-        flag = 0;
-      }
-    }    
-    wb_differential_wheels_set_speed(speed[LEFT], speed[RIGHT]);
-    wb_robot_step(TIME_STEP);
-    //c cronometer(-1, 0); 
+  }  
+  if (question) {
+    if (front == 5) {
+      speed[LEFT] = -speed[LEFT];
+      wb_robot_step(TIME_STEP);
+      wb_robot_step(TIME_STEP);
+    } else if (front == -5) {
+      speed[RIGHT] = -speed[RIGHT];
+      wb_robot_step(TIME_STEP);
+      wb_robot_step(TIME_STEP);
+    }
+    //c waiting(2, bot);
+    readSensors(0, bot);
+    if (question || (bot->ps_value[6] > hit_thres) || (bot->ps_value[1] > hit_thres)){
+      forward(5, speed, bot);
+      flag = 0;
+    }
+  }  
+  wb_differential_wheels_set_speed(speed[LEFT], speed[RIGHT]);
+  wb_robot_step(TIME_STEP);
+  cronometer(-1, 0, bot); 
   }
-  waiting(1);
+  waiting(1, bot);
   return 1;
 } 
 
-int enterTam(struct robotDevices *bot, double *speed){ //ok
-  // 1 blue, 2 red, and 3 magenta
-  int flag1stCheck = 1; //0 juan check 
-  //1 rigth and -1 left
+int enterTam(double *speed, struct robot *bot){ //ok
+  int flag1stCheck = 1; 
   int dir = 0;
+  
   if (bot->ps_value[1] + bot->ps_value[0] > bot->ps_value[7] + bot->ps_value[6]) {
-    dir = 1;
+    dir = 1; // rigth
   } else {
-    dir = -1;
+    dir = -1;//left 
   }
-  //c flag1stCheck = detectTam(); 
+  flag1stCheck = detectTam(bot); 
   if (!flag1stCheck) { 
-    turnSteps(-26*dir, speed);
-    //c waiting(1);
+    turnSteps(-26*dir, speed, bot);
     hitWall(1, speed, bot); 
-    forward(-6, speed);//8
+    forward(-6, speed, bot);//8
   }  
   if ((bot->ps_value[0] > THRESHOLD_DIST) && (bot->ps_value[7] > THRESHOLD_DIST) && (bot->ps_value[6] < THRESHOLD_DIST) && (bot->ps_value[1] < THRESHOLD_DIST)) {
     //printf("\n Everything is fine!!");
     //printf("\n");
     return 1; 
-  } else {    
-    //c flag1stCheck = detectTam();
+  } else {  
+    flag1stCheck = detectTam(bot);
     if (!flag1stCheck) {
       printf("\n not inside TAM correctly");
       printf("\n");
-      waiting(10);
+      waiting(5, bot);
       return 0;
     } else {
       //printf("\n %s entered successfully square",robotName);
-      waiting(1);
+      waiting(1, bot);
       return 1;  
     }  
   }
-  return -1;    
+  return -1;  
 }
 
-int waiting(int n){ //ok
+int waiting(int n, struct robot *bot){ //ok
   wb_differential_wheels_set_speed(0,0);
   while (n > 0) {
     n--;
     wb_robot_step(TIME_STEP);
-    //c cronometer(-1, 0);
+    cronometer(-1, 0, bot);
   } 
   return 1;  
 }

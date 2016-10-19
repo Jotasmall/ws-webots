@@ -6,7 +6,7 @@
 #define HEXBLACK 0x000000
 #define NB_LEDS 10
 
-void resetDevices(struct robotDevices *bot){
+void resetDevices(struct robot *bot){
   int i;
   // get distance sensors
   char textSensors[4] = "ps0";
@@ -35,7 +35,7 @@ void resetDevices(struct robotDevices *bot){
   wb_receiver_enable(bot->receiver,TIME_STEP);
 }
 
-void calibrateSensors(struct robotDevices *bot){
+void calibrateSensors(struct robot *bot){
   int i, k;
   for (k = 0; k <CALIBRATE; k++){
     for (i=0; i<NB_DIST_SENS; i++){
@@ -43,31 +43,29 @@ void calibrateSensors(struct robotDevices *bot){
     }
     wb_robot_step(TIME_STEP);
   } 
-  //printf("\n Calibration offset ");
   for (i=0; i<NB_DIST_SENS; i++){
     bot->ps_offset[i] /= CALIBRATE-1;
-    //printf("%d ", ps_offset[i]);
   }  
 }
 
-void resetDisplay(WbDeviceTag *displayExtra, unsigned short width, unsigned short height){ //ok
+void resetDisplay(WbDeviceTag *displayExtra, struct robot *bot){ //ok
   *displayExtra = wb_robot_get_device("displayExtra");
   wb_display_set_color((WbDeviceTag)*displayExtra, HEXBLACK);
-  wb_display_draw_rectangle((WbDeviceTag)*displayExtra, 0, 0, width, height);
+  wb_display_draw_rectangle((WbDeviceTag)*displayExtra, 0, 0, bot->width, bot->height);
 }
 
-void initEstimations(struct robotEstimations *bot, int nRegions){ //ok-
+void initEstimations(int nRegions, struct robot *bot){ //ok-
   // rand() % (max_n - min_n + 1) + min_n;
   bot->estPickS = rand() % (500-200+1)+200; 
   bot->estDropN = rand() % (500-200+1)+200;
   bot->estTravelGrey = rand() % (1000-350+1)+350;
   bot->estTravelRed = rand() % (1000-350+1)+350;
   bot->estTravelBlue = rand() % (1000-350+1)+350;
-  //bot->timeImage = 0;
-  //bot->timeMeasured = 0;
-  //bot->timeListened = 0;  
+  bot->timeImage = 0;
+  bot->timeMeasured = 0;
+  bot->timeListened = 0;  
   bot->lastImage = 0;
   memset(bot->nPick, 0, nRegions);  
-  memset(bot->nDrop, 0, nRegions);    
+  memset(bot->nDrop, 0, nRegions); 
   wb_robot_step(32);
 }

@@ -9,16 +9,17 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-
+#include "dsp.h"
+#include "registers.h"
 #include "headerStruct.h"
 
-void forward(int steps, double *speed);
-void turnSteps(int steps, double *speed);
-void avoidance(double *speed, struct robotDevices *bot);
-int readSensors(int print, struct robotDevices *bot);
-int run(int flagLoad, int steps, double *speed, struct robotDevices *bot);
-int hitWall(int front, double *speed, struct robotDevices *bot);
-int enterTam(struct robotDevices *bot, double *speed);
-int waiting(int n);
+void forward(int steps, double *speed, struct robot *bot);
+void turnSteps(int steps, double *speed, struct robot *bot);
+void avoidance(double *speed, struct robot *bot);
+int readSensors(int print, struct robot *bot);
+int run(int steps, double *speed, struct robot *bot);
+int hitWall(int front, double *speed, struct robot *bot);
+int enterTam(double *speed, struct robot *bot);
+int waiting(int n, struct robot *bot);
 
 #endif

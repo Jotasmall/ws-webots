@@ -13,9 +13,9 @@
 
 #include "headerStruct.h"
 
-void createDir(int option, int flagBuild, struct flags4Files *botFlags);
-void createFiles(struct flags4Files *botFlags);
-void writeDecision(float boundP, float realP, int mechanism, int flagTravel, struct flags4Files *botFlags);
-void writeMessage(int speaking, const char *msg, struct flags4Files *botFlags);
+void createDir(int option, int flagBuild, struct robot *bot);
+void createFiles(struct robot *bot);
+void writeDecision(float boundP, float realP, int mechanism, int flagTravel, struct robot *bot);
+void writeMessage(int speaking, const char *msg, struct robot *bot);
 
 #endif

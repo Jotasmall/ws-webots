@@ -15,12 +15,9 @@
 #include "communication.h"
 #include "headerStruct.h"
 
-void updateEstimations(int task, int value, int cache, int timeImage, int timeMeasured, int timeListened, struct robotState *botState, struct modelParam *botParam, struct robotEstimations *botEst, struct robotDevices *botDevices, struct flags4Files *botFlags);
-void updateBitacora(int codeTask, int estimations, int cache, int timeMeasured, int timeListened, struct robotEstimations *botEst, struct flags4Files *botFlags, struct robotDevices *botDevices, struct robotState *botState);
-//void cronometer(int task, int cache, int *suggestedState, int *timeImage, int *timeMeasured, struct robotDevices *botDevices, struct robotState *botState, struct flags4Files *botFlags);
+void updateEstimations(int task, int cache, struct robot *bot);
+void updateBitacora(int codeTask, int estimations, int cache, struct robot *bot);
+void cronometer(int task, int cache, struct robot *bot);
+void countObjects(int nbRegions, struct robot *bot);
 
-/*
-void cronometer(int task, int cacheShape);
-void countObjects();
-*/
 #endif

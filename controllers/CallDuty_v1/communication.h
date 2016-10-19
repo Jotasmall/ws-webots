@@ -11,9 +11,10 @@
 #include <stdlib.h>
 
 #include "readWriteFiles.h"
+#include "registers.h"
 #include "headerStruct.h"
 
-int listening(WbDeviceTag receiver, int floorColor, int botNumber, int *listFriends, int *stateUML, int *suggestedState, struct flags4Files *botFlags);
-int speaking(struct robotDevices *bot, int botNumber, int toWhom, int codeTask, int time, int cache, struct flags4Files *botFlags);
+int listening(struct robot *bot);
+int speaking(int toWhom, int codeTask, int time, int cache, struct robot *bot);
 
 #endif

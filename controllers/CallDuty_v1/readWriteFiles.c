@@ -17,97 +17,95 @@
 #define TRAVELING_LEVY 1
 #define TRAVELING_CALL 2
 
-//void createDir(int option, int flagBuild, char *fileRobot, char *dirPath){
-void createDir(int option, int flagBuild, struct flags4Files *botFlags){
+void createDir(int option, int flagBuild, struct robot *bot){
   switch(option){
-    case FSM:
-      sprintf(botFlags->fileRobot, "%s-FSM", botFlags->dirPath);
-      break;
-    case ESTIMATIONS:
-      sprintf(botFlags->fileRobot, "%s-EST", botFlags->dirPath); 
-      break;
-    case LIFE:
-      sprintf(botFlags->fileRobot, "%s-REC", botFlags->dirPath);
-      break;
-    case DECISIONS:
-      sprintf(botFlags->fileRobot, "%s-DM", botFlags->dirPath); 
-      break;
-    case PERFORMANCE:
-      sprintf(botFlags->fileRobot, "%s-OBJ", botFlags->dirPath);
-      break;
-    case COMMUNICATION:
-      sprintf(botFlags->fileRobot, "%s-COM", botFlags->dirPath);
-      break;
-   }
-   //printf("\n fileRobot %s", fileRobot);
-   //printf("\n");
-   
-   
-   //if (flagBuild){ mkdir(fileRobot,0700);} //LINUX
-   if (flagBuild){ CreateDirectory(botFlags->fileRobot, NULL);}  //Windows
-    
-   strcat(botFlags->fileRobot, "/");
-   strcat(botFlags->fileRobot, wb_robot_get_name()); 
-   
-   switch(option){
-     case FSM:
-       strcat(botFlags->fileRobot, "-FSM.txt");
-       break;       
-     case ESTIMATIONS:
-       strcat(botFlags->fileRobot, "-EST.txt");
-       break;       
-     case LIFE:
-       strcat(botFlags->fileRobot, "-REC.txt");
-       break;
-     case DECISIONS:
-       strcat(botFlags->fileRobot, "-DM.txt"); 
-       break;
-     case PERFORMANCE:
-       strcat(botFlags->fileRobot, "-OBJ.txt"); 
-       break;
-     case COMMUNICATION:
-       strcat(botFlags->fileRobot, "-COM.txt");
-       break;
+  case FSM:
+    sprintf(bot->fileRobot, "%s-FSM", bot->dirPath);
+    break;
+  case ESTIMATIONS:
+    sprintf(bot->fileRobot, "%s-EST", bot->dirPath); 
+    break;
+  case LIFE:
+    sprintf(bot->fileRobot, "%s-REC", bot->dirPath);
+    break;
+  case DECISIONS:
+    sprintf(bot->fileRobot, "%s-DM", bot->dirPath); 
+    break;
+  case PERFORMANCE:
+    sprintf(bot->fileRobot, "%s-OBJ", bot->dirPath);
+    break;
+  case COMMUNICATION:
+    sprintf(bot->fileRobot, "%s-COM", bot->dirPath);
+    break;
+ }
+ //printf("\n fileRobot %s", fileRobot);
+ //printf("\n");
+ 
+ //if (flagBuild){ mkdir(fileRobot,0700);} //LINUX
+ if (flagBuild){ CreateDirectory(bot->fileRobot, NULL);}  //Windows
+  
+ strcat(bot->fileRobot, "/");
+ strcat(bot->fileRobot, wb_robot_get_name()); 
+ 
+ switch(option){
+   case FSM:
+     strcat(bot->fileRobot, "-FSM.txt");
+     break;   
+   case ESTIMATIONS:
+     strcat(bot->fileRobot, "-EST.txt");
+     break;   
+   case LIFE:
+     strcat(bot->fileRobot, "-REC.txt");
+     break;
+   case DECISIONS:
+     strcat(bot->fileRobot, "-DM.txt"); 
+   break;
+   case PERFORMANCE:
+     strcat(bot->fileRobot, "-OBJ.txt"); 
+     break;
+   case COMMUNICATION:
+     strcat(bot->fileRobot, "-COM.txt");
+     break;
   }
   //printf("\n fileRobot %s", fileRobot);
   //printf("\n"); 
-   
+ 
   if (flagBuild){
-    //printf("\n %s is accessing to %s", robotName, fileRobot);
+  //printf("\n %s is accessing to %s", robotName, fileRobot);
   }  
 }
 
-void createFiles(struct flags4Files *botFlags){ //ok
+void createFiles(struct robot *bot){ //ok
   // File for each cycle of FSM
-  if (botFlags->flagFilesFSM) {
-    createDir(FSM, 1, botFlags); 
-    FILE *ffsm = fopen(botFlags->fileRobot, "w");
+  if (bot->flagFilesFSM) {
+    createDir(FSM, 1, bot); 
+    FILE *ffsm = fopen(bot->fileRobot, "w");
     if (ffsm == NULL) {
       printf("Error opening file bot fsm \n");
       printf("\n");
       exit(1);
     }
-    fprintf(ffsm, "StateUML, Suceess/Fail, timeMeasured \n");
+    fprintf(ffsm, "StateUML, Suceess/Fail, bot->timeMeasured \n");
     fclose(ffsm);
   }
   // File for evolution of estimations
-  if (botFlags->flagFilesEST) {
-    createDir(ESTIMATIONS, 1, botFlags); 
-    FILE *fest = fopen(botFlags->fileRobot, "w");
+  if (bot->flagFilesEST) {
+    createDir(ESTIMATIONS, 1, bot); 
+    FILE *fest = fopen(bot->fileRobot, "w");
     if (fest == NULL) {
       printf("Error opening estimation file \n");
       printf("\n");
       exit(1);
     }
-    fprintf(fest,"who, tStore, tHarvest, tPickS, tDropC,"
-                 " tePickC, tDropN, WCacheDrop, WCachePick,"
-                  "tImage \n");
+    fprintf(fest,"who, tStore, tHarvest, tPickS, tDropC, "
+                 "tePickC, tDropN, WCacheDrop, WCachePick, "
+                 "tImage \n");
     fclose(fest);
   }  
   // File for record entire life
-  if (botFlags->flagFilesLIFE) {
-    createDir(LIFE, 1, botFlags); 
-    FILE *flife = fopen(botFlags->fileRobot, "w");
+  if (bot->flagFilesLIFE) {
+    createDir(LIFE, 1, bot); 
+    FILE *flife = fopen(bot->fileRobot, "w");
     if (flife == NULL) {
       printf("Error opening estimation file \n");
       printf("\n");
@@ -117,9 +115,9 @@ void createFiles(struct flags4Files *botFlags){ //ok
     fclose(flife);
   }  
   // File for decisions
-  if (botFlags->flagFilesDM) {
-    createDir(DECISIONS, 1, botFlags); 
-    FILE *fpart = fopen(botFlags->fileRobot, "w");
+  if (bot->flagFilesDM) {
+    createDir(DECISIONS, 1, bot); 
+    FILE *fpart = fopen(bot->fileRobot, "w");
     if (fpart == NULL) {
       printf("Error opening partition file \n");
       printf("\n");
@@ -129,9 +127,9 @@ void createFiles(struct flags4Files *botFlags){ //ok
     fclose(fpart);
   }  
   // File for performance 
-  if (botFlags->flagFilesPER) {
-    createDir(PERFORMANCE, 1, botFlags);
-    FILE *fper = fopen(botFlags->fileRobot, "w");
+  if (bot->flagFilesPER) {
+    createDir(PERFORMANCE, 1, bot);
+    FILE *fper = fopen(bot->fileRobot, "w");
     if (fper == NULL) {
       printf("Error opening performance file \n");
       printf("\n");
@@ -141,9 +139,9 @@ void createFiles(struct flags4Files *botFlags){ //ok
     fclose(fper);
   }  
   // File for communications
-  if (botFlags->flagFilesCOM) {
-    createDir(COMMUNICATION, 1, botFlags);
-    FILE *fcom = fopen(botFlags->fileRobot, "w");
+  if (bot->flagFilesCOM) {
+    createDir(COMMUNICATION, 1, bot);
+    FILE *fcom = fopen(bot->fileRobot, "w");
     if (fcom == NULL) {
       printf("Error opening communication file \n");
       printf("\n");
@@ -154,20 +152,18 @@ void createFiles(struct flags4Files *botFlags){ //ok
   }
 }
 
-//void writeDecision(float boundP, float realP, int mechanism, int flagTravel, struct flags4Files *botFlags, char *fileRobot, char *dirPath ){ //ok-
-void writeDecision(float boundP, float realP, int mechanism, int flagTravel, struct flags4Files *botFlags){ //ok-
-  if (botFlags->flagFilesDM) {
+void writeDecision(float boundP, float realP, int mechanism, int flagTravel, struct robot *bot){ //ok-
+  if (bot->flagFilesDM) {
     // File for decisions
-    createDir(DECISIONS, 0, botFlags);
+    createDir(DECISIONS, 0, bot);
     //printf("\n %s is registering its decision in %s", robotName, fileRobot);
     //printf("\n");	
-    FILE *file = fopen(botFlags->fileRobot, "a+");
+    FILE *file = fopen(bot->fileRobot, "a+");
     if (file==NULL) {
       printf("Error opening file of estimations bot\n");
       printf("\n");
       exit(1);
     }
-  
     if (mechanism == TRAVELING_AGREE) {
       fprintf(file, "\n Partitioning %d, %.2f, %.2f", boundP>realP, boundP, realP);
     } else if (mechanism == TRAVELING_LEVY){
@@ -179,15 +175,13 @@ void writeDecision(float boundP, float realP, int mechanism, int flagTravel, str
   }
 }
 
-
-//void writeMessage(int speaking, const char *msg, struct flags4Files *botFlagFiles, char *fileRobot, char *dirPath) {
-void writeMessage(int speaking, const char *msg, struct flags4Files *botFlags) {
-  if (botFlags->flagFilesCOM) {
-      // File for decisions
-    createDir(COMMUNICATION, 0, botFlags);
+void writeMessage(int speaking, const char *msg, struct robot *bot) {
+  if (bot->flagFilesCOM) {
+    // File for decisions
+    createDir(COMMUNICATION, 0, bot);
     //printf("\n %s is registering its messages in %s", robotName, fileRobot);
     //printf("\n");	
-    FILE *file = fopen(botFlags->fileRobot, "a+");
+    FILE *file = fopen(bot->fileRobot, "a+");
     if (file == NULL) {
       printf("Error opening file of communications\n");
       printf("\n");

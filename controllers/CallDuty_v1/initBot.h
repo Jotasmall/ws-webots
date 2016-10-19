@@ -18,13 +18,9 @@
 
 #include "headerStruct.h"
 
-/*void initSensors(WbDeviceTag *sensors);
-void initCamera(WbDeviceTag *cam, unsigned short *width, unsigned short *height);
-void initLeds(WbDeviceTag *leds);*/
-void resetDevices(struct robotDevices *bot);
-void resetDisplay(WbDeviceTag *displayExtra, unsigned short width, unsigned short height);
-void calibrateSensors(struct robotDevices *bot);
-//void calibrateSensors(WbDeviceTag *sensors, int *ps_offset);
-//void initEstimations(struct robotEstimations *bot, int nRegions);
+void resetDevices(struct robot *bot);
+void resetDisplay(WbDeviceTag *displayExtra, struct robot *bot);
+void calibrateSensors(struct robot *bot);
+void initEstimations(int nRegions, struct robot *bot);
 
 #endif
