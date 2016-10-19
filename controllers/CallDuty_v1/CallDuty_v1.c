@@ -68,15 +68,20 @@ WbDeviceTag displayExtra;
 #define ROBOT 306
 // Colors
 #define RED 0
+#define DARK_RED 20
 #define GREY 1
 #define BLUE 2
+#define DARK_BLUE 22
 #define CYAN 3
+#define DARK_CYAN 23
 #define MAGENTA 4
+#define DARK_MAGENTA 24
 #define BLACK 6
 #define GREEN 7
 #define WHITE 8
 #define TAM_WALL 9
 #define ROBOT_COLOR 10
+
 #define HEXRED 0xFF0000
 #define HEXWHITE 0xFFFFFF
 #define HEXBLACK 0x000000
@@ -278,7 +283,7 @@ void executeUML(){
         case RED:
           colorSeeking = BLUE; break;
         case GREY:
-          colorSeeking = CYAN; break;
+          colorSeeking = DARK_RED; break;
         case BLUE:
           colorSeeking = RED; break;
       }

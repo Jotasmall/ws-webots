@@ -4,10 +4,14 @@
 #define TURN_CACHE -52
 // Colors
 #define RED 0
+#define DARK_RED 20
 #define GREY 1
 #define BLUE 2
+#define DARK_BLUE 22
 #define CYAN 3
+#define DARK_CYAN 23
 #define MAGENTA 4
+#define DARK_MAGENTA 24
 #define BLACK 6
 #define GREEN 7
 #define WHITE 8
@@ -61,6 +65,9 @@ int compareColorPixel(int pixelX, int pixelY, int foreground, struct robot *bot)
   case RED:
     auxColor = (pixelR > COLOR_THRES) && (pixelB < 20) && (pixelG < 20); //only red
     break;
+  case DARK_RED:
+    auxColor = (pixelR > 100) && (pixelR < 150) && (pixelB < 20) && (pixelG < 20); 
+    break;  
   case GREEN:
     auxColor = (pixelG > COLOR_THRES) && (pixelB < LOW_THRES) && (pixelR < LOW_THRES); //only green
     break;  
@@ -132,12 +139,14 @@ int cont_height_figure(int indexP, int color, struct robot *bot){ //ok
       if (foreground != BLACK) { foreground = WHITE;}
     } break;
   case 102: // checking for sources 
-    if (bot->currentState == PICK_SOURCE) {
+    /*if (bot->currentState == PICK_SOURCE) {
       foreground = RED;
       if (bot->floorColor == RED) {
         foreground = BLUE;
       }
-    } break;
+    }*/
+	foreground = bot->colorSeeking;
+	break;
   default:  // Normal processing
     if ((indexP >= 0) && (indexP < bot->width)) { endX = 0;}
   } 

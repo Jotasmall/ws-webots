@@ -163,11 +163,14 @@ int main(int argc, char **argv) {
     W_updateNests();
     W_updateSources();
     listening();
+    //printf("\n %s is on count %ld",robotName, timeCounter);
+    //printf("\n");
     //printStates();
     if (timeCounter%112 == 0) {//448 -> 1 min
       timeMinute++;
       if (timeMinute > MINUTES_EMPTY) {
-        //* printf("\n %s is gonna speak", robotName);
+        printf("\n %s is gonna speak", robotName);
+        printf("\n");
         timeMinute = 0;
         W_speaking(M2NEST); // Call of Duty
       }
@@ -202,7 +205,7 @@ void W_updateNests(){
           wb_led_set(led[sensorNest[n]], 1);
           if ((ds_value1[sensorNest[n]]>THRESHOLD_DIST) || (ds_value2[sensorNest[n]]>THRESHOLD_DIST)){ 
             contArrivalNest[n]++;
-            timeMinute = 0;
+            //juan timeMinute = 0;
             if (contArrivalNest[n]>TIME4ARRIVAL){
               contArrivalNest[n] = 0;
               stateNest[n] = UNLOAD_NEST; 
