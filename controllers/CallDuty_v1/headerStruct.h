@@ -16,7 +16,7 @@ struct robot{
   int botNumber;           //ok - *main
   int currentState;        //ok - initVariables *main
   int suggestedState;      //ok - initVariables *main
-  int travelDestination;   //ok - initVariables *main
+  int colorDestination;   //ok - initVariables *main
   int flagLoad;            //ok - initVariables *main 
   int floorColor;          //ok - *main
   int *listFriends;        //ok - *main

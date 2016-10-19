@@ -169,10 +169,10 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra, struct robot *bot
   return 0;
 }
 
-int going2region(int colorDestination, double *speed, WbDeviceTag *displayExtra, struct robot *bot){ //ok
+int going2region(double *speed, WbDeviceTag *displayExtra, struct robot *bot){ //ok
   int endTask = 0, i;
   resetDisplay(displayExtra, bot);
-  printf("\n %d getting in position destination %d by line of color %d", bot->botNumber, colorDestination, bot->lineColor);
+  printf("\n %d getting in position destination %d by line of color %d", bot->botNumber, bot->colorDestination, bot->lineColor);
   printf("\n");
   endTask = setRobotPosition(speed, displayExtra, bot);
   if (endTask == -1) { // found no line
@@ -209,12 +209,12 @@ int going2region(int colorDestination, double *speed, WbDeviceTag *displayExtra,
 	}
     whereArrive(speed, bot);
     run(10, speed, bot);
-    if (bot->floorColor == colorDestination) {
+    if (bot->floorColor == bot->colorDestination) {
       printf("\n Excellent entrance, %d is on desired region", bot->botNumber);
       printf("\n");
       return 1;
     } else {
-      printf("\n Something went wrong, please %d recheck color destination %d", bot->botNumber, colorDestination);
+      printf("\n Something went wrong, please %d recheck color destination %d", bot->botNumber, bot->colorDestination);
       printf("\n");
       return 0;
     } 

@@ -50,19 +50,25 @@ int listening(struct robot *bot){ //ok-
         if (bot->botNumber != 2701) {    
           switch(suggestedDestination){
           case RED:
-            printf("\n %d do not wanna go RED", bot->botNumber);
-            bot->currentState = TRAVEL2RED;
-            bot->suggestedState = TRAVEL2RED;
+		    if (bot->floorColor != RED) {
+              printf("\n %d do not wanna go RED", bot->botNumber);
+              bot->currentState = TRAVEL2RED;
+              bot->suggestedState = TRAVEL2RED;
+			}  
             break;
           case GREY:
-            printf("\n %d do not wanna go GREY", bot->botNumber);
-            bot->currentState = TRAVEL2GREY;
-            bot->suggestedState = TRAVEL2GREY;
+            if (bot->floorColor != GREY) {
+			  printf("\n %d do not wanna go GREY", bot->botNumber);
+              bot->currentState = TRAVEL2GREY;
+              bot->suggestedState = TRAVEL2GREY;
+			}  
             break;
           case BLUE:
-            printf("\n %d do not wanna go BLUE", bot->botNumber);
-            bot->currentState = TRAVEL2BLUE;
-            bot->suggestedState = TRAVEL2BLUE;
+            if (bot->floorColor != BLUE) {
+			  printf("\n %d do not wanna go BLUE", bot->botNumber);
+              bot->currentState = TRAVEL2BLUE;
+              bot->suggestedState = TRAVEL2BLUE;
+			}  
             break;
           }
 		  bot->flagCommanded = 1;

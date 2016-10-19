@@ -194,7 +194,7 @@ int whereArrive(double *speed, struct robot *bot){
   // Verify if not robot is close
   if ((readSensors(0, bot) == 0)) {
     bot->floorColor = whereIam(0, speed, bot);
-    printf("\n %d arrived into a land of color %d", bot->botNumber, bot->floorColor);
+    printf("\n %d arrived into a land of color %d when going to color %d", bot->botNumber, bot->floorColor, bot->currentState);
     printf("\n");
     speaking(M2NEST, ROBOT_ARRIVING, 0, 0, bot);
   } else {

@@ -229,7 +229,7 @@ void initVariables(){
     modelTest = ESSAY;
   } 
   bot.flagLoad = 0;
-  bot.travelDestination = NONE;
+  bot.colorDestination = NONE;
   output = STOP;
   switch(modelTest){
   case ESSAY:
@@ -289,7 +289,7 @@ void executeUML(){
         bot.suggestedState = NONE;
         bot.flagCommanded = 0;
       } else {
-        bot.currentState = moduleUML(colorSeeking, BOX, PICKING, DROP_NEST, bot.travelDestination, 0);
+        bot.currentState = moduleUML(colorSeeking, BOX, PICKING, DROP_NEST, bot.colorDestination, 0);
         // avoid commands of nest when loaded
         if (bot.flagLoad) { bot.suggestedState = NONE;}  
       }  
@@ -304,23 +304,26 @@ void executeUML(){
         bot.suggestedState = NONE;
         bot.flagCommanded = 0;
       } else {
-        bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, bot.travelDestination, 1); 
+        bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, bot.colorDestination, 1); 
         if (bot.flagLoad) { bot.suggestedState = NONE;}
       }
     break;
     case TRAVEL2GREY:
       printf("\n %d state TRAVEL2GREY", bot.botNumber);
       printf("\n");
+      bot.colorDestination = GREY;
       bot.currentState = moduleTravel();
     break;  
     case TRAVEL2BLUE:
       printf("\n %d state TRAVEL2BLUE", bot.botNumber);
       printf("\n");
+      bot.colorDestination = BLUE;
       bot.currentState = moduleTravel();
       break;
     case TRAVEL2RED:
       printf("\n %d state TRAVEL2RED", bot.botNumber);
       printf("\n");
+      bot.colorDestination = GREY;
       bot.currentState = moduleTravel();
       break;
     default:
@@ -336,7 +339,7 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
   statePrevious = bot.currentState;
   int auxShapeSeen = 0; //when working with different shapes
   // Light indications
-  if (pick_or_drop == PICKING) { pickingIndication(1);}
+  if (pick_or_drop == DROPPING) { pickingIndication(1);}
   else { wb_led_set(bot.leds[8], 1);}
  
   printf("\n %s UML module has flagCommanded %d flagLoad %d and modelTest %d", robotName, bot.flagCommanded, bot.flagLoad, modelTest);
@@ -356,27 +359,27 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
         turnSteps(TURN_CACHE, speed, &bot);
         updateEstimations(statePrevious, auxShapeSeen, &bot);
         bot.flagLoad = !flag;
-        if (pick_or_drop == PICKING) { pickingIndication(0);}
+        if (pick_or_drop == DROPPING) { pickingIndication(0);}
         else { wb_led_set(bot.leds[8], 0);}	
         break;
       }  
     }
-    flagTravel = computeTraveling(0);
+    flagTravel = 0;//check computeTraveling(0);
     // Once a robot got an item, it has to dropped in that region
     if (flagTravel && (bot.flagLoad == 0)) { 
       float p = ((float)rand())/RAND_MAX;
       if (p > 0.5) {
-        bot.travelDestination = bot.floorColor - 1;
-        if (bot.travelDestination < 0) {
-          bot.travelDestination = 2; // BLUE
+        bot.colorDestination = bot.floorColor - 1;
+        if (bot.colorDestination < 0) {
+          bot.colorDestination = 2; // BLUE
         }
       } else {
-        bot.travelDestination = bot.floorColor + 1;
-        if (bot.travelDestination > 2) {
-          bot.travelDestination = 0; // RED
+        bot.colorDestination = bot.floorColor + 1;
+        if (bot.colorDestination > 2) {
+          bot.colorDestination = 0; // RED
         }
       }
-      //printf("\n %s would like to travel towards %d", robotName, travelDestination);
+      //printf("\n %s would like to travel towards %d", robotName, colorDestination);
       //nextState = stateTravel;
     }	  
   } 
@@ -388,46 +391,53 @@ int moduleTravel(){
   bot.colorSeeking = CYAN;
   bot.shapeLooking = BOX;
 
-  printf("\n %s travel modul has flagCommanded %d flagLoad %d and modelTest %d", robotName, bot.flagLoad, bot.flagCommanded, modelTest);
+  printf("\n %s travel module has flagCommanded %d flagLoad %d and modelTest %d", robotName, bot.flagCommanded, bot.flagLoad, modelTest);
   printf("\n");
+  if (bot.floorColor == bot.colorDestination) {
+    printf("\n %s has fulfilled its trip, stay here picking", robotName);
+    printf("\n");
+    return PICK_SOURCE;
+  } 
 
-  output = moduleFSM();
+  output = moduleFSM(); 
   
   if (output == STOP){  
     printf("\n %s is on region %d desiring to go to %d", robotName, bot.floorColor, bot.currentState);
-    printf("\n");
+    printf("\n"); 
     if (bot.currentState  == TRAVEL2GREY) {
       if (bot.floorColor == BLUE) {
         bot.lineColor = RED;
-        flagReady = going2region(GREY, speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra, &bot);
       } else if (bot.floorColor ==  GREY) {
         flagReady = 1;
       } else if (bot.floorColor == RED){
         bot.lineColor = BLUE;
-        flagReady = going2region(GREY, speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra, &bot);
       }  
     } else if (bot.currentState == TRAVEL2BLUE)  {
       if (bot.floorColor == GREY){
         bot.lineColor = RED;
-        flagReady = going2region(BLUE, speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra, &bot);
       } else if (bot.floorColor == BLUE) {
         flagReady = 1;
       } else if (bot.floorColor == RED){
         bot.floorColor = BLUE;
-        flagReady = going2region(BLUE, speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra, &bot);
       }
     } else if (bot.currentState == TRAVEL2RED) {
       if (bot.floorColor == GREY){
         bot.floorColor = BLUE; 
-        flagReady = going2region(RED, speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra, &bot);
       } else if (bot.floorColor == RED) {
         flagReady = 1;
       } else if (bot.floorColor == BLUE){
         bot.floorColor = RED;
-        flagReady = going2region(RED, speed, &displayExtra, &bot);
-      }
+        flagReady = going2region(speed, &displayExtra, &bot);
+      } 
     } 
-    if (flagReady) {  
+    if (flagReady) { 
+      printf("\n Excellent entrance, %d is on desired region", bot.botNumber);
+      printf("\n");	
       auxUML = PICK_SOURCE;  
       updateEstimations(bot.currentState, 0, &bot);
       /*

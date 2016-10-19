@@ -13,7 +13,7 @@
 int followingLine(double *speed, WbDeviceTag *displayExtra, struct robot *bot);
 int doorEntrance(double *speed, int steps, struct robot *bot);
 int setRobotPosition(double *speed, WbDeviceTag *displayExtra, struct robot *bot);
-int going2region(int colorDestination, double *speed, WbDeviceTag *displayExtra, struct robot *bot);
+int going2region(double *speed, WbDeviceTag *displayExtra, struct robot *bot);
 int going2it(int index, double *speed, WbDeviceTag *displayExtra, struct robot *bot);
 int levyFlight(double *speed, WbDeviceTag *displayExtra, struct robot *bot);
 
