@@ -15,12 +15,13 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
+#include "headerStruct.h" 
+#include "botStruct.h"
+robot bot;
 
-#include "headerStruct.h"
-
-void resetDevices(struct robot *bot);
-void resetDisplay(WbDeviceTag *displayExtra, struct robot *bot);
-void calibrateSensors(struct robot *bot);
-void initEstimations(int nRegions, struct robot *bot);
+void resetDevices();
+void resetDisplay(WbDeviceTag *displayExtra);
+void calibrateSensors();
+void initEstimations(int nRegions);
 
 #endif

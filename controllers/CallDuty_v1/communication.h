@@ -12,9 +12,11 @@
 
 #include "readWriteFiles.h"
 #include "registers.h"
-#include "headerStruct.h"
+#include "headerStruct.h" 
+#include "botStruct.h"
+robot bot;
 
-int listening(struct robot *bot);
-int speaking(int toWhom, int codeTask, int time, int cache, struct robot *bot);
+int listening();
+int speaking(int toWhom, int codeTask, int time, int cache);
 
 #endif

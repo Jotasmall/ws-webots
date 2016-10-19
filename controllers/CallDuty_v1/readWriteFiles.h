@@ -10,12 +10,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "headerStruct.h" 
+#include "botStruct.h"
+robot bot;
 
-#include "headerStruct.h"
-
-void createDir(int option, int flagBuild, struct robot *bot);
-void createFiles(struct robot *bot);
-void writeDecision(float boundP, float realP, int mechanism, int flagTravel, struct robot *bot);
-void writeMessage(int speaking, const char *msg, struct robot *bot);
+void createDir(int option, int flagBuild);
+void createFiles();
+void writeDecision(float boundP, float realP, int mechanism, int flagTravel);
+void writeMessage(int speaking, const char *msg);
 
 #endif

@@ -52,14 +52,14 @@
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
 
-int compareColorPixel(int pixelX, int pixelY, int foreground, struct robot *bot){ //ok-
+int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
   int auxColor = 0;
-  //int width = bot->width;
-  int pixelR = wb_camera_image_get_red(bot->image, bot->width, pixelX, pixelY);
-  int pixelG = wb_camera_image_get_green(bot->image, bot->width, pixelX, pixelY);
-  int pixelB = wb_camera_image_get_blue(bot->image, bot->width, pixelX, pixelY);
+  //int width = bot.width;
+  int pixelR = wb_camera_image_get_red(bot.image, bot.width, pixelX, pixelY);
+  int pixelG = wb_camera_image_get_green(bot.image, bot.width, pixelX, pixelY);
+  int pixelB = wb_camera_image_get_blue(bot.image, bot.width, pixelX, pixelY);
   
-  if ((foreground == CYAN) && (bot->floorColor == GREY) && (bot->currentState != PICK_SOURCE)) { foreground = WHITE;}
+  if ((foreground == CYAN) && (bot.floorColor == GREY) && (bot.currentState != PICK_SOURCE)) { foreground = WHITE;}
   
   switch(foreground){
   case RED:
@@ -104,122 +104,122 @@ int compareColorPixel(int pixelX, int pixelY, int foreground, struct robot *bot)
   return auxColor;
 }
 
-int cont_height_figure(int indexP, int color, struct robot *bot){ //ok
+int cont_height_figure(int indexP, int color){ //ok
   int count=0;
   int maxCount = 0;
   int beginY = 0;
-  int endX = bot->width-1;
+  int endX = bot.width-1;
   int foreground = color;
   int i, j;
   switch (indexP){
   case -22:
-    beginY = bot->height - 5;
+    beginY = bot.height - 5;
     foreground = GREY; break;
   case -21: // checking red-nest ground color
-    beginY = bot->height - 5;
+    beginY = bot.height - 5;
     foreground = RED; break;
   case -20: // checking blue-source ground color
-    beginY = bot->height - 5; 
+    beginY = bot.height - 5; 
     foreground = BLUE; break; 
   case -11: // looking for landmark
     foreground = MAGENTA; // nest TAM
     break; 
   case -10: // On levy avoid colors 18 
     foreground = MAGENTA;
-    if (bot->currentState == DROP_NEST) { 
+    if (bot.currentState == DROP_NEST) { 
       foreground = RED; // source TAM
-      if (bot->floorColor == RED) { foreground = BLUE;} // source TAM
+      if (bot.floorColor == RED) { foreground = BLUE;} // source TAM
     } break; 
   case 100: // checking tam_wall color
     foreground = TAM_WALL; break;
   case 101: // waiting on TAM 
-    if ((bot->currentState == TRAVEL2BLUE) || (bot->currentState == TRAVEL2RED) || (bot->currentState == TRAVEL2GREY)){
+    if ((bot.currentState == TRAVEL2BLUE) || (bot.currentState == TRAVEL2RED) || (bot.currentState == TRAVEL2GREY)){
       foreground = CYAN;
     } else {
       if (foreground != BLACK) { foreground = WHITE;}
     } break;
   case 102: // checking for sources 
-    /*if (bot->currentState == PICK_SOURCE) {
+    /*if (bot.currentState == PICK_SOURCE) {
       foreground = RED;
-      if (bot->floorColor == RED) {
+      if (bot.floorColor == RED) {
         foreground = BLUE;
       }
     }*/
-	foreground = bot->colorSeeking;
+	foreground = bot.colorSeeking;
 	break;
   default:  // Normal processing
-    if ((indexP >= 0) && (indexP < bot->width)) { endX = 0;}
+    if ((indexP >= 0) && (indexP < bot.width)) { endX = 0;}
   } 
 
   for (i = 0; i <= endX; i++) {
     if (endX == 0) { i = indexP;} // Only that point
-    for (j = beginY; j < bot->height; j++) {
-     count += compareColorPixel(i, j, foreground, bot);  
+    for (j = beginY; j < bot.height; j++) {
+     count += compareColorPixel(i, j, foreground);  
     } 
     if (count > maxCount) { maxCount = count;}
-    if (beginY != (bot->height - 5)) { count = 0;}
+    if (beginY != (bot.height - 5)) { count = 0;}
   } 
   // printf("\n count value %d index %d", maxCount, i);
   return maxCount;
 }
 
-int detectTam(struct robot *bot){ //ok
-  bot->image  = wb_camera_get_image(bot->cam);
+int detectTam(){ //ok
+  bot.image  = wb_camera_get_image(bot.cam);
   wb_robot_step(TIME_STEP);  
-  if ((cont_height_figure(101, bot->colorSeeking, bot) < 35) && (cont_height_figure(102, bot->colorSeeking, bot) < 35)){ //30 checking wall tam
+  if ((cont_height_figure(101, bot.colorSeeking) < 35) && (cont_height_figure(102, bot.colorSeeking) < 35)){ //30 checking wall tam
     printf("\n Something went wrong entering");
     printf("\n");
-    waiting(1, bot);
+    waiting(1);
     return 0;  
   } 
   return 1;  
 }
 
-int whereIam(int avoiding, double *speed, struct robot *bot){ 
-  bot->image = wb_camera_get_image(bot->cam);
+int whereIam(int avoiding, double *speed){ 
+  bot.image = wb_camera_get_image(bot.cam);
   wb_robot_step(TIME_STEP);
   int groundDetected = GREY;
-  // cronometer(IMAGE, 0, bot); //This is a fast operation
+  // cronometer(IMAGE, 0); //This is a fast operation
   
-  if (cont_height_figure(-20, bot->colorSeeking, bot) > 104 ) { 
+  if (cont_height_figure(-20, bot.colorSeeking) > 104 ) { 
     groundDetected = BLUE;
-  } else if (cont_height_figure(-21, bot->colorSeeking, bot) > 104 ) {
+  } else if (cont_height_figure(-21, bot.colorSeeking) > 104 ) {
     groundDetected = RED;
-  } else if (cont_height_figure(-22, bot->colorSeeking, bot) > 104) {
+  } else if (cont_height_figure(-22, bot.colorSeeking) > 104) {
     groundDetected = GREY;
   }
-  if ((avoiding) && (groundDetected != bot->floorColor)) {
+  if ((avoiding) && (groundDetected != bot.floorColor)) {
     float p = ((float)rand())/RAND_MAX; 
     if (p>0.5) {p = 1;} else { p = -1;} 
-    turnSteps((int) p*TURN_CACHE/2, speed, bot);
-    run(7, speed, bot);	
+    turnSteps((int) p*TURN_CACHE/2, speed);
+    run(7, speed);	
     //printf("\n Missing my region %s", robotName);
     //printf("\n");
   }  
   return groundDetected;
 } 
 
-int whereArrive(double *speed, struct robot *bot){
+int whereArrive(double *speed){
   // Verify if not robot is close
-  if ((readSensors(0, bot) == 0)) {
-    bot->floorColor = whereIam(0, speed, bot);
-    printf("\n %d arrived into a land of color %d when going to color %d", bot->botNumber, bot->floorColor, bot->currentState);
+  if ((readSensors(0) == 0)) {
+    bot.floorColor = whereIam(0, speed);
+    printf("\n %d arrived into a land of color %d when going to color %d", bot.botNumber, bot.floorColor, bot.currentState);
     printf("\n");
-    speaking(M2NEST, ROBOT_ARRIVING, 0, 0, bot);
+    speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
   } else {
-    waiting(10, bot);
+    waiting(10);
     printf("\n Waiting to have a clear ground");
     printf("\n");
-    return whereArrive(speed, bot);
+    return whereArrive(speed);
   }
   return 1;
 }
 
 
-int find_middle(int wrongLine, struct robot *bot){ //ok 
+int find_middle(int wrongLine){ //ok 
   int i;
   int aux, index1 = -1, index2 = -1;
-  int foreground = bot->lineColor;
+  int foreground = bot.lineColor;
   if (wrongLine) { 
     if (foreground == BLUE) {
       foreground = RED;
@@ -228,8 +228,8 @@ int find_middle(int wrongLine, struct robot *bot){ //ok
     }
   }
   // new world
-  for (i = 0; i<bot->width; i++){
-    aux = compareColorPixel(i, bot->height-1, foreground, bot);
+  for (i = 0; i<bot.width; i++){
+    aux = compareColorPixel(i, bot.height-1, foreground);
     if (aux == 1) {
       if (index1 == -1) { // the 1st time see the color
         index1 = i;
@@ -242,20 +242,20 @@ int find_middle(int wrongLine, struct robot *bot){ //ok
   aux = (index2-index1)/2+index1;
   if (wrongLine) {
     aux = 100;
-    printf("\n %d had found a wrong line color", bot->botNumber);
+    printf("\n %d had found a wrong line color", bot.botNumber);
     printf("\n");
   }
   return aux;  
 }
 
-int waiting_color(struct robot *bot) {//ok
-  bot->image = wb_camera_get_image(bot->cam);
-  waiting(1, bot);
+int waiting_color() {//ok
+  bot.image = wb_camera_get_image(bot.cam);
+  waiting(1);
   int count = 0;
-  count = cont_height_figure(101, bot->colorSeeking, bot);
+  count = cont_height_figure(101, bot.colorSeeking);
   int countArriving = 0;
   int flagPrint1=0;
-  countArriving = cont_height_figure(102, bot->colorSeeking, bot);
+  countArriving = cont_height_figure(102, bot.colorSeeking);
   if (flagPrint1) {
     if (count > countArriving) {
       printf("\n Intensity %d half line", count);
@@ -265,10 +265,10 @@ int waiting_color(struct robot *bot) {//ok
     flagPrint1 = 0;
   } 
   if ((count > 26) || (countArriving > 26)) {
-    if (bot->currentState == PICK_SOURCE) {
-      cronometer(WAITING, 0, bot); //shapeSeen); //when using different shapes
+    if (bot.currentState == PICK_SOURCE) {
+      cronometer(WAITING, 0); //shapeSeen); //when using different shapes
     } 
-    cronometer(-1, 0, bot);
+    cronometer(-1, 0);
     return 1; //keep waiting
   }  
   //printf("\n Intensity gets down");
@@ -344,12 +344,12 @@ int whatIsee(int color, float Eccentricity, float Extent, int squarewidth, int m
   return shapeFound;
 }
 
-int doubleCheck(double *speed, WbDeviceTag *displayExtra, struct robot *bot){
+int doubleCheck(double *speed, WbDeviceTag *displayExtra){
   int index = -1;
-  run(10, speed, bot); 
-  index = detectImage(displayExtra, bot);
+  run(10, speed); 
+  index = detectImage(displayExtra);
   if ((index == -1) || (index == 100)){
-    printf("\n False alarm %d - %d continue searching", index, bot->botNumber);
+    printf("\n False alarm %d - %d continue searching", index, bot.botNumber);
     printf("\n");
     return -1;
   } 
@@ -358,24 +358,24 @@ int doubleCheck(double *speed, WbDeviceTag *displayExtra, struct robot *bot){
   return index; 
 }
 
-int check4Robot(WbDeviceTag *displayExtra, struct robot *bot){ //ok
+int check4Robot(WbDeviceTag *displayExtra){ //ok
   int sizeRobot = 0;
-  int auxColor = bot->colorSeeking;
-  int auxShape = bot->shapeLooking;
-  bot->colorSeeking = ROBOT_COLOR;
-  bot->shapeLooking = ROBOT;
-  sizeRobot = detectImage(displayExtra, bot);
-  bot->colorSeeking = auxColor;
-  bot->shapeLooking = auxShape;
-  if (((sizeRobot > 9) && (bot->nComp > 1)) || ((sizeRobot > 4) && (bot->nComp > 3))) {//4 3
-    printf("\n %d sees a robot of height %d components %d", bot->botNumber, sizeRobot, bot->nComp);
+  int auxColor = bot.colorSeeking;
+  int auxShape = bot.shapeLooking;
+  bot.colorSeeking = ROBOT_COLOR;
+  bot.shapeLooking = ROBOT;
+  sizeRobot = detectImage(displayExtra);
+  bot.colorSeeking = auxColor;
+  bot.shapeLooking = auxShape;
+  if (((sizeRobot > 9) && (bot.nComp > 1)) || ((sizeRobot > 4) && (bot.nComp > 3))) {//4 3
+    printf("\n %d sees a robot of height %d components %d", bot.botNumber, sizeRobot, bot.nComp);
     return 1;
   }
   return 0;
 }
 
 
-int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
+int detectImage(WbDeviceTag *displayExtra){ //ok
   int flagSeen = -1;
   int middleH = -1;
   int aux = 0;
@@ -385,29 +385,29 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
   int realComp = 0;
   int i, j, k;
   int left, up;
-  int minV = bot->height;
+  int minV = bot.height;
   int maxV = 0; 
-  int minH = bot->width; 
+  int minH = bot.width; 
   int maxH = 0; 
   int area = 0;
   
-  int middlest = bot->width;
+  int middlest = bot.width;
   int tallest = 0;
   
-  int imaComp[bot->width][bot->height];
-  memset(imaComp, -1, bot->width*bot->height*sizeof(int));
+  int imaComp[bot.width][bot.height];
+  memset(imaComp, -1, bot.width*bot.height*sizeof(int));
   int relations[40];
   memset(relations, 0, 40*sizeof(int));
   int check[20];
   memset(check, 0, 20*sizeof(int));
   
-  bot->image = wb_camera_get_image(bot->cam);
+  bot.image = wb_camera_get_image(bot.cam);
   wb_robot_step(TIME_STEP);
-  cronometer(IMAGE, 0, bot); // for image processing
+  cronometer(IMAGE, 0); // for image processing
   // Segmentation process
-  for (i = 0; i < bot->width; i++) {
-    for (j = 0; j < bot->height; j++) {
-      aux = compareColorPixel(i, j, bot->colorSeeking, bot); 
+  for (i = 0; i < bot.width; i++) {
+    for (j = 0; j < bot.height; j++) {
+      aux = compareColorPixel(i, j, bot.colorSeeking); 
       if (aux){  
         // Identifying component through a N-neighborhood strategy
         left = i-1; 
@@ -441,8 +441,8 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
   aux = 0;
   for (k = comp; 0 < k; k--) {
     if (relations[k] != k) {
-      for (i = 0; i < bot->width; i++) {
-        for (j = 0; j < bot->height; j++) {
+      for (i = 0; i < bot.width; i++) {
+        for (j = 0; j < bot.height; j++) {
           if (imaComp[i][j] == k) {
             imaComp[i][j] = relations[k];
           }
@@ -459,9 +459,9 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
   //  FILE *fp4 = fopen("image_descritors_4n.csv","a");  
   for (k = 0; k < comp; k++) {
     // reset values to find them in a new component
-    minV = bot->height; maxV = 0; minH = bot->width; maxH = 0; area = 0; 
-    for (i = 0; i < bot->width; i++) {
-      for (j = 0; j < bot->height; j++) {
+    minV = bot.height; maxV = 0; minH = bot.width; maxH = 0; area = 0; 
+    for (i = 0; i < bot.width; i++) {
+      for (j = 0; j < bot.height; j++) {
         // If the pixel has the same component
         if (imaComp[i][j] == check[k]) {
           area++;
@@ -473,14 +473,14 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
         } 
       }
     }
-    if ((bot->shapeLooking == 255) && (bot->colorSeeking == CYAN)) {
-      bot->pointA = cont_height_figure(minH+1, CYAN, bot); 
-      bot->pointB = cont_height_figure(maxH-1, CYAN, bot);
+    if ((bot.shapeLooking == 255) && (bot.colorSeeking == CYAN)) {
+      bot.pointA = cont_height_figure(minH+1, CYAN); 
+      bot.pointB = cont_height_figure(maxH-1, CYAN);
       //printf("\n %s really close and sure it is not a robot, go for the center", robotName);
       //printf("\n");
     return 100;
   }
-  if (((area > 10) && (bot->colorSeeking != CYAN)) || ((bot->colorSeeking == CYAN) && (area > 25))) { 
+  if (((area > 10) && (bot.colorSeeking != CYAN)) || ((bot.colorSeeking == CYAN) && (area > 25))) { 
     int squarewidth = maxH-minH+1;
     int squareHeight = maxV-minV+1;  
     // Middle axis width within the square
@@ -513,16 +513,16 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
     wb_display_set_color((WbDeviceTag)*displayExtra, HEXYELLOW);
     wb_display_draw_rectangle((WbDeviceTag)*displayExtra, minH, minV, squarewidth+1, squareHeight+1);
     // return the horizontal position as delta value
-    distMiddle = abs(bot->width/2-x);
+    distMiddle = abs(bot.width/2-x);
     realComp++;
-    bot->nComp = realComp;
+    bot.nComp = realComp;
     // A great enough region
     if ((squarewidth >= 4) && (squareHeight >= 4)) {
       //1 Triangle, 2 Box, 3 Circle, 4 Nothing, 0 ReallyNothing, 5 All, 6 Robot
-      newShapeSeen = whatIsee(bot->colorSeeking, eccentricity, extent, squarewidth, middleAxisH, middleAxisV);
-      if (bot->shapeLooking == ROBOT){
+      newShapeSeen = whatIsee(bot.colorSeeking, eccentricity, extent, squarewidth, middleAxisH, middleAxisV);
+      if (bot.shapeLooking == ROBOT){
         if (newShapeSeen == ROBOT) {
-          if ((x > 23) && (x < 29) && (areaSquare > 600)) { waiting(15, bot);} 
+          if ((x > 23) && (x < 29) && (areaSquare > 600)) { waiting(15);} 
             return squareHeight; //only returned when checkRobot is used  
           } 
         } else {
@@ -530,13 +530,13 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
           case NOTHING:
             //last value to check and nothing was seen clearly
             if ((flagSeen == -1) && (k == comp-1) && (squareHeight < 15)) { 
-              bot->nComp = 1; 
+              bot.nComp = 1; 
               return 100;
             } break;
           case TRIANGLE:
           case CIRCLE:
           case BOX:
-            if ((bot->shapeLooking == ALL) || (bot->shapeLooking == newShapeSeen)) { 
+            if ((bot.shapeLooking == ALL) || (bot.shapeLooking == newShapeSeen)) { 
               flagSeen = 1;
             } else if (k == comp-1){
               return 100;
@@ -547,25 +547,25 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
 				  tallest = squareHeight;
 				  middlest = distMiddle;
 				  middleH = x;
-				  bot->shapeSeen = newShapeSeen;
-				  //printf("\n Robot %d found a new shape %d taller %d and closer to the middle %d", bot->botNumber, newShapeSeen, tallest, middlest);          
+				  bot.shapeSeen = newShapeSeen;
+				  //printf("\n Robot %d found a new shape %d taller %d and closer to the middle %d", bot.botNumber, newShapeSeen, tallest, middlest);          
               } else if (tallest == squareHeight) {
                 if (middlest > distMiddle) {
                   middlest = distMiddle;
 				  middleH = x;
-                  bot->shapeSeen = newShapeSeen;
-                  //printf("\n Robot %d found a new shape %d just closer to the middle %d", bot->botNumber, newShapeSeen, middlest);
+                  bot.shapeSeen = newShapeSeen;
+                  //printf("\n Robot %d found a new shape %d just closer to the middle %d", bot.botNumber, newShapeSeen, middlest);
                 }
               }
               flagSeen = 0;
             }      
-            bot->nComp = realComp; 
+            bot.nComp = realComp; 
             break;
           }  
         }
       } 
     }  
   }
-  bot->nComp = realComp;
+  bot.nComp = realComp;
   return middleH; 
 }  

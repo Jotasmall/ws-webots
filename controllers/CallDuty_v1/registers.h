@@ -12,12 +12,13 @@
 #include <unistd.h>
 
 #include "readWriteFiles.h"
-#include "communication.h"
-#include "headerStruct.h"
+#include "communication.h"#include "headerStruct.h" 
+#include "botStruct.h"
+robot bot;
 
-void updateEstimations(int task, int cache, struct robot *bot);
-void updateBitacora(int codeTask, int estimations, int cache, struct robot *bot);
-void cronometer(int task, int cache, struct robot *bot);
-void countObjects(int nbRegions, struct robot *bot);
+void updateEstimations(int task, int cache);
+void updateBitacora(int codeTask, int estimations, int cache);
+void cronometer(int task, int cache);
+void countObjects(int nbRegions);
 
 #endif

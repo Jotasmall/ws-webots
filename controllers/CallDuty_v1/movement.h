@@ -11,15 +11,17 @@
 #include <stdlib.h>
 #include "dsp.h"
 #include "registers.h"
-#include "headerStruct.h"
+#include "headerStruct.h" 
+#include "botStruct.h"
+robot bot;
 
-void forward(int steps, double *speed, struct robot *bot);
-void turnSteps(int steps, double *speed, struct robot *bot);
-void avoidance(double *speed, struct robot *bot);
-int readSensors(int print, struct robot *bot);
-int run(int steps, double *speed, struct robot *bot);
-int hitWall(int front, double *speed, struct robot *bot);
-int enterTam(double *speed, struct robot *bot);
-int waiting(int n, struct robot *bot);
+void forward(int steps, double *speed);
+void turnSteps(int steps, double *speed);
+void avoidance(double *speed);
+int readSensors(int print);
+int run(int steps, double *speed);
+int hitWall(int front, double *speed);
+int enterTam(double *speed);
+int waiting(int n);
 
 #endif

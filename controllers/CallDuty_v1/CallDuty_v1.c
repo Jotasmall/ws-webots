@@ -24,8 +24,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include "headerStruct.h"
+#include "headerStruct.h" 
+#include "botStruct.h"
 #include "initBot.h"
 #include "dsp.h"
 #include "movement.h"
@@ -156,7 +156,7 @@ char dirPath[] = "/dir-dd-hh-mm";
 time_t rawtime;
 struct tm * timeinfo;
 
-struct robot bot = {0};
+//struct robot bot = {0};
 
 int main(int argc, char **argv) {
   /* necessary to initialize webots stuff */
@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 }
 
 void reset(){ //ok-
-  resetDevices(&bot);
+  resetDevices();
   // Parameters
   bot.alpha = 60;       //in percentage
   bot.flagMomento = flagMomento;    //to enable soft changes
@@ -193,9 +193,9 @@ void reset(){ //ok-
   bot.listFriends = listFriends;
   // Display for user
   bot.image = wb_camera_get_image(bot.cam);
-  resetDisplay(&displayExtra, &bot);
+  resetDisplay(&displayExtra);
   // Getting data for initial state
-  bot.floorColor = whereIam(0, speed, &bot);
+  bot.floorColor = whereIam(0, speed);
   //printf("\n %s was born in region %d", wb_robot_get_name(), bot.floorColor);
   //printf("\n");
   // Create files, enable/disable files records
@@ -208,17 +208,17 @@ void reset(){ //ok-
     bot.flagFilesDM = 1;
     bot.flagFilesPER = 1;
     bot.flagFilesCOM = 1;
-    createFiles(&bot);
+    createFiles();
   } 
-  initEstimations(NB_REGIONS, &bot);
-  updateBitacora(0, ESTIMATIONS, 0, &bot);
+  initEstimations(NB_REGIONS);
+  updateBitacora(0, ESTIMATIONS, 0);
   // Random seed by the number of the robot
   strcpy(robotName, wb_robot_get_name());
   bot.botNumber = atoi(&robotName[6]);
   srand(bot.botNumber*100+timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min);
   wb_robot_step(TIME_STEP);
   // Adjust sensor noise by offset
-  calibrateSensors(&bot);
+  calibrateSensors();
   /*
   printf("\n Calibration offset ");
   int i;
@@ -226,7 +226,7 @@ void reset(){ //ok-
     printf("%d ", bot.ps_offset[i]);
   } 
   */
-  speaking(M2NEST, ROBOT_ARRIVING, 0, 0, &bot);
+  speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
 }
 
 void initVariables(){
@@ -274,7 +274,7 @@ void executeUML(){
   while (wb_robot_step(TIME_STEP) != -1) {
     switch(bot.currentState){
     case EXPERIMENT:
-      cronometer(1000, 0, &bot);
+      cronometer(1000, 0);
     break;
     case PICK_SOURCE:
       printf("\n %d state PICK_SOURCE", bot.botNumber);
@@ -356,13 +356,13 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
   bot.flagLoad = flag;
   if (output == STOP) {
     while(flagWait) {
-      flagWait = waiting_color(&bot);	
+      flagWait = waiting_color();	
       if (flagWait == 0) {
         // Count only works with UCB
-        countObjects(NB_REGIONS, &bot);
-        forward(-120, speed, &bot);   
-        turnSteps(TURN_CACHE, speed, &bot);
-        updateEstimations(statePrevious, auxShapeSeen, &bot);
+        countObjects(NB_REGIONS);
+        forward(-120, speed);   
+        turnSteps(TURN_CACHE, speed);
+        updateEstimations(statePrevious, auxShapeSeen);
         bot.flagLoad = !flag;
         if (pick_or_drop == DROPPING) { pickingIndication(0);}
         else { wb_led_set(bot.leds[8], 0);}	
@@ -412,39 +412,39 @@ int moduleTravel(){
     if (bot.currentState  == TRAVEL2GREY) {
       if (bot.floorColor == BLUE) {
         bot.lineColor = RED;
-        flagReady = going2region(speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra);
       } else if (bot.floorColor ==  GREY) {
         flagReady = 1;
       } else if (bot.floorColor == RED){
         bot.lineColor = BLUE;
-        flagReady = going2region(speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra);
       }  
     } else if (bot.currentState == TRAVEL2BLUE)  {
       if (bot.floorColor == GREY){
         bot.lineColor = RED;
-        flagReady = going2region(speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra);
       } else if (bot.floorColor == BLUE) {
         flagReady = 1;
       } else if (bot.floorColor == RED){
         bot.floorColor = BLUE;
-        flagReady = going2region(speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra);
       }
     } else if (bot.currentState == TRAVEL2RED) {
       if (bot.floorColor == GREY){
         bot.floorColor = BLUE; 
-        flagReady = going2region(speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra);
       } else if (bot.floorColor == RED) {
         flagReady = 1;
       } else if (bot.floorColor == BLUE){
         bot.floorColor = RED;
-        flagReady = going2region(speed, &displayExtra, &bot);
+        flagReady = going2region(speed, &displayExtra);
       } 
     } 
     if (flagReady) { 
       printf("\n Excellent entrance, %d is on desired region", bot.botNumber);
       printf("\n");	
       auxUML = PICK_SOURCE;  
-      updateEstimations(bot.currentState, 0, &bot);
+      updateEstimations(bot.currentState, 0);
       /*
         float p = ((float)rand())/RAND_MAX;
         if (p>0.5) {
@@ -514,7 +514,7 @@ int moduleFSM(){
   while (!moduleEnded) {
     switch(stateFSM) {
       case LEVY:
-      index = levyFlight(speed, &displayExtra, &bot);
+      index = levyFlight(speed, &displayExtra);
         if (index == -1) {
           contLevy++;
           //printf("\n %s is thinking about her decision", robotName);
@@ -530,7 +530,7 @@ int moduleFSM(){
             } else {
               //-- printf("\n %s cancel travel", robotName);
    	      // when the travel is finished
-              updateBitacora(STOP_LEVY, FSM, 0, &bot);
+              updateBitacora(STOP_LEVY, FSM, 0);
               //bot.timeMeasured = 0;
               return STOP_LEVY;
             }
@@ -543,7 +543,7 @@ int moduleFSM(){
               printf("\n %s decide to change to travel", robotName);
               printf("\n");
               // when abandon a task
-              updateBitacora(STOP_LEVY, FSM, 0, &bot);
+              updateBitacora(STOP_LEVY, FSM, 0);
               bot.timeMeasured = 0;
               return STOP_LEVY;
             } else {
@@ -554,7 +554,7 @@ int moduleFSM(){
           }  
         } else {  //it found something
           contLevy = 0;
-          updateBitacora(LEVY, FSM, 0, &bot);
+          updateBitacora(LEVY, FSM, 0);
           stateFSM = GO2IT; 
         }
         if (bot.currentState == PICK_SOURCE) {
@@ -570,33 +570,33 @@ int moduleFSM(){
       case GO2IT:
         //printf("\n %s found something and goes to get it", robotName);
         //printf("\n");
-        flagProximity = going2it(index, speed, &displayExtra, &bot);
+        flagProximity = going2it(index, speed, &displayExtra);
         if (flagProximity){
           flagProximity = 0;
           flagSureSeen = 0;      
           if ((bot.currentState == TRAVEL2BLUE) || (bot.currentState == TRAVEL2RED) || (bot.currentState == TRAVEL2GREY)) {
-            flagInside = hitWall(0, speed, &bot);
+            flagInside = hitWall(0, speed);
           } else {
-            flagInside = enterTam(speed, &bot);
+            flagInside = enterTam(speed);
           }
           if (flagInside == 1) { //sucessful enter TAM or hit wall
             stateFSM = STOP;
           } else {
-            forward(-50, speed, &bot);
+            forward(-50, speed);
             stateFSM = LOST;
           }
-          updateBitacora(GO2IT, FSM, 0, &bot);
+          updateBitacora(GO2IT, FSM, 0);
         } else { //it is yet far
-          newIndex = detectImage(&displayExtra, &bot);
+          newIndex = detectImage(&displayExtra);
           if (newIndex == -1) {
-            flagRobot = check4Robot(&displayExtra, &bot);
+            flagRobot = check4Robot(&displayExtra);
             if (flagRobot) {
               printf("\n %s saw a robot in path to target", robotName);
               printf("\n");
-              waiting(5, &bot);
-              cronometer(-1, 0, &bot);
+              waiting(5);
+              cronometer(-1, 0);
             } else {
-              updateBitacora(GO2IT, FSM, 0, &bot);
+              updateBitacora(GO2IT, FSM, 0);
               stateFSM = LOST;
             }
             flagSureSeen = 0;
@@ -618,18 +618,18 @@ int moduleFSM(){
         break;
       case LOST:
         //printf("\n %s is lost", robotName);
-        run(5, speed, &bot);
-        whereIam(1, speed, &bot);
-        index = detectImage(&displayExtra, &bot);
+        run(5, speed);
+        whereIam(1, speed);
+        index = detectImage(&displayExtra);
         if (index >= 0) {
           contLost = 0;
-          updateBitacora(LOST, FSM, 0, &bot);
+          updateBitacora(LOST, FSM, 0);
           stateFSM = GO2IT;
         } else {
           contLost++;
           if (contLost > 3) {
             contLost = 0;
-            updateBitacora(LOST, FSM, 0, &bot);
+            updateBitacora(LOST, FSM, 0);
             stateFSM = LEVY;
           }
         }
@@ -638,7 +638,7 @@ int moduleFSM(){
         moduleEnded = 1;
         //printf("\n %s succesfully ended the module FSM with shapeseen %d", robotName, shapeSeen);
         //printf("\n");
-        updateBitacora(STOP, FSM, 0, &bot);
+        updateBitacora(STOP, FSM, 0);
         return STOP;
         break;
       default:
@@ -675,11 +675,11 @@ int computeTraveling (int levy){
   
   switch(modelTest){
     case RANDOMLY:
-      writeDecision(1.01, 0.01, TRAVELING_AGREE, flagTravel, &bot);
+      writeDecision(1.01, 0.01, TRAVELING_AGREE, flagTravel);
       return 1;
       break;
     case NEVER:
-      writeDecision(0.01, 1.01, TRAVELING_AGREE, flagTravel, &bot);
+      writeDecision(0.01, 1.01, TRAVELING_AGREE, flagTravel);
       return 0;
       break; 
     case GREEDY: 
@@ -732,9 +732,9 @@ int computeTraveling (int levy){
     }  
     //printf("\n Robot %s Ppartitioning is %.2f my chance is %.2f and timeFull is %.1f timePart is %.1f",robotName, Ppartitioning, p, tFull, tPart);
     if (levy) {
-      writeDecision(Ppartitioning, p, TRAVELING_LEVY, flagTravel, &bot);
+      writeDecision(Ppartitioning, p, TRAVELING_LEVY, flagTravel);
     } else {
-      writeDecision(Ppartitioning, p, TRAVELING_AGREE, flagTravel, &bot);
+      writeDecision(Ppartitioning, p, TRAVELING_AGREE, flagTravel);
     }
   int result = Ppartitioning > p;
   if (result){
@@ -742,7 +742,7 @@ int computeTraveling (int levy){
   } else {
     printf("\n %s do the full task", robotName);
   }
-  speaking(M2ROBOT, -1, -1, -1, &bot);
+  speaking(M2ROBOT, -1, -1, -1);
   wb_robot_step(32); // to update global values
   return result;
 }

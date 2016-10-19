@@ -4,7 +4,7 @@
 #define NB_DIST_SENS 8
 #define NB_LEDS 10
 
-struct robot{
+typedef struct{
   // model parameters
   int alpha;       	//in percentage
   int flagMomento;  //to enable soft changes
@@ -63,8 +63,7 @@ struct robot{
   int pointA;
   int pointB;
   int nComp;  
-};
-
+}robot;
 
 struct message{
  int source;
