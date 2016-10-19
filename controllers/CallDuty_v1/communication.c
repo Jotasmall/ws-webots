@@ -39,20 +39,20 @@ int listening(struct robot *bot){ //ok-
     if (place == bot->floorColor) {
       int destinatary = atoi(&data[5]);
       if (destinatary == bot->botNumber){ 
-        printf("\n %d is listening its nest location %d to say %s", bot->botNumber, place, data);
-        printf("\n");
+        //l printf("\n %d is listening its nest location %d to say %s", bot->botNumber, place, data);
+        //l printf("\n");
         writeMessage(0, data, bot);
         int newFriend = atoi(&data[10]);
         int suggestedDestination = atoi(&data[13]);
         if (newFriend == LEAVE) {
-          printf("\n Nest %d is asking for %d to leave and go %d", place, bot->botNumber, suggestedDestination);
-          printf("\n");
+          //l printf("\n Nest %d is asking for %d to leave and go %d", place, bot->botNumber, suggestedDestination);
+          //l printf("\n");
         if (bot->botNumber != 2701) {    
           switch(suggestedDestination){
           case RED:
-              printf("\n %d do not wanna go RED", bot->botNumber);
-              bot->currentState = TRAVEL2RED;
-              bot->suggestedState = TRAVEL2RED;
+            printf("\n %d do not wanna go RED", bot->botNumber);
+            bot->currentState = TRAVEL2RED;
+            bot->suggestedState = TRAVEL2RED;
             break;
           case GREY:
             printf("\n %d do not wanna go GREY", bot->botNumber);
@@ -181,7 +181,7 @@ int speaking(int toWhom, int codeTask, int time, int cache, struct robot *bot){ 
     }
   } 
   if (strcmp(message, "U")) {
-    printf("\n %d updating its record of messages", bot->botNumber);
+    //s printf("\n %d updating its record of messages", bot->botNumber);
     writeMessage(1, message, bot);
   }  
   wb_emitter_send(bot->emitter, message, strlen(message)+1);

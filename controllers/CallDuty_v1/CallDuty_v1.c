@@ -166,8 +166,8 @@ int main(int argc, char **argv) {
   wb_robot_step(TIME_STEP);
   
   initVariables();   
-  printf("\n Robot %s is ready to begin with state %d", robotName,bot.currentState);
-  printf("\n");
+  //printf("\n Robot %s is ready to begin with state %d", robotName,bot.currentState);
+  //printf("\n");
   executeUML();
   wb_robot_cleanup();
   return 0;
@@ -468,8 +468,8 @@ int moduleFSM(){
   int flagInside = 0;
   int moduleEnded = 0;
   output = STOP_LEVY; 
-  printf("\n %s is going in FSM to search %d", robotName, bot.currentState);
-  printf("\n");
+  //fsm printf("\n %s is going in FSM to search %d", robotName, bot.currentState);
+  //fsm printf("\n");
   while (!moduleEnded) {
     switch(stateFSM) {
       case LEVY:

@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
     W_updateSources();
     listening();
     //printStates();
-    if (timeCounter%448 == 0) {
+    if (timeCounter%224 == 0) {//448 -> 1 min
       timeMinute++;
       if (timeMinute > MINUTES_EMPTY) {
         //* printf("\n %s is gonna speak", robotName);
@@ -727,7 +727,8 @@ int W_speaking(int toWhom){ //ok-
         i++;
         if ((robotLeaving != 0) && (robotLeaving != lastVisitor)){
           j++;
-          printf("\n %s has chosen %d to leave because utility is %d and in destination %d has %d", robotName, robotLeaving, utility[codeTam], place2Go, utility[place2Go]);
+          printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
+          printf("\n %s also known as %d utilities values %d, %d, %d", robotName, codeTam, utility[0], utility[1], utility[2]);
           printf("\n");
           sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
           wb_emitter_send(emitter, message, strlen(message)+1);
