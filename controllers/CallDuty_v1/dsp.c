@@ -372,9 +372,7 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
   int aux = 0;
   int newShapeSeen = 0;
   int distMiddle = 0;
-  int maxProx = 0;
   int comp = 1;
-  int nearest = 100;
   int realComp = 0;
   int i, j, k;
   int left, up;
@@ -383,6 +381,10 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
   int minH = bot->width; 
   int maxH = 0; 
   int area = 0;
+  
+  int middlest = bot->width;
+  int tallest = 0;
+  
   int imaComp[bot->width][bot->height];
   memset(imaComp, -1, bot->width*bot->height*sizeof(int));
   int relations[40];
@@ -532,18 +534,18 @@ int detectImage(WbDeviceTag *displayExtra, struct robot *bot){ //ok
             }
             //if in k component was seen, then check if it is better
             if (flagSeen == 1) { 
-              if (maxProx < middleAxisH) {
-                nearest = distMiddle;
-                maxProx = middleAxisH;
-                middleH = x;
-                bot->shapeSeen = newShapeSeen;
-                //printf("\n Robot %s found a new shape %d higher %d and closer to the middle %d", robotName, newShapeSeen, maxProx, middleH);
-              } else if (maxProx == middleAxisH) {
-                if (nearest > distMiddle) {
-                  nearest = distMiddle;
-                  middleH = x;
+			  if (tallest < squareHeight){
+				  tallest = squareHeight;
+				  middlest = distMiddle;
+				  middleH = x;
+				  bot->shapeSeen = newShapeSeen;
+				  //printf("\n Robot %d found a new shape %d taller %d and closer to the middle %d", bot->botNumber, newShapeSeen, tallest, middlest);          
+              } else if (tallest == squareHeight) {
+                if (middlest > distMiddle) {
+                  middlest = distMiddle;
+				  middleH = x;
                   bot->shapeSeen = newShapeSeen;
-                  //printf("\n Robot %s found a new shape %d just closer to the middle %d", robotName, newShapeSeen, middleH);
+                  //printf("\n Robot %d found a new shape %d just closer to the middle %d", bot->botNumber, newShapeSeen, middlest);
                 }
               }
               flagSeen = 0;

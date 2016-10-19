@@ -268,35 +268,35 @@ void executeUML(){
   while (wb_robot_step(TIME_STEP) != -1) {
     switch(bot.currentState){
     case EXPERIMENT:
-      //printf("\n %d is on floorColor %d", botNumber, floorColor);
+      //s printf("\n %d is on floorColor %d", botNumber, floorColor);
       cronometer(1000, 0, &bot);
     break;
     case PICK_SOURCE:
-      printf("\n state PICK_SOURCE");
-      printf("\n");
+      //s printf("\n state PICK_SOURCE");
+      //s printf("\n");
       if (bot.floorColor == RED) { colorSeeking = BLUE;}
       bot.currentState = moduleUML(colorSeeking, BOX, PICKING, DROP_NEST, bot.travelDestination, 0);
       // avoid commands of nest when loaded
       if (bot.flagLoad) { bot.suggestedState = NONE;}  
     break;
     case DROP_NEST:
-      printf("\n state DROP_NEST");
-      printf("\n");
+      //s printf("\n state DROP_NEST");
+      //s printf("\n");
       bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, bot.travelDestination, 1); 
     break;
     case TRAVEL2GREY:
-      printf("\n state TRAVEL2NEST");
-      printf("\n");
+      //s printf("\n state TRAVEL2NEST");
+      //s printf("\n");
       bot.currentState = moduleTravel();
     break;  
     case TRAVEL2BLUE:
-      printf("\n state TRAVEL2SOURCE");
-      printf("\n");
+      //s printf("\n state TRAVEL2SOURCE");
+      //s printf("\n");
       bot.currentState = moduleTravel();
       break;
     case TRAVEL2RED:
-      printf("\n state TRAVEL2SOURCE");
-      printf("\n");
+      //s printf("\n state TRAVEL2SOURCE");
+      //s printf("\n");
       bot.currentState = moduleTravel();
       break;
     default:
