@@ -159,11 +159,11 @@ void countObjects(int nbRegions, struct robot *bot){
   case PICK_SOURCE:
     bot->nPick[bot->floorColor]++; break;
   }
-  //c printf("\n We have %d objects picked", bot->nPick[bot->floorColor]);
-  //c printf("\n");
+  printf("\n We have %d objects picked", bot->nPick[bot->floorColor]);
+  printf("\n");
   if (bot->flagFilesPER) {
     createDir(PERFORMANCE, 0, bot);
-    //printf("\n %s is counting objects in %s", bot->botNumber, bot->fileRobot);
+    //printf("\n %s is counting objects in %s", robotName, fileRobot);
     //printf("\n");
     FILE *fper = fopen(bot->fileRobot, "a+");
     int i;

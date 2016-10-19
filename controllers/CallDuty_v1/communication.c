@@ -65,7 +65,9 @@ int listening(struct robot *bot){ //ok-
             bot->suggestedState = TRAVEL2BLUE;
             break;
           }
+		  bot->flagCommanded = 1;
           printf("\n");  
+		  wb_robot_step(32);
         }  
       } else if (newFriend == COME) {
         printf("\n Nest %d is asking for %d to arrive", place, bot->botNumber);
@@ -164,8 +166,8 @@ int speaking(int toWhom, int codeTask, int time, int cache, struct robot *bot){ 
     } else {
       if (codeTask == ROBOT_LEAVING) {
         sprintf(message,"R2T%dT%dX%d",bot->botNumber, ROBOT_LEAVING, bot->floorColor);
-        printf("\n %d is leaving NEST %d", bot->botNumber, bot->floorColor);
-        printf(" message %s", message);
+        //s printf("\n %d is leaving NEST %d", bot->botNumber, bot->floorColor);
+        //s printf(" message %s", message);
         printf("\n");
       } else if (codeTask == ROBOT_ARRIVING) {
         sprintf(message,"R2T%dT%dX%d",bot->botNumber, ROBOT_ARRIVING, bot->floorColor);

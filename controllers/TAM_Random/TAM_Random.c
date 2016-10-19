@@ -164,7 +164,7 @@ int main(int argc, char **argv) {
     W_updateSources();
     listening();
     //printStates();
-    if (timeCounter%224 == 0) {//448 -> 1 min
+    if (timeCounter%112 == 0) {//448 -> 1 min
       timeMinute++;
       if (timeMinute > MINUTES_EMPTY) {
         //* printf("\n %s is gonna speak", robotName);

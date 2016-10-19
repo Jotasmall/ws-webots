@@ -55,7 +55,7 @@ int compareColorPixel(int pixelX, int pixelY, int foreground, struct robot *bot)
   int pixelG = wb_camera_image_get_green(bot->image, bot->width, pixelX, pixelY);
   int pixelB = wb_camera_image_get_blue(bot->image, bot->width, pixelX, pixelY);
   
-  if ((foreground == CYAN) && (bot->floorColor == GREY)) { foreground = WHITE;}
+  if ((foreground == CYAN) && (bot->floorColor == GREY) && (bot->currentState != PICK_SOURCE)) { foreground = WHITE;}
   
   switch(foreground){
   case RED:

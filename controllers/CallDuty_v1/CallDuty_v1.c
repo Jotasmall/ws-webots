@@ -184,6 +184,7 @@ void reset(){ //ok-
   bot.sParam = 1;     //in 2013 6/1-Explote/Explore
   bot.flagCom = flagCom;
   bot.flagListened = 0;
+  bot.flagCommanded = 0;
   bot.listFriends = listFriends;
   // Display for user
   bot.image = wb_camera_get_image(bot.cam);
@@ -268,35 +269,58 @@ void executeUML(){
   while (wb_robot_step(TIME_STEP) != -1) {
     switch(bot.currentState){
     case EXPERIMENT:
-      //s printf("\n %d is on floorColor %d", botNumber, floorColor);
       cronometer(1000, 0, &bot);
     break;
     case PICK_SOURCE:
-      //s printf("\n state PICK_SOURCE");
-      //s printf("\n");
-      if (bot.floorColor == RED) { colorSeeking = BLUE;}
-      bot.currentState = moduleUML(colorSeeking, BOX, PICKING, DROP_NEST, bot.travelDestination, 0);
-      // avoid commands of nest when loaded
-      if (bot.flagLoad) { bot.suggestedState = NONE;}  
+      printf("\n %d state PICK_SOURCE", bot.botNumber);
+      printf("\n");
+      switch(bot.floorColor){
+        case RED:
+          colorSeeking = BLUE; break;
+        case GREY:
+          colorSeeking = CYAN; break;
+        case BLUE:
+          colorSeeking = RED; break;
+      }
+      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (modelTest == ESSAY)) {
+        printf("\n %d from picking was commanded toward %d", bot.botNumber, bot.suggestedState);
+        printf("\n");
+        bot.currentState = bot.suggestedState;
+        bot.suggestedState = NONE;
+        bot.flagCommanded = 0;
+      } else {
+        bot.currentState = moduleUML(colorSeeking, BOX, PICKING, DROP_NEST, bot.travelDestination, 0);
+        // avoid commands of nest when loaded
+        if (bot.flagLoad) { bot.suggestedState = NONE;}  
+      }  
     break;
     case DROP_NEST:
-      //s printf("\n state DROP_NEST");
-      //s printf("\n");
-      bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, bot.travelDestination, 1); 
+      printf("\n %d state DROP_NEST", bot.botNumber);
+      printf("\n");
+      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (modelTest == ESSAY)) {
+        printf("\n %d from dropping was commanded toward %d", bot.botNumber, bot.suggestedState);
+        printf("\n");
+        bot.currentState = bot.suggestedState;
+        bot.suggestedState = NONE;
+        bot.flagCommanded = 0;
+      } else {
+        bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, bot.travelDestination, 1); 
+        if (bot.flagLoad) { bot.suggestedState = NONE;}
+      }
     break;
     case TRAVEL2GREY:
-      //s printf("\n state TRAVEL2NEST");
-      //s printf("\n");
+      printf("\n %d state TRAVEL2GREY", bot.botNumber);
+      printf("\n");
       bot.currentState = moduleTravel();
     break;  
     case TRAVEL2BLUE:
-      //s printf("\n state TRAVEL2SOURCE");
-      //s printf("\n");
+      printf("\n %d state TRAVEL2BLUE", bot.botNumber);
+      printf("\n");
       bot.currentState = moduleTravel();
       break;
     case TRAVEL2RED:
-      //s printf("\n state TRAVEL2SOURCE");
-      //s printf("\n");
+      printf("\n %d state TRAVEL2RED", bot.botNumber);
+      printf("\n");
       bot.currentState = moduleTravel();
       break;
     default:
@@ -314,12 +338,10 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
   // Light indications
   if (pick_or_drop == PICKING) { pickingIndication(1);}
   else { wb_led_set(bot.leds[8], 1);}
-  // change by nest command
-  if ((bot.flagListened == 1) && (bot.flagLoad == 0) && (modelTest == ESSAY)) { 
-    printf("\n %s is going to obey an order from nest", robotName);
-    printf("\n");
-    return bot.suggestedState;
-  }  
+ 
+  printf("\n %s UML module has flagCommanded %d flagLoad %d and modelTest %d", robotName, bot.flagCommanded, bot.flagLoad, modelTest);
+  printf("\n");
+  
   output = moduleFSM();
   int nextState = stateRemain;
   int flagWait = 1;
@@ -365,6 +387,10 @@ int moduleTravel(){
   int auxUML = bot.currentState; 
   bot.colorSeeking = CYAN;
   bot.shapeLooking = BOX;
+
+  printf("\n %s travel modul has flagCommanded %d flagLoad %d and modelTest %d", robotName, bot.flagLoad, bot.flagCommanded, modelTest);
+  printf("\n");
+
   output = moduleFSM();
   
   if (output == STOP){  
@@ -576,7 +602,7 @@ int moduleFSM(){
         }  
         break;
       case LOST:
-        printf("\n %s is lost", robotName);
+        //printf("\n %s is lost", robotName);
         run(5, speed, &bot);
         whereIam(1, speed, &bot);
         index = detectImage(&displayExtra, &bot);

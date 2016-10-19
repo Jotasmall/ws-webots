@@ -41,6 +41,7 @@ struct robot{
   WbDeviceTag emitter;                //ok - reset *initBot
   int flagCom;                        //ok - *main
   int flagListened;                   //ok - *main
+  int flagCommanded;                  //ok - *main 
   WbDeviceTag sensors[NB_DIST_SENS];  //ok - reset *initBot
   int ps_value[NB_DIST_SENS];         //ok - reset *initBot  
   int ps_offset[NB_DIST_SENS];        //ok - calibrate *initBot       

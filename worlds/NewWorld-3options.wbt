@@ -1233,7 +1233,7 @@ DEF Grey DifferentialWheels {
       ]
       name "Wled5"
       color [
-        1 0 0
+        0 1 1
         1 1 1
       ]
     }
@@ -1273,7 +1273,7 @@ DEF Grey DifferentialWheels {
       ]
       name "Wled6"
       color [
-        1 0 0
+        0 1 1
         1 1 1
       ]
     }
@@ -1313,7 +1313,7 @@ DEF Grey DifferentialWheels {
       ]
       name "Wled7"
       color [
-        1 0 0
+        0 1 1
         1 1 1
       ]
     }
@@ -1353,7 +1353,7 @@ DEF Grey DifferentialWheels {
       ]
       name "Wled8"
       color [
-        1 0 0
+        0 1 1
         1 1 1
       ]
     }
@@ -1393,7 +1393,7 @@ DEF Grey DifferentialWheels {
       ]
       name "Wled9"
       color [
-        1 0 0
+        0 1 1
         1 1 1
       ]
     }
@@ -1996,7 +1996,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.59727 2.36855e-15 -0.302399
+  translation 0.42727 2.36855e-15 -0.222398
   rotation 0 1 0 1.5708
   controller "CallDuty_v1"
   name "e-puck2801"
