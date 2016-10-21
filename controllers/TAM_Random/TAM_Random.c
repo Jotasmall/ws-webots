@@ -58,7 +58,7 @@ WbDeviceTag emitter;
 char robotName[8];
 int codeTam = 0;
 #define NEIGHBORS 3
-int utility[] = {nRobots,nRobots,nRobots};
+float utility[] = {nRobots,nRobots,nRobots};
 int resources[] = {0, 0, 0};
 #define NB_TAM 10
 #define noS 5
@@ -664,11 +664,11 @@ void recordUtility(){
       printf("Error opening file utilities \n");
       exit(1);
     }
-    printf("\n %s is updating utilities %d, %d, %d", robotName, utility[0], utility[1], utility[2]);
+    printf("\n %s is updating utilities %g, %g, %g", robotName, utility[0], utility[1], utility[2]);
     printf("\n");
     int i;
     for (i = 0; i < NEIGHBORS; i++) {
-      fprintf(fw2, "%d, ", utility[i]);
+      fprintf(fw2, "%d, ", (int) utility[i]);
     }
     fprintf(fw2,"\n");
     fclose(fw2);
@@ -704,10 +704,11 @@ int W_speaking(int toWhom){ //ok-
   if (flagCom == 0) { return 0;}
 
   char message[30];
-  int i, place2Go = codeTam, dif, maxDif = -1;
+  int i, place2Go = codeTam;
+  float maxDif = -1, dif;
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
   if (toWhom == M2NEST) { // reporting just to have the same number of lines
-    sprintf(message, "T2T%dX%d", codeTam, utility[codeTam]);
+    sprintf(message, "T2T%dX%d", codeTam, (int) utility[codeTam]);
     wb_emitter_send(emitter, message, strlen(message)+1);
     writeMessage(1, message);
    //printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], utility[0], utility[1], utility[2]);
@@ -717,12 +718,18 @@ int W_speaking(int toWhom){ //ok-
       if ((i != codeTam) && (utility[i] > utility[codeTam])) {
         dif = utility[i]-utility[codeTam];
         if (dif > maxDif) {
-          maxDif = dif;
+          maxDif = dif/2;
           place2Go = i;
         }
       }  
     }
-    if (place2Go != codeTam) {
+    //Rounding values
+    if (maxDif > 1) {
+      maxDif = round(maxDif);
+    } else {
+      maxDif = ceil(maxDif);
+    }
+    if ((place2Go != codeTam) && (maxDif > 0)) {
       i = 0;
       int j = 0;
       while ((j < maxDif) && (i < nRobots)) {
@@ -731,7 +738,7 @@ int W_speaking(int toWhom){ //ok-
         if ((robotLeaving != 0) && (robotLeaving != lastVisitor)){
           j++;
           printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
-          printf("\n %s also known as %d utilities values %d, %d, %d", robotName, codeTam, utility[0], utility[1], utility[2]);
+          printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
           printf("\n");
           sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
           wb_emitter_send(emitter, message, strlen(message)+1);

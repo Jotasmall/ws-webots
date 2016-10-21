@@ -2013,8 +2013,8 @@ E-puck {
   ]
 }
 E-puck {
-  translation -0.485898 1.88304e-15 -0.289769
-  rotation 0 -1 0 6.28318
+  translation 0.564101 1.88304e-15 -0.419775
+  rotation 0 -1 0 2.35619
   controller "CallDuty_v1"
   name "e-puck2901"
   camera_pixelSize 2

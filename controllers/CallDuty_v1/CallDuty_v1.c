@@ -426,17 +426,17 @@ int moduleTravel(){
       } else if (bot.floorColor == BLUE) {
         flagReady = 1;
       } else if (bot.floorColor == RED){
-        bot.floorColor = BLUE;
+        bot.lineColor = BLUE;
         flagReady = going2region(speed, &displayExtra);
       }
     } else if (bot.currentState == TRAVEL2RED) {
       if (bot.floorColor == GREY){
-        bot.floorColor = BLUE; 
+        bot.lineColor = BLUE; 
         flagReady = going2region(speed, &displayExtra);
       } else if (bot.floorColor == RED) {
         flagReady = 1;
       } else if (bot.floorColor == BLUE){
-        bot.floorColor = RED;
+        bot.lineColor = RED; 
         flagReady = going2region(speed, &displayExtra);
       } 
     } 
