@@ -49,6 +49,7 @@ WbDeviceTag emitter;
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
 #define ROBOT_UPDATING 33
+#define ROBOT_NEGATIVE 34
 #define M2NEST 2
 // Destinations
 #define RED 0
@@ -57,6 +58,8 @@ WbDeviceTag emitter;
 // Robot data
 char robotName[8];
 int codeTam = 0;
+int robotLeaving;
+int place2Go;
 #define NEIGHBORS 3
 float utility[] = {nRobots,nRobots,nRobots};
 int resources[] = {0, 0, 0};
@@ -704,7 +707,8 @@ int W_speaking(int toWhom){ //ok-
   if (flagCom == 0) { return 0;}
 
   char message[30];
-  int i, place2Go = codeTam;
+  int i;
+  place2Go = codeTam;
   float maxDif = -1, dif;
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
   if (toWhom == M2NEST) { // reporting just to have the same number of lines
@@ -733,7 +737,7 @@ int W_speaking(int toWhom){ //ok-
       i = 0;
       int j = 0;
       while ((j < maxDif) && (i < nRobots)) {
-        int robotLeaving = listWorkers[j];
+        robotLeaving = listWorkers[j];
         i++;
         if ((robotLeaving != 0) && (robotLeaving != lastVisitor)){
           j++;
@@ -766,7 +770,8 @@ int W_speaking(int toWhom){ //ok-
 }
 
 int listening() { 
-  int i, robot, value;
+  int i, robot, value, j;
+  char message[30];
   //printf("\n %s is receiving a message %s", robotName);
   while(wb_receiver_get_queue_length(receiver)>0){  
     //printf("\n %s has received a message", robotName);
@@ -813,7 +818,31 @@ int listening() {
             }
           }
         }
-      }
+        else if (action == ROBOT_NEGATIVE) {
+          for (i = 0; i < nRobots; i++) {
+            if (listWorkers[i] == robot) {
+              printf("\n %s received from %d a negative answer", robotName, robot);
+              printf("\n");
+              i++; // try the next worker
+              break;
+            }
+          }
+          for (j = 0; j < nRobots; j++){
+            if (j >= nRobots) { i = 0;}
+            robotLeaving = listWorkers[i];
+            if (robotLeaving != 0) {
+              printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
+              printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
+              printf("\n");
+              sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
+              wb_emitter_send(emitter, message, strlen(message)+1);
+              writeMessage(1, message);
+              wb_robot_step(32);
+            }
+            i++;
+          } 
+        }
+      }  
       if (action == ROBOT_UPDATING) {          
         for (i = 0; i < nRobots; i++){
           if (robot == listWorkers[i]){

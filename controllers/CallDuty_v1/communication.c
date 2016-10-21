@@ -14,6 +14,7 @@
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
 #define ROBOT_UPDATING 33
+#define ROBOT_NEGATIVE 34
 // To write decisions
 #define TRAVELING_AGREE 0
 #define TRAVELING_LEVY 1
@@ -74,7 +75,11 @@ int listening(){ //ok-
 		  bot.flagCommanded = 1;
           printf("\n");  
 		  wb_robot_step(32);
-        }  
+        } else {
+          if ((bot.flagLoad) || (bot.botNumber == 2701)) {
+            speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+		  }	
+		}
       } else if (newFriend == COME) {
         printf("\n Nest %d is asking for %d to arrive", place, bot.botNumber);
         printf("\n");
@@ -182,10 +187,15 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
         printf("\n");
       } else if (codeTask == ROBOT_UPDATING) {
         sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_UPDATING, bot.estPickS + bot.estDropN);
-        printf("\n %d is arriving into NEST %d", bot.botNumber, bot.floorColor);
+        printf("\n %d is updating NEST %d", bot.botNumber, bot.floorColor);
         printf(" message %s", message);    
         printf("\n");
-      }
+      } else if (codeTask == ROBOT_NEGATIVE) {
+		sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_NEGATIVE, bot.floorColor);
+        printf("\n %d said *negative sir* to nest %d commands", bot.botNumber, bot.floorColor);
+        printf(" message %s", message);    
+        printf("\n"); 
+	  }
     }
   } 
   if (strcmp(message, "U")) {
