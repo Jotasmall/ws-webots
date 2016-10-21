@@ -38,6 +38,7 @@ float pDisable = 0.0;
 #define nRobots 4
 int listWorkers[] = {0, 0, 0, 0}; // number of robots
 int lastVisitor = 0;
+int flagOnebyOne = 1;
 // Communication flags
 int flagFiles = 0;
 int flagCom = 1;                //to enable or disable communications 
@@ -122,6 +123,7 @@ int W_speaking(int toWhom);
 int listening();
 void printStates();
 void updateUtility(int amount);
+void sortWorkers();
 // Robot files
 #define COMMUNICATION 5
 #define WORKERS 6
@@ -730,9 +732,14 @@ int W_speaking(int toWhom){ //ok-
     //Rounding values
     if (maxDif > 1) {
       maxDif = round(maxDif);
+      if (flagOnebyOne) {
+        maxDif = 1;
+      }
     } else {
       maxDif = ceil(maxDif);
     }
+    printf("\n %s is needing some %d robot goes out to %d", robotName, (int) maxDif, place2Go);
+    printf("\n");
     if ((place2Go != codeTam) && (maxDif > 0)) {
       i = 0;
       int j = 0;
@@ -747,7 +754,9 @@ int W_speaking(int toWhom){ //ok-
           sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
           wb_emitter_send(emitter, message, strlen(message)+1);
           writeMessage(1, message);
-        } 
+        } else if (robotLeaving == 0){ 
+          j++;
+        }
       }
       lastVisitor = 0;  
      //*  printf("\n %s communicates to its robots", robotName);
@@ -803,6 +812,7 @@ int listening() {
               //printf("\n %s removed from its list %d", robotName, robot);
               //printf("\n");
               updateUtility(-1);
+              sortWorkers();
             }
           } 
         } else if (action == ROBOT_ARRIVING) {
@@ -861,3 +871,12 @@ int listening() {
   }
   return 1;
 }
+
+void sortWorkers(){
+  int i;
+  printf("\n The list of workers in %s is ", robotName);
+  for (i = 0; i < nRobots-1; i++) {
+    printf("%d ", listWorkers[i]);
+    listWorkers[i] = listWorkers[i+1];
+  }
+} 

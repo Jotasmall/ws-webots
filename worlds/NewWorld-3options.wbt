@@ -1996,7 +1996,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.42727 2.36855e-15 -0.222398
+  translation 0.66727 2.36855e-15 -0.222399
   rotation 0 1 0 1.5708
   controller "CallDuty_v1"
   name "e-puck2801"
