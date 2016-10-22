@@ -123,7 +123,7 @@ int W_speaking(int toWhom);
 int listening();
 void printStates();
 void updateUtility(int amount);
-void sortWorkers();
+void sortWorkers(int i);
 // Robot files
 #define COMMUNICATION 5
 #define WORKERS 6
@@ -812,7 +812,7 @@ int listening() {
               //printf("\n %s removed from its list %d", robotName, robot);
               //printf("\n");
               updateUtility(-1);
-              sortWorkers();
+              sortWorkers(i);
             }
           } 
         } else if (action == ROBOT_ARRIVING) {
@@ -872,10 +872,10 @@ int listening() {
   return 1;
 }
 
-void sortWorkers(){
-  int i;
+void sortWorkers(int i){ 
+  int j;
   printf("\n The list of workers in %s is ", robotName);
-  for (i = 0; i < nRobots-1; i++) {
+  for (j = i; j < nRobots-1; j++) {
     printf("%d ", listWorkers[i]);
     listWorkers[i] = listWorkers[i+1];
   }

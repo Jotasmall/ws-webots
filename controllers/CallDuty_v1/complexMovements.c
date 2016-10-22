@@ -7,6 +7,9 @@
 #define TURN_90 27
 #define TURN_M90 -27
 #define SPEEDCARGO 1 
+// UML states
+#define PICK_SOURCE 100
+#define DROP_NEST 103
 
 #define THRESHOLD_DIST 150
 #define LEFT 0
@@ -40,11 +43,12 @@
 #define TRAVEL2RED 104
 #define TRAVEL2GREY 105
 #define TRAVEL2BLUE 106
-
+// communications
 #define M2ROBOT 1
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
 #define ROBOT_UPDATING 33
+#define ROBOT_NEGATIVE 34
 #define M2NEST 2
 #define LEAVE 11
 #define COME 12
@@ -62,8 +66,8 @@ int followingLine(double *speed, WbDeviceTag *displayExtra){//ok-
     readSensors(0);
     if ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7] > THRESHOLD_DIST)){ 
       waiting(20);  
-      printf("\n %d something is in front of me", bot.botNumber);
-      printf("\n");
+      //f printf("\n %d something is in front of me", bot.botNumber);
+      //f printf("\n");
     } else {
       bot.image = wb_camera_get_image(bot.cam);
       delta = find_middle(0);
@@ -154,8 +158,8 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra){
           return -1;
         } else if (flagRobot == 0) {
           counter = aux;
-          printf("\n %d has a clear way", bot.botNumber);
-          printf("\n");
+          // printf("\n %d has a clear way", bot.botNumber);
+          // printf("\n");
         }
       }
       if (wrongDoor) {
@@ -306,12 +310,18 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       else if (iter < -2) { hitWall(-5, speed);}
       else { hitWall(0, speed);}
  
-      //printf("\n %d reached cyan landmark!", bot.botNumber);
-      //printf("\n");
+      printf("\n %d reached cyan landmark!", bot.botNumber);
+      printf("\n");
       waiting(1);  
+	  if ((bot.flagCommanded == 1) && (bot.suggestedState != bot.currentState)
+	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+            bot.suggestedState = bot.currentState;
+            bot.flagCommanded = 0;
+	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+	  }
       return 1;
     } else {
-      //printf("\n Robot %d is near but...", bot.botNumber);
+      printf("\n Robot %d is near but...", bot.botNumber);
       if (flagRobot) {
         //printf("\n %d found another robot there", bot.botNumber);
         forward(-5, speed);   
@@ -326,6 +336,12 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       if (delta > THRESHOLD_DIST) { turnSteps(3, speed);} // almost 10°
       else if (delta < THRESHOLD_DIST) { turnSteps(-3, speed);}
       waiting(1);
+	  if ((bot.flagCommanded == 1) && (bot.suggestedState != bot.currentState)
+	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+            bot.suggestedState = bot.currentState;
+            bot.flagCommanded = 0;
+	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+	  }
       return 1;
     } 
   } else { //before being close enough

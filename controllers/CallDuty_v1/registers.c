@@ -54,8 +54,8 @@ void updateEstimations(int task, int cache){ //ok-
     if (bot.flagListened) {
       bot.flagListened = 0;
     } else {
-      printf("\n Everybody listen, I am %d, my %d cost me %d", bot.botNumber, codeTask, value);
-      printf("\n");
+      //s printf("\n Everybody listen, I am %d, my %d cost me %d", bot.botNumber, codeTask, value);
+      //s printf("\n");
       speaking(M2ROBOT, codeTask, value, cache);
     }  
   } 
@@ -159,8 +159,8 @@ void countObjects(int nbRegions){
   case PICK_SOURCE:
     bot.nPick[bot.floorColor]++; break;
   }
-  printf("\n We have %d objects picked", bot.nPick[bot.floorColor]);
-  printf("\n");
+  //c printf("\n We have %d objects picked", bot.nPick[bot.floorColor]);
+  //c rintf("\n");
   if (bot.flagFilesPER) {
     createDir(PERFORMANCE, 0);
     //printf("\n %s is counting objects in %s", robotName, fileRobot);

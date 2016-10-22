@@ -97,6 +97,7 @@ int nRobots = 10;
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
 #define ROBOT_UPDATING 33
+#define ROBOT_NEGATIVE 34
 #define M2NEST 2
 #define LEAVE 11
 #define COME 12
@@ -136,6 +137,7 @@ char fileRobot[] = "DIRPATH\\dd-hh-mm\\e-puck0000-OPTION.txt";
 #define EXPERIMENT 666
 #define WAITING 777
 #define TALK_NEST 999
+#define STOP_BY_CALL 128
 int statePrevious;
 int output = STOP;
 // Main functions
@@ -274,11 +276,17 @@ void executeUML(){
   while (wb_robot_step(TIME_STEP) != -1) {
     switch(bot.currentState){
     case EXPERIMENT:
+       if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
+        printf("\n %d from waiting in vain commanded toward %d", bot.botNumber, bot.suggestedState);
+        printf("\n");
+        bot.currentState = bot.suggestedState;
+        bot.flagCommanded = 0;
+      }
       cronometer(1000, 0);
     break;
     case PICK_SOURCE:
-      printf("\n %d state PICK_SOURCE", bot.botNumber);
-      printf("\n");
+      //e printf("\n %d state PICK_SOURCE", bot.botNumber);
+      //e printf("\n");
       switch(bot.floorColor){
         case RED:
           colorSeeking = BLUE; break;
@@ -287,35 +295,33 @@ void executeUML(){
         case BLUE:
           colorSeeking = RED; break;
       }
-      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (modelTest == ESSAY)) {
+      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
         printf("\n %d from picking was commanded toward %d", bot.botNumber, bot.suggestedState);
         printf("\n");
         bot.currentState = bot.suggestedState;
-        bot.suggestedState = NONE;
         bot.flagCommanded = 0;
       } else {
         bot.currentState = moduleUML(colorSeeking, BOX, PICKING, DROP_NEST, bot.colorDestination, 0);
         // avoid commands of nest when loaded
-        if (bot.flagLoad) { bot.suggestedState = NONE;}  
+        if (bot.flagLoad) { bot.suggestedState = bot.currentState;}  
       }  
     break;
     case DROP_NEST:
-      printf("\n %d state DROP_NEST", bot.botNumber);
-      printf("\n");
-      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (modelTest == ESSAY)) {
+      //e printf("\n %d state DROP_NEST", bot.botNumber);
+      //e printf("\n");
+      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
         printf("\n %d from dropping was commanded toward %d", bot.botNumber, bot.suggestedState);
         printf("\n");
         bot.currentState = bot.suggestedState;
-        bot.suggestedState = NONE;
         bot.flagCommanded = 0;
       } else {
         bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, bot.colorDestination, 1); 
-        if (bot.flagLoad) { bot.suggestedState = NONE;}
+        if (bot.flagLoad) { bot.suggestedState = bot.currentState;}
       }
     break;
     case TRAVEL2GREY:
-      printf("\n %d state TRAVEL2GREY", bot.botNumber);
-      printf("\n");
+      //e printf("\n %d state TRAVEL2GREY", bot.botNumber);
+      //e printf("\n");
       bot.colorDestination = GREY;
       bot.currentState = moduleTravel();
     break;  
@@ -354,7 +360,10 @@ int moduleUML(int foreground, int shape, int pick_or_drop, int stateRemain, int 
   int nextState = stateRemain;
   int flagWait = 1;
   bot.flagLoad = flag;
-  if (output == STOP) {
+  if (output == STOP_BY_CALL) {
+    bot.flagCommanded = 0;
+    return bot.suggestedState;  
+  } else if (output == STOP) {
     while(flagWait) {
       flagWait = waiting_color();	
       if (flagWait == 0) {
@@ -403,12 +412,11 @@ int moduleTravel(){
     printf("\n");
     return PICK_SOURCE;
   } 
-
   output = moduleFSM(); 
   
   if (output == STOP){  
-    printf("\n %s is on region %d desiring to go to %d", robotName, bot.floorColor, bot.currentState);
-    printf("\n"); 
+    //t printf("\n %s is on region %d desiring to go to %d", robotName, bot.floorColor, bot.currentState);
+    //t printf("\n"); 
     if (bot.currentState  == TRAVEL2GREY) {
       if (bot.floorColor == BLUE) {
         bot.lineColor = RED;
@@ -441,8 +449,8 @@ int moduleTravel(){
       } 
     } 
     if (flagReady) { 
-      printf("\n Excellent entrance, %d is on desired region", bot.botNumber);
-      printf("\n");	
+      //t printf("\n Excellent entrance, %d is on desired region", bot.botNumber);
+      //t printf("\n");	
       auxUML = PICK_SOURCE;  
       updateEstimations(bot.currentState, 0);
       /*
@@ -509,12 +517,16 @@ int moduleFSM(){
   int flagInside = 0;
   int moduleEnded = 0;
   output = STOP_LEVY; 
-  //fsm printf("\n %s is going in FSM to search %d", robotName, bot.currentState);
-  //fsm printf("\n");
+
   while (!moduleEnded) {
+    //f printf("\n %s is going in FSM to search %d with flagCommanded %d flagLoad %d", robotName, bot.currentState, bot.flagCommanded, bot.flagLoad);
+    //f printf("\n");
     switch(stateFSM) {
       case LEVY:
-      index = levyFlight(speed, &displayExtra);
+        index = levyFlight(speed, &displayExtra);
+
+        printf("\n %s is going in LEVY to search %d with flagCommanded %d flagLoad %d", robotName, bot.currentState, bot.flagCommanded, bot.flagLoad);
+        printf("\n");
         if (index == -1) {
           contLevy++;
           //printf("\n %s is thinking about her decision", robotName);
@@ -555,7 +567,14 @@ int moduleFSM(){
         } else {  //it found something
           contLevy = 0;
           updateBitacora(LEVY, FSM, 0);
-          stateFSM = GO2IT; 
+          if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)
+	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+	    printf("\n %d from %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
+            printf("\n");
+            return STOP_BY_CALL;
+          } else {			
+            stateFSM = GO2IT; 
+          }
         }
         if (bot.currentState == PICK_SOURCE) {
           wb_led_set(bot.leds[0], 1);
@@ -571,7 +590,16 @@ int moduleFSM(){
         //printf("\n %s found something and goes to get it", robotName);
         //printf("\n");
         flagProximity = going2it(index, speed, &displayExtra);
+        printf("\n %s is going in GO2IT to catch %d from currentState %d with flagCommanded %d flagLoad %d and flagProximity %d", robotName, bot.suggestedState, bot.currentState, bot.flagCommanded, bot.flagLoad, flagProximity);
+        printf("\n");
+ 
         if (flagProximity){
+          if ((bot.flagCommanded == 1) && (bot.suggestedState != bot.currentState)
+	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+            bot.suggestedState = bot.currentState;
+            bot.flagCommanded = 0;
+	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+	  }
           flagProximity = 0;
           flagSureSeen = 0;      
           if ((bot.currentState == TRAVEL2BLUE) || (bot.currentState == TRAVEL2RED) || (bot.currentState == TRAVEL2GREY)) {
@@ -587,6 +615,12 @@ int moduleFSM(){
           }
           updateBitacora(GO2IT, FSM, 0);
         } else { //it is yet far
+          if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)
+	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+	    printf("\n %d from %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
+            printf("\n");
+            return STOP_BY_CALL;
+	  }
           newIndex = detectImage(&displayExtra);
           if (newIndex == -1) {
             flagRobot = check4Robot(&displayExtra);
@@ -620,6 +654,12 @@ int moduleFSM(){
         //printf("\n %s is lost", robotName);
         run(5, speed);
         whereIam(1, speed);
+		if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)
+		  && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+		  printf("\n %d from %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
+          printf("\n");
+          return STOP_BY_CALL;
+		}
         index = detectImage(&displayExtra);
         if (index >= 0) {
           contLost = 0;

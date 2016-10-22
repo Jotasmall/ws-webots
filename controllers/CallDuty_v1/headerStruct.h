@@ -19,6 +19,7 @@ typedef struct{
   int colorDestination;   //ok - initVariables *main
   int flagLoad;            //ok - initVariables *main 
   int floorColor;          //ok - *main
+  int flagBusy;
   int *listFriends;        //ok - *main
   // estimations
   int estPickS;       //ok *initBot

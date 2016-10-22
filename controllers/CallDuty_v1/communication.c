@@ -48,26 +48,26 @@ int listening(){ //ok-
         if (newFriend == LEAVE) {
           //l printf("\n Nest %d is asking for %d to leave and go %d", place, bot.botNumber, suggestedDestination);
           //l printf("\n");
-        if (bot.botNumber != 2701) {    
+        if (bot.flagLoad == 0) {    
           switch(suggestedDestination){
           case RED:
 		    if (bot.floorColor != RED) {
-              printf("\n %d do not wanna go RED", bot.botNumber);
-              bot.currentState = TRAVEL2RED;
+              printf("\n %d commanded toward RED", bot.botNumber);
+              //bot.currentState = TRAVEL2RED;
               bot.suggestedState = TRAVEL2RED;
 			}  
             break;
           case GREY:
             if (bot.floorColor != GREY) {
-			  printf("\n %d do not wanna go GREY", bot.botNumber);
-              bot.currentState = TRAVEL2GREY;
+			  printf("\n %d commanded toward GREY", bot.botNumber);
+              //bot.currentState = TRAVEL2GREY;
               bot.suggestedState = TRAVEL2GREY;
 			}  
             break;
           case BLUE:
             if (bot.floorColor != BLUE) {
-			  printf("\n %d do not wanna go BLUE", bot.botNumber);
-              bot.currentState = TRAVEL2BLUE;
+			  printf("\n %d commanded toward BLUE", bot.botNumber);
+              //bot.currentState = TRAVEL2BLUE;
               bot.suggestedState = TRAVEL2BLUE;
 			}  
             break;
@@ -76,13 +76,11 @@ int listening(){ //ok-
           printf("\n");  
 		  wb_robot_step(32);
         } else {
-          if ((bot.flagLoad) || (bot.botNumber == 2701)) {
-            speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-		  }	
+          speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
 		}
       } else if (newFriend == COME) {
-        printf("\n Nest %d is asking for %d to arrive", place, bot.botNumber);
-        printf("\n");
+        //s printf("\n Nest %d is asking for %d to arrive", place, bot.botNumber);
+        //s printf("\n");
       } else {
         int flagNew = 1, pos = NROBOTS; 
         for (i = 0; i < NROBOTS; i++) { 
@@ -173,7 +171,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
     }
   } else if (toWhom == M2NEST) {
     if (time == -1) {
-      printf("\n %d will update your estimation NEST %d", bot.botNumber, bot.floorColor);
+      //s printf("\n %d will update your estimation NEST %d", bot.botNumber, bot.floorColor);
     } else {
       if (codeTask == ROBOT_LEAVING) {
         sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_LEAVING, bot.floorColor);

@@ -258,9 +258,9 @@ int waiting_color() {//ok
   countArriving = cont_height_figure(102, bot.colorSeeking);
   if (flagPrint1) {
     if (count > countArriving) {
-      printf("\n Intensity %d half line", count);
+      //w printf("\n Intensity %d half line", count);
     } else {
-      printf("\n Intensity %d half line", countArriving);  
+      //w printf("\n Intensity %d half line", countArriving);  
     }
     flagPrint1 = 0;
   } 
