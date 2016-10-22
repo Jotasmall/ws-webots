@@ -40,7 +40,7 @@ int listWorkers[] = {0, 0, 0, 0}; // number of robots
 int lastVisitor = 0;
 int flagOnebyOne = 1;
 // Communication flags
-int flagFiles = 0;
+int flagFiles = 1;
 int flagCom = 1;                //to enable or disable communications 
 WbDeviceTag receiver;
 WbDeviceTag emitter;
@@ -812,7 +812,8 @@ int listening() {
               //printf("\n %s removed from its list %d", robotName, robot);
               //printf("\n");
               updateUtility(-1);
-              sortWorkers(i);
+              int position = i;
+              sortWorkers(position);
             }
           } 
         } else if (action == ROBOT_ARRIVING) {
@@ -872,11 +873,14 @@ int listening() {
   return 1;
 }
 
-void sortWorkers(int i){ 
+void sortWorkers(int pos){ 
   int j;
-  printf("\n The list of workers in %s is ", robotName);
-  for (j = i; j < nRobots-1; j++) {
-    printf("%d ", listWorkers[i]);
-    listWorkers[i] = listWorkers[i+1];
+  printf("\n changing the list of workers from %d in %s is ", pos, robotName);
+  for (j = pos; j < nRobots-1; j++) {
+    printf("%d ", listWorkers[j]);
+    listWorkers[j] = listWorkers[j+1];
+    listWorkers[j+1] = 0;
   }
+  printf("%d", listWorkers[nRobots-1]);
+  wb_robot_step(32);
 } 
