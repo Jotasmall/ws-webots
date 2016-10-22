@@ -107,6 +107,7 @@ int doorEntrance(double *speed, int steps){
   speaking(    -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
   waiting(1);
   //turnSteps(-10, speed);
+  printf("\n robot %d is traveling to %d with floorColor %d", bot.botNumber, bot.currentState, bot.floorColor);
   if (((bot.currentState == TRAVEL2GREY) && (bot.floorColor == BLUE)) ||
      ((bot.currentState == TRAVEL2RED)  && (bot.floorColor == GREY))){ 
      turnSteps(TURN_90, speed); 

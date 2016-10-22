@@ -669,8 +669,8 @@ void recordUtility(){
       printf("Error opening file utilities \n");
       exit(1);
     }
-    printf("\n %s is updating utilities %g, %g, %g", robotName, utility[0], utility[1], utility[2]);
-    printf("\n");
+    //C printf("\n %s is updating utilities %g, %g, %g", robotName, utility[0], utility[1], utility[2]);
+    //C printf("\n");
     int i;
     for (i = 0; i < NEIGHBORS; i++) {
       fprintf(fw2, "%d, ", (int) utility[i]);
@@ -738,8 +738,8 @@ int W_speaking(int toWhom){ //ok-
     } else {
       maxDif = ceil(maxDif);
     }
-    printf("\n %s is needing some %d robot goes out to %d", robotName, (int) maxDif, place2Go);
-    printf("\n");
+    //C printf("\n %s is needing some %d robot goes out to %d", robotName, (int) maxDif, place2Go);
+    //C printf("\n");
     if ((place2Go != codeTam) && (maxDif > 0)) {
       i = 0;
       int j = 0;

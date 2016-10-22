@@ -320,22 +320,43 @@ void executeUML(){
       }
     break;
     case TRAVEL2GREY:
-      //e printf("\n %d state TRAVEL2GREY", bot.botNumber);
-      //e printf("\n");
-      bot.colorDestination = GREY;
-      bot.currentState = moduleTravel();
+      printf("\n %d state TRAVEL2GREY", bot.botNumber);
+      printf("\n");
+      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
+        printf("\n %d from TRAVE2GREY was commanded toward %d", bot.botNumber, bot.suggestedState);
+        printf("\n");
+        bot.currentState = bot.suggestedState;
+        bot.flagCommanded = 0;
+      } else {
+        bot.colorDestination = GREY;
+        bot.currentState = moduleTravel();
+      }
     break;  
     case TRAVEL2BLUE:
       printf("\n %d state TRAVEL2BLUE", bot.botNumber);
       printf("\n");
-      bot.colorDestination = BLUE;
-      bot.currentState = moduleTravel();
+      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
+        printf("\n %d from TRAVEL2BLUE was commanded toward %d", bot.botNumber, bot.suggestedState);
+        printf("\n");
+        bot.currentState = bot.suggestedState;
+        bot.flagCommanded = 0;
+      } else {
+        bot.colorDestination = BLUE;
+        bot.currentState = moduleTravel();
+      }
       break;
     case TRAVEL2RED:
       printf("\n %d state TRAVEL2RED", bot.botNumber);
       printf("\n");
-      bot.colorDestination = GREY;
-      bot.currentState = moduleTravel();
+      if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
+        printf("\n %d from TRAVEL2BLUE was commanded toward %d", bot.botNumber, bot.suggestedState);
+        printf("\n");
+        bot.currentState = bot.suggestedState;
+        bot.flagCommanded = 0;
+      } else {
+        bot.colorDestination = GREY;
+        bot.currentState = moduleTravel();
+      }
       break;
     default:
       printf("\n Big failure on UML machine");
@@ -407,14 +428,18 @@ int moduleTravel(){
 
   printf("\n %s travel module has flagCommanded %d flagLoad %d and modelTest %d", robotName, bot.flagCommanded, bot.flagLoad, modelTest);
   printf("\n");
-  if (bot.floorColor == bot.colorDestination) {
+  whereIam(0, speed);
+  if ((bot.floorColor == bot.colorDestination) && (bot.flagCommanded == 0)) {
     printf("\n %s has fulfilled its trip, stay here picking", robotName);
     printf("\n");
     return PICK_SOURCE;
   } 
   output = moduleFSM(); 
   
-  if (output == STOP){  
+  if (output == STOP_BY_CALL) {
+    bot.flagCommanded = 0;
+    return bot.suggestedState;  
+  } else if (output == STOP){  
     //t printf("\n %s is on region %d desiring to go to %d", robotName, bot.floorColor, bot.currentState);
     //t printf("\n"); 
     if (bot.currentState  == TRAVEL2GREY) {
@@ -546,8 +571,7 @@ int moduleFSM(){
               //bot.timeMeasured = 0;
               return STOP_LEVY;
             }
-            break;
-         */ 
+            break; 
           case PICK_SOURCE:
           case DROP_NEST:
             flagTravel  = computeTraveling(1);
@@ -562,13 +586,13 @@ int moduleFSM(){
               printf("\n %s decide to go on in this region", robotName);      
               printf("\n");
             }
-            break;       
+            break;
+            */       
           }  
         } else {  //it found something
           contLevy = 0;
           updateBitacora(LEVY, FSM, 0);
-          if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)
-	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+          if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
 	    printf("\n %d from %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
             printf("\n");
             return STOP_BY_CALL;
@@ -590,14 +614,16 @@ int moduleFSM(){
         //printf("\n %s found something and goes to get it", robotName);
         //printf("\n");
         flagProximity = going2it(index, speed, &displayExtra);
-        printf("\n %s is going in GO2IT to catch %d from currentState %d with flagCommanded %d flagLoad %d and flagProximity %d", robotName, bot.suggestedState, bot.currentState, bot.flagCommanded, bot.flagLoad, flagProximity);
-        printf("\n");
- 
+        if (bot.flagCommanded == 1){
+          printf("\n %s is going in GO2IT but %d with flagLoad %d and flagProximity %d", robotName, (bot.suggestedState!=bot.currentState), bot.flagLoad, flagProximity);
+          printf("\n");
+        }
         if (flagProximity){
-          if ((bot.flagCommanded == 1) && (bot.suggestedState != bot.currentState)
-	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
+          if ((bot.flagCommanded == 1) && (bot.suggestedState != bot.currentState)) {
             bot.suggestedState = bot.currentState;
             bot.flagCommanded = 0;
+            printf("\n %d respond with negative to tam %d", bot.botNumber, bot.floorColor);
+            printf("\n");
 	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
 	  }
           flagProximity = 0;
@@ -654,12 +680,11 @@ int moduleFSM(){
         //printf("\n %s is lost", robotName);
         run(5, speed);
         whereIam(1, speed);
-		if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)
-		  && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
-		  printf("\n %d from %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
+        if ((bot.flagCommanded == 1) && (bot.flagLoad == 0) && (bot.suggestedState != bot.currentState)) {
+	  printf("\n %d from %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
           printf("\n");
           return STOP_BY_CALL;
-		}
+        }
         index = detectImage(&displayExtra);
         if (index >= 0) {
           contLost = 0;
