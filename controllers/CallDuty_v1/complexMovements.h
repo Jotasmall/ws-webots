@@ -14,7 +14,7 @@ robot bot;
 int followingLine(double *speed, WbDeviceTag *displayExtra);
 int doorEntrance(double *speed, int steps);
 int setRobotPosition(double *speed, WbDeviceTag *displayExtra);
-int going2region(double *speed, WbDeviceTag *displayExtra);
+int enter2Destination(double *speed, WbDeviceTag *displayExtra);
 int going2it(int index, double *speed, WbDeviceTag *displayExtra);
 int levyFlight(double *speed, WbDeviceTag *displayExtra);
 

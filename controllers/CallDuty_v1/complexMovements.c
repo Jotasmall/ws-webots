@@ -70,7 +70,7 @@ int followingLine(double *speed, WbDeviceTag *displayExtra){//ok-
       //f printf("\n");
     } else {
       bot.image = wb_camera_get_image(bot.cam);
-      delta = find_middle(0);
+      delta = findMiddle(0);
       if ((delta > -1) && (delta < 100)) {
         delta = delta - bot.width/2;
         speed[LEFT] = 220 - K_TURN*abs(delta);
@@ -96,6 +96,7 @@ int followingLine(double *speed, WbDeviceTag *displayExtra){//ok-
 int doorEntrance(double *speed, int steps){
   forward(10, speed);
   turnSteps(TURN_M90, speed);
+  waiting(1);
   readSensors(0);
   if ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7]> THRESHOLD_DIST)) {
      printf("\n %d wrong turn", bot.botNumber);
@@ -143,8 +144,8 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra){
       readSensors(0);
       counter++;
       if (bot.ps_value[5]> 300) {
-        notReady = find_middle(0) < 0; // returns the index -1 if not
-        wrongDoor = find_middle(1) > 0; // return 100 if it found it
+        notReady = findMiddle(0) < 0; // returns the index -1 if not
+        wrongDoor = findMiddle(1) > 0; // return 100 if it found it
         flagRobot = check4Robot(displayExtra);
         aux = counter;
         while (flagRobot) {
@@ -184,7 +185,7 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra){
   return 0;
 }
 
-int going2region(double *speed, WbDeviceTag *displayExtra){ //ok
+int enter2Destination(double *speed, WbDeviceTag *displayExtra){ //ok
   int endTask = 0, i;
   resetDisplay(displayExtra);
   printf("\n %d getting in position destination %d by line of color %d", bot.botNumber, bot.colorDestination, bot.lineColor);
@@ -288,6 +289,7 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
   speed[RIGHT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/bot.height;
   // The robot is close enough to the object, i.e., > 75%  
   if (count > PROXIMITY_COLOR) {
+	bot.flagBusy = 1;
     resetDisplay(displayExtra);
     flagRobot = check4Robot(displayExtra);
     if (bot.colorSeeking == CYAN){ 
@@ -314,12 +316,11 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       printf("\n %d reached cyan landmark!", bot.botNumber);
       printf("\n");
       waiting(1);  
-	  if ((bot.flagCommanded == 1) && (bot.suggestedState != bot.currentState)
-	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
-            bot.suggestedState = bot.currentState;
-            bot.flagCommanded = 0;
+	  /*if (bot.flagCommanded == 1) {
+        bot.suggestedState = bot.currentState;
+        bot.flagCommanded = 0;
 	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	  }
+	  }*/
       return 1;
     } else {
       printf("\n Robot %d is near but...", bot.botNumber);
@@ -337,12 +338,11 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       if (delta > THRESHOLD_DIST) { turnSteps(3, speed);} // almost 10°
       else if (delta < THRESHOLD_DIST) { turnSteps(-3, speed);}
       waiting(1);
-	  if ((bot.flagCommanded == 1) && (bot.suggestedState != bot.currentState)
-	    && ((bot.currentState == PICK_SOURCE) || (bot.currentState == DROP_NEST))) {
-            bot.suggestedState = bot.currentState;
-            bot.flagCommanded = 0;
+	  /*if (bot.flagCommanded == 1) {
+        bot.suggestedState = bot.currentState;
+        bot.flagCommanded = 0;
 	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	  }
+	  }*/
       return 1;
     } 
   } else { //before being close enough

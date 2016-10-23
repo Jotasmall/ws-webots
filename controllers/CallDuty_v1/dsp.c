@@ -216,7 +216,7 @@ int whereArrive(double *speed){
 }
 
 
-int find_middle(int wrongLine){ //ok 
+int findMiddle(int wrongLine){ //ok 
   int i;
   int aux, index1 = -1, index2 = -1;
   int foreground = bot.lineColor;
@@ -248,7 +248,7 @@ int find_middle(int wrongLine){ //ok
   return aux;  
 }
 
-int waiting_color() {//ok
+int waitingColor() {//ok
   bot.image = wb_camera_get_image(bot.cam);
   waiting(1);
   int count = 0;

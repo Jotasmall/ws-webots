@@ -48,33 +48,30 @@ int listening(){ //ok-
         if (newFriend == LEAVE) {
           //l printf("\n Nest %d is asking for %d to leave and go %d", place, bot.botNumber, suggestedDestination);
           //l printf("\n");
-        if (bot.flagLoad == 0) {    
+        if ((bot.flagLoad == 0) && (bot.flagBusy == 0)) {    
           switch(suggestedDestination){
           case RED:
 		    if (bot.floorColor != RED) {
               printf("\n %d commanded toward RED", bot.botNumber);
-              //bot.currentState = TRAVEL2RED;
               bot.suggestedState = TRAVEL2RED;
 			}  
             break;
           case GREY:
             if (bot.floorColor != GREY) {
 			  printf("\n %d commanded toward GREY", bot.botNumber);
-              //bot.currentState = TRAVEL2GREY;
               bot.suggestedState = TRAVEL2GREY;
 			}  
             break;
           case BLUE:
             if (bot.floorColor != BLUE) {
 			  printf("\n %d commanded toward BLUE", bot.botNumber);
-              //bot.currentState = TRAVEL2BLUE;
               bot.suggestedState = TRAVEL2BLUE;
 			}  
             break;
           }
 		  bot.flagCommanded = 1;
           printf("\n");  
-		  wb_robot_step(32);
+		  //wb_robot_step(32);
         } else {
           speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
 		}
@@ -136,7 +133,7 @@ int listening(){ //ok-
             //printf("\n Thanks %d buddy, %s will consider your estimations for %d of time %d", name, bot.botNumber, codeReceived, bot.timeListened);
             //printf("\n");
             bot.flagListened = 1;
-            wb_robot_step(32); // to update global values
+            //wb_robot_step(32); // to update global values
             updateEstimations(codeReceived, 0);
           }
         }
@@ -201,7 +198,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
     writeMessage(1, message);
   }  
   wb_emitter_send(bot.emitter, message, strlen(message)+1);
-  wb_robot_step(32);
+  //wb_robot_step(32);
   return 1;
   
 }

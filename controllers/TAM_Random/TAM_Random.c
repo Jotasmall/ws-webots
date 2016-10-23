@@ -40,7 +40,7 @@ int listWorkers[] = {0, 0, 0, 0}; // number of robots
 int lastVisitor = 0;
 int flagOnebyOne = 1;
 // Communication flags
-int flagFiles = 1;
+int flagFiles = 0;
 int flagCom = 1;                //to enable or disable communications 
 WbDeviceTag receiver;
 WbDeviceTag emitter;
@@ -174,8 +174,8 @@ int main(int argc, char **argv) {
     if (timeCounter%112 == 0) {//448 -> 1 min
       timeMinute++;
       if (timeMinute > MINUTES_EMPTY) {
-        printf("\n %s is gonna speak", robotName);
-        printf("\n");
+       //all printf("\n %s is gonna speak", robotName);
+       //all printf("\n");
         timeMinute = 0;
         W_speaking(M2NEST); // Call of Duty
       }
@@ -188,13 +188,13 @@ int main(int argc, char **argv) {
 
 void printStates(){
   int i;
-  //*  printf("\n We sources ares on ");
+  //* //all printf("\n We sources ares on ");
   for (i=0; i<noS; i++){
-  //*  printf("\n %d is %d", i, stateSource[i]);  
+  //* //all printf("\n %d is %d", i, stateSource[i]);  
   }
-  //*  printf("\n We nests ares on ");
+  //* //all printf("\n We nests ares on ");
   for (i=0; i<noN; i++){
-  //*  printf("\n %d is %d", i, stateNest[i]);  
+  //* //all printf("\n %d is %d", i, stateNest[i]);  
   }
 }
 
@@ -256,7 +256,7 @@ void W_updateSources(){
             p = ((float)rand())/RAND_MAX;
             if (pDisable < p) {
               stateSource[s] = FREE_SOURCE;
-             //*  printf("\n source %d in %s go for service", s, robotName);
+             //* //all printf("\n source %d in %s go for service", s, robotName);
             }
           } else {
             wb_led_set(led[sensorSource[s]], 0);           
@@ -298,7 +298,7 @@ void W_updateSources(){
               stateSource[s] = DISABLE;
             } else {
               stateSource[s] = FREE_SOURCE;
-             //*  printf("\n source %d in %s go for service", s, robotName);
+             //* //all printf("\n source %d in %s go for service", s, robotName);
             }  
           } 
           break;
@@ -324,10 +324,10 @@ void W_initialize(){
     p = ((float)rand())/RAND_MAX;
     if (pDisable > p) {
       stateSource[i] = DISABLE;
-     //*  printf("\n source %d in %s go to rest with p %.2f", i, robotName, p);
+     //* //all printf("\n source %d in %s go to rest with p %.2f", i, robotName, p);
     } else {
       stateSource[i] = FREE_SOURCE;
-     //*  printf("\n source %d in %s go for service with p %.2f", i, robotName, p);
+     //* //all printf("\n source %d in %s go for service with p %.2f", i, robotName, p);
     } 
   }
   for (i=0; i<noN; i++){
@@ -353,7 +353,7 @@ void W_read_dsensor(){
   /*printf("\n Sensor values ");
   for (i=0; i<NB_TAM; i++){
     ds_value[i] /= samples;
-    printf(" %d ", ds_value[i]);
+   //all printf(" %d ", ds_value[i]);
   }*/
 }
 
@@ -370,14 +370,14 @@ void W_calibrate(int n){
       ds_offset2[i] += (int) wb_distance_sensor_get_value(ds2[i]);
     }
   }
- //*  printf("\n Sensor offset ");
+ //* //all printf("\n Sensor offset ");
   for (i=0; i<NB_TAM; i++){
     ds_offset1[i] /= n;
     ds_offset2[i] /= n;
-   //*  printf(" a %d b %d ", ds_offset1[i], ds_offset2[i]);
+   //* //all printf(" a %d b %d ", ds_offset1[i], ds_offset2[i]);
   }
- //*  printf("\n Calibration is done.");
- //*  printf("\n");
+ //* //all printf("\n Calibration is done.");
+ //* //all printf("\n");
 }
 
 void W_reset(){
@@ -436,15 +436,15 @@ void W_reset(){
   srand(codeTam*100+date);
   wb_robot_step(TIME_STEP);
  
- //*  printf("\n %s is ready to work!", robotName);
+ //* //all printf("\n %s is ready to work!", robotName);
 }
 
 void createFiles(){
   createDir(COMMUNICATION, 1);
   FILE *fcom = fopen(fileRobot, "w");
   if (fcom == NULL) {
-    printf("Error opening file com\n");
-    printf("\n");
+   //all printf("Error opening file com\n");
+   //all printf("\n");
     exit(1);
   }
   fclose(fcom);
@@ -452,8 +452,8 @@ void createFiles(){
   createDir(WORKERS, 1);
   FILE *fworker = fopen(fileRobot, "w");
   if (fworker == NULL) {
-    printf("Error opening file robot\n");
-    printf("\n");
+   //all printf("Error opening file robot\n");
+   //all printf("\n");
     exit(1);
   }
   fclose(fworker);
@@ -461,8 +461,8 @@ void createFiles(){
   createDir(UTILITY, 1);
   FILE *futi = fopen(fileRobot, "w");
   if (futi == NULL) {
-    printf("Error opening file utility\n");
-    printf("\n");
+   //all printf("Error opening file utility\n");
+   //all printf("\n");
     exit(1);
   }
   fclose(futi);
@@ -470,14 +470,14 @@ void createFiles(){
   createDir(VISIT, 1);
   FILE *fvis1 = fopen(fileRobot, "w");
   if (fvis1 == NULL) {
-    printf("Error opening file visit\n");
-    printf("\n");
+   //all printf("Error opening file visit\n");
+   //all printf("\n");
     exit(1);
   }
   FILE *fvis2 = fopen(fileAux, "w");
   if (fvis2 == NULL) {
-    printf("Error opening file visits-aux\n");
-    printf("\n");
+   //all printf("Error opening file visits-aux\n");
+   //all printf("\n");
     exit(1);
   }
   int row;
@@ -577,12 +577,12 @@ void updateFiles(){
     createDir(VISIT, 0);
     FILE *fw=fopen(fileAux,"w");
     if (fw == NULL){
-      printf("Error opening auxiliar file\n");
+     //all printf("Error opening auxiliar file\n");
       exit(1);
     }
     FILE *fr=fopen(fileRobot,"r");
     if (fr == NULL ){
-      printf("Error opening file 1 - update \n");
+     //all printf("Error opening file 1 - update \n");
       exit(1);
     }
     rewind(fr);
@@ -606,12 +606,12 @@ void writeFile(int idPlace){
     createDir(VISIT, 0);
     FILE *fw=fopen(fileRobot,"w");
     if (fw == NULL){
-      printf("Error opening file 1 - writing\n");
+     //all printf("Error opening file 1 - writing\n");
       exit(1);
     }
     FILE *fr=fopen(fileAux,"r");
     if (fr == NULL ){
-      printf("Error opening auxiliar file \n");
+     //all printf("Error opening auxiliar file \n");
       exit(1);
     }
     rewind(fr);
@@ -649,7 +649,7 @@ void updateUtility(int amount) {
     createDir(WORKERS, 0);
     FILE *fw1 = fopen(fileRobot,"a");
     if (fw1 == NULL){
-      printf("Error opening file workers\n");
+     //all printf("Error opening file workers\n");
       exit(1);
     }
     for (i = 0; i < nRobots; i++){
@@ -666,11 +666,11 @@ void recordUtility(){
     createDir(UTILITY, 0);
     FILE *fw2 = fopen(fileRobot, "a");
     if (fw2 == NULL) {
-      printf("Error opening file utilities \n");
+     //all printf("Error opening file utilities \n");
       exit(1);
     }
-    //C printf("\n %s is updating utilities %g, %g, %g", robotName, utility[0], utility[1], utility[2]);
-    //C printf("\n");
+    //C//all printf("\n %s is updating utilities %g, %g, %g", robotName, utility[0], utility[1], utility[2]);
+    //C//all printf("\n");
     int i;
     for (i = 0; i < NEIGHBORS; i++) {
       fprintf(fw2, "%d, ", (int) utility[i]);
@@ -688,8 +688,8 @@ void writeMessage(int speaking, const char *msg) {
     //printf("\n");	
     FILE *file = fopen(fileRobot, "a+");
     if (file == NULL) {
-      printf("Error opening file of communications\n");
-      printf("\n");
+     //all printf("Error opening file of communications\n");
+     //all printf("\n");
       exit(1);
     }
     //printf("\n %s is updating with %s", robotName, msg);
@@ -738,8 +738,8 @@ int W_speaking(int toWhom){ //ok-
     } else {
       maxDif = ceil(maxDif);
     }
-    //C printf("\n %s is needing some %d robot goes out to %d", robotName, (int) maxDif, place2Go);
-    //C printf("\n");
+    //C//all printf("\n %s is needing some %d robot goes out to %d", robotName, (int) maxDif, place2Go);
+    //C//all printf("\n");
     if ((place2Go != codeTam) && (maxDif > 0)) {
       i = 0;
       int j = 0;
@@ -748,9 +748,9 @@ int W_speaking(int toWhom){ //ok-
         i++;
         if ((robotLeaving != 0) && (robotLeaving != lastVisitor)){
           j++;
-          printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
-          printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
-          printf("\n");
+         //all printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
+         //all printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
+         //all printf("\n");
           sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
           wb_emitter_send(emitter, message, strlen(message)+1);
           writeMessage(1, message);
@@ -759,8 +759,8 @@ int W_speaking(int toWhom){ //ok-
         }
       }
       lastVisitor = 0;  
-     //*  printf("\n %s communicates to its robots", robotName);
-     //*  printf("\n");      
+     //* //all printf("\n %s communicates to its robots", robotName);
+     //* //all printf("\n");      
     }
   } else {
     //printf("\n %s is introducing the new %d", robotName, lastVisitor);
@@ -812,8 +812,8 @@ int listening() {
               //printf("\n %s removed from its list %d", robotName, robot);
               //printf("\n");
               updateUtility(-1);
-              int position = i;
-              sortWorkers(position);
+              //int position = i;
+              sortWorkers(i);
             }
           } 
         } else if (action == ROBOT_ARRIVING) {
@@ -832,14 +832,14 @@ int listening() {
         else if (action == ROBOT_NEGATIVE) {
           for (i = 0; i < nRobots; i++) {
             if (listWorkers[i] == robot) {
-              printf("\n %s received from %d a negative answer", robotName, robot);
-              printf("\n");
+             //all printf("\n %s received from %d a negative answer", robotName, robot);
+             //all printf("\n");
               i++; // try the next worker
               break;
             }
           }
           for (j = 0; j < nRobots; j++){
-            if (j >= nRobots) { i = 0;}
+            if (i >= nRobots) { i = 0;}
             robotLeaving = listWorkers[i];
             if (robotLeaving != 0) {
               printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);

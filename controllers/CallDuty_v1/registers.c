@@ -154,10 +154,10 @@ void cronometer(int task, int cache){//ok-
 
 void countObjects(int nbRegions){
   switch(bot.currentState){
-  case DROP_NEST:
-    bot.nDrop[bot.floorColor]++; break;
-  case PICK_SOURCE:
-    bot.nPick[bot.floorColor]++; break;
+    case DROP_NEST:
+      bot.nDrop[bot.floorColor]++; break;
+    case PICK_SOURCE:
+      bot.nPick[bot.floorColor]++; break;
   }
   //c printf("\n We have %d objects picked", bot.nPick[bot.floorColor]);
   //c rintf("\n");
