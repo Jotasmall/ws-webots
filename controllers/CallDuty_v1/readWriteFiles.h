@@ -17,6 +17,6 @@ robot bot;
 void createDir(int option, int flagBuild);
 void createFiles();
 void writeDecision(float boundP, float realP, int mechanism, int flagTravel);
-void writeMessage(int speaking, const char *msg);
+void writeMessage(const char *msg);
 
 #endif

@@ -284,61 +284,61 @@ int whatIsee(int color, float Eccentricity, float Extent, int squarewidth, int m
     if (Extent <= 0.889) {
       if (Extent <= 0.711) {
         if (squarewidth <= 11) {
-          printf("\n Circle (4.0/1.0)");
+          //printf("\n Circle (4.0/1.0)");
           shapeFound = CIRCLE;
         } else {
-          printf("\n Robot (176.0)");
+          //printf("\n Robot (176.0)");
           shapeFound = ROBOT;
         }
       } else {
         if (Eccentricity <= 0.818) {
-          printf("\n Robot (6.0)");
+          //printf("\n Robot (6.0)");
           shapeFound = ROBOT;
         } else {
-          printf("\n Circle (135.0/1.0)");
+          //printf("\n Circle (135.0/1.0)");
           shapeFound = CIRCLE;
         }
       }
     } else {
-      printf("\n Box (132.0)");
+      //printf("\n Box (132.0)");
       shapeFound = BOX;
     }
   } else {
     if (Extent <= 0.708) { 
       if (Extent <= 0.474) {
-        printf("\n Robot (20.0/1.0)");
+        //printf("\n Robot (20.0/1.0)");
         shapeFound = ROBOT;
       } else {
         if (Eccentricity <= 2.455) {
           if (Extent <= 0.613) {
             if (middleAxisH <= 3) {
-              printf("\n No triangle (4.0)");
+              //printf("\n No triangle (4.0)");
               shapeFound = NOTHING;
             } else {
-              printf("\n Triangle (99.0/3.0)");
+              //printf("\n Triangle (99.0/3.0)");
               shapeFound = TRIANGLE;
             } 
           } else {
             if (squarewidth <= 7) {
               if (middleAxisV <= 7) {
-                printf("\n Triangle (15.0)");
+                //printf("\n Triangle (15.0)");
                 shapeFound = TRIANGLE;
               } else {
-                printf("\n No circle (5.0)");
+                //printf("\n No circle (5.0)");
                 shapeFound = NOTHING;
               }
             } else {
-              printf("\n No triangle (34.0)");
+              //printf("\n No triangle (34.0)");
               shapeFound = NOTHING;
             }
           }
         } else {
-          printf("\n No triangle (35.0/1.0)");
+          //printf("\n No triangle (35.0/1.0)");
           shapeFound = NOTHING;
         }
       }
     } else {
-      printf("\n No circle (105.0)");
+      //printf("\n No circle (105.0)");
       shapeFound = NOTHING;
       if (color == CYAN ){ shapeFound = BOX;}
     }  

@@ -867,9 +867,9 @@ int listening() {
             if (i >= nRobots) { i = 0;}
             robotLeaving = listWorkers[i];
             if (robotLeaving != 0) {
-              printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
-              printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
-              printf("\n");
+              //c printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
+              //c printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
+              //c printf("\n");
               sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
               wb_emitter_send(emitter, message, strlen(message)+1);
               writeMessage(1, message);
@@ -902,10 +902,12 @@ int listening() {
 void sortWorkers(int pos){ 
   int j;
   printf("\n changing the list of workers from %d in %s is ", pos, robotName);
-  for (j = pos; j < nRobots-1; j++) {
+  for (j = 1; j < nRobots-1; j++) {
     printf("%d ", listWorkers[j]);
-    listWorkers[j] = listWorkers[j+1];
-    listWorkers[j+1] = 0;
+    if (listWorkers[j] == 0) {
+      listWorkers[j] = listWorkers[j+1];
+      listWorkers[j+1] = 0;
+    }  
   }
   printf("%d", listWorkers[nRobots-1]);
   wb_robot_step(32);

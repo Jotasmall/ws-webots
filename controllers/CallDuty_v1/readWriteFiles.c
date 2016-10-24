@@ -175,7 +175,7 @@ void writeDecision(float boundP, float realP, int mechanism, int flagTravel){ //
   }
 }
 
-void writeMessage(int speaking, const char *msg) {
+void writeMessage(const char *msg) {
   if (bot.flagFilesCOM) {
     // File for decisions
     createDir(COMMUNICATION, 0);
@@ -188,13 +188,8 @@ void writeMessage(int speaking, const char *msg) {
       exit(1);
     }
     //printf("\n %s is updating with %s", robotName, msg);
-    if (speaking) {
-      fprintf(file, "\n speaking, %s", msg);
-      //printf("\n %s is updating with %s by speaking", robotName, msg);
-    } else {
-      fprintf(file, "\n listening, %s", msg);
-      //printf("\n %s is updating with %s by listening", robotName, msg);
-    }
+    fprintf(file, "\n listening, %s", msg);
+    //printf("\n %s is updating with %s by listening", robotName, msg);
     fclose(file);
   }
 }

@@ -20,9 +20,11 @@
 #define TRAVELING_AGREE 0
 #define TRAVELING_LEVY 1
 #define TRAVELING_CALL 2
+#define COMMUNICATION 5
 // destinations
 #define M2ROBOT 1
 #define M2NEST 2
+
 
 
 int listening(){ //ok-
@@ -78,6 +80,8 @@ int listening(){ //ok-
 		  //wb_robot_step(32);
         } else {
           speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+		  printf("\n %d is saying not because Busy %d or load %d", bot.botNumber, bot.flagBusy, bot.flagLoad);
+		  printf("\n");
 		}
       } else if (newFriend == COME) {
         //s printf("\n Nest %d is asking for %d to arrive", place, bot.botNumber);
@@ -155,18 +159,16 @@ int listening(){ //ok-
     }
   }	
   if (flagWrite == 1) {
-    writeMessage(0, data);
+    writeMessage(data);
   }	
   return 1;
 }
 
 int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   if (bot.flagCom == 0) { return 0;}
-  char message[30];
-  int flagWrite = 0;
+  char message[30]="";
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
   if (toWhom == M2ROBOT) {
-    flagWrite = 1;
     if (time == -1) { // reporting just to have the same number of lines
       sprintf(message, "U");
     } else if (toWhom == -1){ 
@@ -175,7 +177,6 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
       sprintf(message, "R2R%dC%dT%d",bot.botNumber, codeTask, time);
     }
   } else if (toWhom == M2NEST) {
-    flagWrite = 1;
     if (time == -1) {
       //s printf("\n %d will update your estimation NEST %d", bot.botNumber, bot.floorColor);
     } else {
@@ -206,10 +207,24 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
     //s printf("\n %d updating its record of messages", bot.botNumber);
   }  
   wb_emitter_send(bot.emitter, message, strlen(message)+1);
-  wb_robot_step(32);
-  if (flagWrite == 1){
-    writeMessage(1, message);
+  wb_robot_step(32); 
+  if (message[0] == 'R'){
+    if (bot.flagFilesCOM) {
+      // File for decisions
+      createDir(COMMUNICATION, 0);
+      printf("\n %d is registering its messages in %s", bot.botNumber, message);
+      printf("\n");	
+      FILE *file = fopen(bot.fileRobot, "a+");
+      if (file == NULL) {
+        printf("Error opening file of communications\n");
+        printf("\n");
+        exit(1);
+      }
+      //printf("\n %s is updating with %s", robotName, msg);
+      fprintf(file, "\n speaking, %s", message);
+      //printf("\n %s is updating with %s by speaking", robotName, msg);
+      fclose(file);
+    }
   }	
-  return 1;
-  
+  return 1; 
 }

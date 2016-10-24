@@ -431,6 +431,7 @@ int moduleTravel(){
           bot.lineColor = RED;
           flagReady = enter2Destination(speed, &displayExtra);
         } 
+		
       break;
       case TRAVEL2GREY:
         bot.colorDestination = GREY;

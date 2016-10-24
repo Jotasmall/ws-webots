@@ -107,6 +107,7 @@ int doorEntrance(double *speed, int steps){
   forward(steps, speed);
   speaking(M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
   speaking(    -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
+  bot.flagBusy = 0;
   waiting(1);
   //turnSteps(-10, speed);
   printf("\n robot %d is traveling to %d with floorColor %d", bot.botNumber, bot.currentState, bot.floorColor);
