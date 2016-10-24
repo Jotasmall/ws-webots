@@ -292,7 +292,7 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
 	bot.flagBusy = 1;
     resetDisplay(displayExtra);
     flagRobot = check4Robot(displayExtra);
-    if (bot.colorSeeking == CYAN){ 
+    if ((bot.colorSeeking == CYAN) || (bot.colorSeeking == WHITE)){ 
       if (flagRobot) { 
         forward(-15, speed);
         // printf("\n %d found a robot when going to Landmark", bot.botNumber); //-- JUAN EDIT
@@ -300,27 +300,24 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
         flagRobot = 0;
         return 0;
       }
-      i = bot.colorSeeking;
       index2 = bot.shapeLooking;
-      bot.colorSeeking = CYAN;
       bot.shapeLooking = 255;
       detectImage(displayExtra);
-      bot.colorSeeking = i;
       bot.shapeLooking = index2;
       //printf("\n Difference between A-B %d", pointA-pointB);
       iter = bot.pointA - bot.pointB;
-      if (iter > 2) { hitWall(5, speed);}
-      else if (iter < -2) { hitWall(-5, speed);}
-      else { hitWall(0, speed);}
+      if (iter > 2) { 
+	    hitWall(5, speed);
+      } else if (iter < -2) { 
+        hitWall(-5, speed);
+      } else { 
+        hitWall(0, speed);
+        forward(5, speed);
+      }
  
       printf("\n %d reached cyan landmark!", bot.botNumber);
       printf("\n");
       waiting(1);  
-	  /*if (bot.flagCommanded == 1) {
-        bot.suggestedState = bot.currentState;
-        bot.flagCommanded = 0;
-	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	  }*/
       return 1;
     } else {
       printf("\n Robot %d is near but...", bot.botNumber);
@@ -338,14 +335,10 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       if (delta > THRESHOLD_DIST) { turnSteps(3, speed);} // almost 10°
       else if (delta < THRESHOLD_DIST) { turnSteps(-3, speed);}
       waiting(1);
-	  /*if (bot.flagCommanded == 1) {
-        bot.suggestedState = bot.currentState;
-        bot.flagCommanded = 0;
-	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	  }*/
       return 1;
     } 
   } else { //before being close enough
+    bot.flagBusy = 0;
     // printf("\n %d saw shape with height %d", bot.botNumber, count);
     if (readSensors(0) && ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[1] > THRESHOLD_DIST) 
         || (bot.ps_value[7] > THRESHOLD_DIST) || (bot.ps_value[6] > THRESHOLD_DIST))) { // 1 for obstacle

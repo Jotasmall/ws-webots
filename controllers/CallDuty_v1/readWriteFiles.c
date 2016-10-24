@@ -179,8 +179,8 @@ void writeMessage(int speaking, const char *msg) {
   if (bot.flagFilesCOM) {
     // File for decisions
     createDir(COMMUNICATION, 0);
-    //printf("\n %s is registering its messages in %s", robotName, fileRobot);
-    //printf("\n");	
+    printf("\n %d is registering its messages in %s", bot.botNumber, msg);
+    printf("\n");	
     FILE *file = fopen(bot.fileRobot, "a+");
     if (file == NULL) {
       printf("Error opening file of communications\n");

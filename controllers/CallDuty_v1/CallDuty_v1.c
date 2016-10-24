@@ -46,7 +46,7 @@
 // for different models
 int modelTest = NEVER;
 // Flags of control
-int flagFiles = 0;
+int flagFiles = 1;
 int flagMasterRecruiting = 0; //1 RANDOMLY, -1 never, 0 whatever
 int flagCom = 1;      //to enable or disable communications
 int flagMomento = 0;
@@ -194,11 +194,11 @@ void reset(){ //ok-
   bot.fileRobot = fileRobot;
   bot.dirPath = dirPath; 
   if (flagFiles) { 
-    bot.flagFilesFSM = 1;
-    bot.flagFilesEST = 1;
+    bot.flagFilesFSM = 0;
+    bot.flagFilesEST = 0;
     bot.flagFilesLIFE = 1;
-    bot.flagFilesDM = 1;
-    bot.flagFilesPER = 1;
+    bot.flagFilesDM = 0;
+    bot.flagFilesPER = 0;
     bot.flagFilesCOM = 1;
     createFiles();
   } 

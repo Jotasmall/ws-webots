@@ -1980,7 +1980,7 @@ DEF Blue DifferentialWheels {
 }
 E-puck {
   translation 0.533116 2.50841e-15 -0.158173
-  rotation 0 -1 0 3.14159
+  rotation 0 1 0 2.8798
   controller "CallDuty_v1"
   name "e-puck2701"
   camera_windowPosition 0.0586907 0.31994

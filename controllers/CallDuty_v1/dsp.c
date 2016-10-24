@@ -205,7 +205,9 @@ int whereArrive(double *speed){
     bot.floorColor = whereIam(0, speed);
     printf("\n %d arrived into a land of color %d when going to color %d", bot.botNumber, bot.floorColor, bot.currentState);
     printf("\n");
-    speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
+	if (bot.colorDestination == bot. floorColor){
+      speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
+	}  
   } else {
     waiting(10);
     printf("\n Waiting to have a clear ground");

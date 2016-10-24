@@ -15,6 +15,7 @@
 #define ROBOT_ARRIVING 32
 #define ROBOT_UPDATING 33
 #define ROBOT_NEGATIVE 34
+#define ROBOT_AFFIRMATIVE 35
 // To write decisions
 #define TRAVELING_AGREE 0
 #define TRAVELING_LEVY 1
@@ -26,8 +27,10 @@
 
 int listening(){ //ok-
   int i;
+  int flagWrite = 0;
+  const char *data;
   while(wb_receiver_get_queue_length(bot.receiver)>0){  
-  const char *data = wb_receiver_get_data(bot.receiver);
+  data = wb_receiver_get_data(bot.receiver);
   if (data[0] == 'U') {
     //printf("\n %d will update its state of partitioning %d", bot.botNumber, flagTravel);
     writeDecision(0, 0, TRAVELING_CALL, 0);
@@ -39,10 +42,10 @@ int listening(){ //ok-
     //printf("\n");
     if (place == bot.floorColor) {
       int destinatary = atoi(&data[5]);
-      if (destinatary == bot.botNumber){ 
+      if (destinatary == bot.botNumber){
+        flagWrite = 1;		  
         //l printf("\n %d is listening its nest location %d to say %s", bot.botNumber, place, data);
         //l printf("\n");
-        writeMessage(0, data);
         int newFriend = atoi(&data[10]);
         int suggestedDestination = atoi(&data[13]);
         if (newFriend == LEAVE) {
@@ -69,6 +72,7 @@ int listening(){ //ok-
 			}  
             break;
           }
+		  speaking(M2NEST, ROBOT_AFFIRMATIVE, 0, 0);
 		  bot.flagCommanded = 1;
           printf("\n");  
 		  //wb_robot_step(32);
@@ -112,7 +116,7 @@ int listening(){ //ok-
     int codeReceived = atoi(&data[8]);
     for (i = 0; i < NROBOTS; i++) {
       if (name == bot.listFriends[i]) {
-        writeMessage(0, data);
+        flagWrite = 1;
         if (codeReceived == ROBOT_LEAVING) {
           printf("\n %d bye bye %d", bot.botNumber, name);
           printf("\n");
@@ -150,15 +154,19 @@ int listening(){ //ok-
       wb_receiver_next_packet(bot.receiver);
     }
   }	
+  if (flagWrite == 1) {
+    writeMessage(0, data);
+  }	
   return 1;
 }
 
 int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   if (bot.flagCom == 0) { return 0;}
   char message[30];
-
+  int flagWrite = 0;
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
   if (toWhom == M2ROBOT) {
+    flagWrite = 1;
     if (time == -1) { // reporting just to have the same number of lines
       sprintf(message, "U");
     } else if (toWhom == -1){ 
@@ -167,6 +175,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
       sprintf(message, "R2R%dC%dT%d",bot.botNumber, codeTask, time);
     }
   } else if (toWhom == M2NEST) {
+    flagWrite = 1;
     if (time == -1) {
       //s printf("\n %d will update your estimation NEST %d", bot.botNumber, bot.floorColor);
     } else {
@@ -186,19 +195,21 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
         printf(" message %s", message);    
         printf("\n");
       } else if (codeTask == ROBOT_NEGATIVE) {
-		sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_NEGATIVE, bot.floorColor);
+	sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_NEGATIVE, bot.floorColor);
         printf("\n %d said *negative sir* to nest %d commands", bot.botNumber, bot.floorColor);
         printf(" message %s", message);    
         printf("\n"); 
-	  }
+      }
     }
   } 
   if (strcmp(message, "U")) {
     //s printf("\n %d updating its record of messages", bot.botNumber);
-    writeMessage(1, message);
   }  
   wb_emitter_send(bot.emitter, message, strlen(message)+1);
-  //wb_robot_step(32);
+  wb_robot_step(32);
+  if (flagWrite == 1){
+    writeMessage(1, message);
+  }	
   return 1;
   
 }
