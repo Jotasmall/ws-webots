@@ -283,7 +283,7 @@ void executeUML(){
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
         } else {
-          bot.currentState = moduleUML(MAGENTA, BOX, PICKING, DROP_NEST, 0);
+          bot.currentState = moduleUML(MAGENTA, BOX, PICKING, DROP_NEST, 1);
         }  
       break;
       case TRAVEL2RED:
@@ -392,8 +392,7 @@ int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int 
       }  
     }
     */  
-  }
-  
+  }  
   wb_robot_step(32);
   return nextState;
 }

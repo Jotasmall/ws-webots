@@ -289,8 +289,8 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
   // increase by 1.25 max_speed
   speed[LEFT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/bot.height;
   speed[RIGHT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/bot.height;
-  // The robot is close enough to the object, i.e., > 75%  
   if (count > PROXIMITY_COLOR) {
+	// The robot is close enough to the object, i.e., > 75% 
 	bot.flagBusy = 1;
     resetDisplay(displayExtra);
     flagRobot = check4Robot(displayExtra);
@@ -368,7 +368,7 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
     }
     speed[LEFT] = speed[LEFT]+K_TURN*delta;
     speed[RIGHT] = speed[RIGHT]-K_TURN*delta;
-    if (bot.flagLoad){ //reducing speed when cargo
+    if (bot.flagLoad == 1){ //reducing speed when cargo
       speed[LEFT]=speed[LEFT]*SPEEDCARGO;
       speed[RIGHT]=speed[RIGHT]*SPEEDCARGO;
     }

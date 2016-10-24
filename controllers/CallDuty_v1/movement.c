@@ -104,7 +104,7 @@ int run(int steps, double *speed){ //ok-
         speed[i] = -MAX_SPEED;
       }
     }
-    if (bot.flagLoad){ //reducing speed when cargo
+    if (bot.flagLoad == 1){ //reducing speed when cargo
       speed[LEFT]=speed[LEFT]*SPEEDCARGO;
       speed[RIGHT]=speed[RIGHT]*SPEEDCARGO;
     }
