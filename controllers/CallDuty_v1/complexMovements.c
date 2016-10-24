@@ -320,11 +320,6 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       printf("\n %d reached cyan landmark!", bot.botNumber);
       printf("\n");
       waiting(1);  
-	  /*if (bot.flagCommanded == 1) {
-        bot.suggestedState = bot.currentState;
-        bot.flagCommanded = 0;
-	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	  }*/
       return 1;
     } else {
       printf("\n Robot %d is near but...", bot.botNumber);
@@ -342,11 +337,6 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       if (delta > THRESHOLD_DIST) { turnSteps(3, speed);} // almost 10°
       else if (delta < THRESHOLD_DIST) { turnSteps(-3, speed);}
       waiting(1);
-	  /*if (bot.flagCommanded == 1) {
-        bot.suggestedState = bot.currentState;
-        bot.flagCommanded = 0;
-	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	  }*/
       return 1;
     } 
   } else { //before being close enough

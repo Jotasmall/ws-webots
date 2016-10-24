@@ -37,11 +37,12 @@ float pDisableNestBlue = 0.6;
 float pDisable = 0.0;
 #define nRobots 4
 int listWorkers[] = {0, 0, 0, 0}; // number of robots
+int listBusy[] = {0, 0, 0, 0};
 int lastVisitor = 0;
 int flagOnebyOne = 1;
 int flagWaitingDeparture = 0;
 // Communication flags
-int flagFiles = 0;
+int flagFiles = 1;
 int flagCom = 1;                //to enable or disable communications 
 WbDeviceTag receiver;
 WbDeviceTag emitter;
@@ -164,7 +165,7 @@ int main(int argc, char **argv) {
   W_initialize();
   
   //printf("\n Leds ready");
-    
+  int i;  
   while (wb_robot_step(TIME_STEP) != -1) {
     timeCounter++;
     W_read_dsensor();
@@ -179,6 +180,9 @@ int main(int argc, char **argv) {
       if (timeMinute > MINUTES_EMPTY) {
        //all//j printf("\n %s is gonna speak", robotName);
        //all//j printf("\n");
+        for (i = 0; i < nRobots; i++){
+          listBusy[i] = 0; // cleaning Busy registers
+        }
         timeMinute = 0;
         W_speaking(M2NEST); // Call of Duty
       }
@@ -714,6 +718,7 @@ int W_speaking(int toWhom){ //ok-
 
   char message[30];
   int i;
+  int flagSpeak = 0;
   place2Go = codeTam;
   float maxDif = -1;
   float dif;
@@ -756,16 +761,27 @@ int W_speaking(int toWhom){ //ok-
       int j = 0; //required workers
       while ((j < maxDif) && (i < nRobots)) {
         robotLeaving = listWorkers[i];
-        if ((robotLeaving != 0) && (robotLeaving != lastVisitor)){
+        int k;
+        for (k = 0 ; k < nRobots; k++) {
+          if ((robotLeaving == listBusy[k]) && (robotLeaving > 0)) {
+             printf("\n %d is busy", robotLeaving);
+             printf("\n");
+             k = -1;
+             break;
+          }
+        }
+        // not busy, not empty, not the same that just arrived
+        if ((k > 0) && (robotLeaving != 0) && (robotLeaving != lastVisitor)){
           j++;
           i++;
          //all printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
          //all printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
          //all printf("\n");
-          sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
+          /*sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
           wb_emitter_send(emitter, message, strlen(message)+1);
-          writeMessage(1, message);
-		  flagWaitingDeparture = 1;
+          writeMessage(1, message);*/
+          flagSpeak = 1;
+	  flagWaitingDeparture = 1;
           if (flagOnebyOne == 1) {
             break;
           }  
@@ -788,7 +804,12 @@ int W_speaking(int toWhom){ //ok-
         //printf("\n");
       }
     }
-  }  
+  }
+  if (flagSpeak == 1) {
+    sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
+    wb_emitter_send(emitter, message, strlen(message)+1);
+    writeMessage(1, message);
+  }
   wb_robot_step(32);
   return 1;
 }
@@ -859,6 +880,12 @@ int listening() {
               flagWaitingDeparture = 0;
               printf("\n %s received from %d a negative answer", robotName, robot);
               printf("\n");
+              for (j = 0; j < nRobots; j++) {
+                if (listBusy[j] == 0) {
+                  listBusy[j] = robot;
+                  break;
+                }
+              }  
               i++; // try the next worker
               break;
             }

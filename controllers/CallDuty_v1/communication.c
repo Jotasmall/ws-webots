@@ -25,8 +25,6 @@
 #define M2ROBOT 1
 #define M2NEST 2
 
-
-
 int listening(){ //ok-
   int i;
   int flagWrite = 0;
@@ -79,9 +77,7 @@ int listening(){ //ok-
           printf("\n");  
 		  //wb_robot_step(32);
         } else {
-          speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-		  printf("\n %d is saying not because Busy %d or load %d", bot.botNumber, bot.flagBusy, bot.flagLoad);
-		  printf("\n");
+	      flagWrite = ROBOT_NEGATIVE;          
 		}
       } else if (newFriend == COME) {
         //s printf("\n Nest %d is asking for %d to arrive", place, bot.botNumber);
@@ -160,7 +156,11 @@ int listening(){ //ok-
   }	
   if (flagWrite == 1) {
     writeMessage(data);
-  }	
+  }	else if (flagWrite == ROBOT_NEGATIVE) {
+	speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+    printf("\n %d is saying not because Busy %d or load %d", bot.botNumber, bot.flagBusy, bot.flagLoad);
+	printf("\n");  
+  }
   return 1;
 }
 
@@ -207,13 +207,13 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
     //s printf("\n %d updating its record of messages", bot.botNumber);
   }  
   wb_emitter_send(bot.emitter, message, strlen(message)+1);
-  wb_robot_step(32); 
+  //wb_robot_step(32); 
   if (message[0] == 'R'){
     if (bot.flagFilesCOM) {
       // File for decisions
       createDir(COMMUNICATION, 0);
-      printf("\n %d is registering its messages in %s", bot.botNumber, message);
-      printf("\n");	
+      //printf("\n %d is registering its messages in %s", bot.botNumber, message);
+      //printf("\n");	
       FILE *file = fopen(bot.fileRobot, "a+");
       if (file == NULL) {
         printf("Error opening file of communications\n");

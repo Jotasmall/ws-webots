@@ -346,7 +346,7 @@ int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int 
   output = moduleFSM();
   if (output == STOP_BY_CALL) {
     bot.flagCommanded = 0;
-    wb_robot_step(32);
+    //wb_robot_step(32);
     return bot.suggestedState;
   } else if (output == STOP) {
     while(flagWait){
@@ -393,7 +393,7 @@ int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int 
     }
     */  
   }  
-  wb_robot_step(32);
+  //wb_robot_step(32);
   return nextState;
 }
 
@@ -413,7 +413,7 @@ int moduleTravel(){
   output = moduleFSM();
   if (output == STOP_BY_CALL) {
     bot.flagCommanded = 0;
-    wb_robot_step(32);
+    //wb_robot_step(32);
     return bot.suggestedState;    
   } else if (output == STOP) {
     bot.flagBusy = 1;
@@ -512,7 +512,7 @@ int moduleTravel(){
      } 
     */ 
   }
-  wb_robot_step(32);
+  //wb_robot_step(32);
   return auxUML;
 }
 
@@ -541,7 +541,7 @@ int moduleFSM(){
           printf("\n");
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
-          wb_robot_step(32);
+          //wb_robot_step(32);
           return STOP_BY_CALL;
         } else if (index == -1) {
           contLevy++;
@@ -576,7 +576,7 @@ int moduleFSM(){
             printf("\n");
             bot.flagCommanded = 0;
             bot.currentState = bot.suggestedState;
-            wb_robot_step(32);
+            //wb_robot_step(32);
             return STOP_BY_CALL;
         } else if (flagProximity) {
           if (bot.flagCommanded == 1) {
@@ -638,7 +638,7 @@ int moduleFSM(){
           printf("\n");
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
-          wb_robot_step(32);
+          //wb_robot_step(32);
           return STOP_BY_CALL;
         } else {
           stateFSM = LEVY; // For now give-up is disable
@@ -684,12 +684,12 @@ int moduleFSM(){
         //printf("\n %s succesfully ended the module FSM with shapeseen %d", robotName, shapeSeen);
         //printf("\n");
         updateBitacora(STOP, FSM, 0);
-        wb_robot_step(32);
+        //wb_robot_step(32); 
         return STOP;
         break;
       default:
         printf("\n %s is with mistakes in FSM module", robotName);
-        wb_robot_step(32);
+        //wb_robot_step(32);
         return 0;  
     }
   }  
@@ -792,7 +792,7 @@ int computeTraveling (int levy){
     printf("\n %s do the full task", robotName);
   }
   speaking(M2ROBOT, -1, -1, -1);
-  wb_robot_step(32); // to update global values
+  //wb_robot_step(32); // to update global values
   return result;
 }
 

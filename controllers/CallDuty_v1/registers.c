@@ -25,7 +25,7 @@ void updateEstimations(int task, int cache){ //ok-
   if (bot.flagMomento != 1) { bot.beta = 0;}
   if (bot.flagListened) {
     value = bot.timeListened;
-    wb_robot_step(32);
+    //wb_robot_step(32);
     //printf("\n for state %d time measured is %d", codeTask, value);
   } 
 
