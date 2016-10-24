@@ -55,6 +55,7 @@
 
 #define ROBOT_COLOR 10
 #define ROBOT 306
+#define STOP_BY_CALL 128
 
 int followingLine(double *speed, WbDeviceTag *displayExtra){//ok-
   int delta = 0;
@@ -318,6 +319,11 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       printf("\n %d reached cyan landmark!", bot.botNumber);
       printf("\n");
       waiting(1);  
+	  /*if (bot.flagCommanded == 1) {
+        bot.suggestedState = bot.currentState;
+        bot.flagCommanded = 0;
+	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+	  }*/
       return 1;
     } else {
       printf("\n Robot %d is near but...", bot.botNumber);
@@ -335,6 +341,11 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       if (delta > THRESHOLD_DIST) { turnSteps(3, speed);} // almost 10°
       else if (delta < THRESHOLD_DIST) { turnSteps(-3, speed);}
       waiting(1);
+	  /*if (bot.flagCommanded == 1) {
+        bot.suggestedState = bot.currentState;
+        bot.flagCommanded = 0;
+	    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+	  }*/
       return 1;
     } 
   } else { //before being close enough
@@ -377,6 +388,9 @@ int levyFlight(double *speed, WbDeviceTag *displayExtra){
   while (r > 0) {
     turnSteps(3, speed); // Blind turn
     r -= 3;
+	if (bot.flagCommanded == 1) {
+		return STOP_BY_CALL;
+	}
     bot.image = wb_camera_get_image(bot.cam);
     wb_robot_step(TIME_STEP);   
     if (cont_height_figure(-10, bot.colorSeeking) > 15) {//18
@@ -405,7 +419,10 @@ int levyFlight(double *speed, WbDeviceTag *displayExtra){
   while (r > 0) {
     run(5, speed); // Blind walk
     r -= 5;
-    whereIam(1, speed);
+    if (bot.flagCommanded == 1) {
+		return STOP_BY_CALL;
+	}
+	whereIam(1, speed);
     bot.image = wb_camera_get_image(bot.cam);
     wb_robot_step(TIME_STEP);     
     if (cont_height_figure(-10, bot.colorSeeking) > 15) { //18

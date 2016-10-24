@@ -113,7 +113,7 @@ int run(int steps, double *speed){ //ok-
     wb_robot_step(TIME_STEP);
     cronometer(-1, 0); 
     //Every 5 steps check ground color
-	//if(steps%5 == 0){ whereIam(1, speed);}
+	if(steps%5 == 0){ whereIam(1, speed);}
   } 
   waiting(1);
   return 1;

@@ -295,6 +295,7 @@ void executeUML(){
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
         } else {
+          bot.colorDestination = RED;
           bot.currentState = moduleTravel();
         }         
       break;
@@ -307,6 +308,7 @@ void executeUML(){
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
         } else {
+          bot.colorDestination = GREY;
           bot.currentState = moduleTravel();
         }  
       break;
@@ -319,6 +321,7 @@ void executeUML(){
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
         } else {
+          bot.colorDestination = BLUE;
           bot.currentState = moduleTravel();
         }  
       break;
@@ -399,6 +402,7 @@ int moduleTravel(){
   int auxUML = bot.currentState;
   int flagReady = 0;
   bot.colorSeeking = CYAN;
+  bot.shapeLooking = ALL;
   if (bot.floorColor == GREY) { bot.colorSeeking = WHITE;}
   int currentFloor = whereIam(0, speed);
   
