@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.00151862 0.772253 0.635313 3.1379
-  position 0.0369439 2.56385 -0.849116
+  orientation 0.000551573 -0.722479 -0.691392 3.14275
+  position 0.358025 1.07737 -0.620854
 }
 Background {
   skyColor [
@@ -1978,8 +1978,66 @@ DEF Blue DifferentialWheels {
   name "tamBlue"
   controller "TAM_Random"
 }
+DifferentialWheels {
+  children [
+    SliderJoint {
+      jointParameters JointParameters {
+        axis 0 -1 0
+      }
+      device [
+        LinearMotor {
+          name "motor1"
+        }
+      ]
+      endPoint Solid {
+        children [
+          Solid {
+            children [
+              Transform {
+                translation 0.255 0.05 -0.5
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 1 0.270588 0.270588
+                      }
+                    }
+                    geometry Box {
+                      size 0.01 0.1 0.2
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+    DistanceSensor {
+      translation 0.255 0.03 -0.445
+      name "ds_enter"
+      lookupTable [
+        0 0 0
+        0.01 1000 0
+        0.07 0 0
+      ]
+    }
+    DistanceSensor {
+      translation 0.255 0.03 -0.56
+      rotation 0 1 0 3.14159
+      name "ds_exit"
+      lookupTable [
+        0 0 0
+        0.01 1000 0
+        0.07 0 0
+      ]
+    }
+  ]
+  name "doorBlueGrey"
+  controller "DoorController"
+}
 E-puck {
-  translation 0.533116 2.50841e-15 -0.328173
+  translation 0.513417 2.51139e-15 -0.220467
   rotation 0 -1 0 3.14159
   controller "CallDuty_v1"
   name "e-puck2701"

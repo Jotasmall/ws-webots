@@ -216,7 +216,7 @@ void reset(){
 }
 
 void initVariables(){
-  if (bot.botNumber != 2701) {
+  if (bot.botNumber == 2701) { //!=
     modelTest = ESSAY;
   } 
   bot.flagLoad = 0; //initializing
@@ -226,7 +226,7 @@ void initVariables(){
   output = STOP;
   switch(modelTest){
   case ESSAY:
-    bot.currentState = EXPERIMENT;//TRAVEL2GREY;
+    bot.currentState = TRAVEL2GREY;//TRAVEL2GREY;
     bot.suggestedState = EXPERIMENT;
   break;
   case NEVER:
