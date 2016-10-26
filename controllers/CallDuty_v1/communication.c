@@ -46,25 +46,25 @@ int listening(){
     if (place == bot.floorColor) {
       int destinatary = atoi(&data[5]);
       if (destinatary == bot.botNumber){
-        flagWrite = 1;		  
-        //l printf("\n %d is listening its nest location %d to say %s", bot.botNumber, place, data);
-        //l printf("\n");
+        writeMessage(data);          
+        printf("\n %d is listening its nest location %d to say %s", bot.botNumber, place, data);
+        printf("\n");
         int newFriend = atoi(&data[10]);
         int suggestedDestination = atoi(&data[13]);
         if (newFriend == LEAVE) {
           //l printf("\n Nest %d is asking for %d to leave and go %d", place, bot.botNumber, suggestedDestination);
           //l printf("\n");
-        if ((bot.flagLoad == 0) && ((bot.flagBusy == 0) || (bot.currentState == DROP_NEST))) {    
+        if ((bot.flagLoad == 0) && ((bot.flagBusy == 0) || (bot.currentState != DROP_NEST))) {    
           switch(suggestedDestination){
           case RED:
-	    if (bot.floorColor != RED) {
+            if (bot.floorColor != RED) {
               printf("\n %d commanded toward RED", bot.botNumber);
               bot.suggestedState = TRAVEL2RED;
             }  
-            break;
+          break;
           case GREY:
             if (bot.floorColor != GREY) {
-	      printf("\n %d commanded toward GREY", bot.botNumber);
+              printf("\n %d commanded toward GREY", bot.botNumber);
               bot.suggestedState = TRAVEL2GREY;
             }  
             break;
@@ -75,12 +75,12 @@ int listening(){
             }  
             break;
           }
-	  flagWrite = ROBOT_AFFIRMATIVE;
-	  bot.flagCommanded = 1;
+          flagWrite = ROBOT_AFFIRMATIVE;
+          bot.flagCommanded = 1;
           printf("\n");  
         } else {
-	  flagWrite = ROBOT_NEGATIVE;          
-	}
+          flagWrite = ROBOT_NEGATIVE;          
+        }
       } else if (newFriend == COME) {
         //s printf("\n Nest %d is asking for %d to arrive", place, bot.botNumber);
         //s printf("\n");
@@ -118,7 +118,7 @@ int listening(){
     int codeReceived = atoi(&data[8]);
     for (i = 0; i < NROBOTS; i++) {
       if (name == bot.listFriends[i]) {
-        flagWrite = 1;
+        writeMessage(data);
         if (codeReceived == ROBOT_LEAVING) {
           printf("\n %d bye bye %d", bot.botNumber, name);
           printf("\n");
@@ -135,7 +135,7 @@ int listening(){
             305 NOTHING  104 timeTravel2Nest  777 waiting
             306 ROBOT    105 timeTravel2Source
           */
-          if ((codeReceived >= 100) && (codeReceived <= 107)){	
+          if ((codeReceived >= 100) && (codeReceived <= 107)){    
             //printf("\n Thanks %d buddy, %s will consider your estimations for %d of time %d", name, bot.botNumber, codeReceived, bot.timeListened);
             //printf("\n");
             bot.flagListened = 1;
@@ -155,25 +155,8 @@ int listening(){
       //printf("\n");
       wb_receiver_next_packet(bot.receiver);
     }
-  }	
-  if (flagWrite == 1) {
-    if (bot.flagFilesCOM) {
-      // File for decisions
-      createDir(COMMUNICATION, 0);
-      //printf("\n %d is registering its messages in %s", bot.botNumber, msg);
-      //printf("\n");	
-      FILE *file = fopen(bot.fileRobot, "a+");
-      if (file == NULL) {
-        printf("Error opening file of communications\n");
-        printf("\n");
-        exit(1);
-      }
-      fprintf(file, "\n listening, %s", data);
-      printf("\n %d is updating with %s by listening", bot.botNumber, data);
-      printf("\n");
-      fclose(file);
-    }
-  } else if (flagWrite == ROBOT_NEGATIVE) {
+  }    
+  if (flagWrite == ROBOT_NEGATIVE) {
     speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
     printf("\n %d is saying not because Busy %d or load %d", bot.botNumber, bot.flagBusy, bot.flagLoad);
     printf("\n");  
@@ -217,7 +200,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){
         printf(" message %s", message);    
         printf("\n");
       } else if (codeTask == ROBOT_NEGATIVE) {
-	    sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_NEGATIVE, bot.floorColor);
+        sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_NEGATIVE, bot.floorColor);
         printf("\n %d said *negative sir* to nest %d commands", bot.botNumber, bot.floorColor);
         printf(" message %s", message);    
         printf("\n"); 
@@ -234,7 +217,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){
       // File for decisions
       createDir(COMMUNICATION, 0);
       //printf("\n %d is registering its messages in %s", bot.botNumber, message);
-      //printf("\n");	
+      //printf("\n");    
       FILE *file = fopen(bot.fileRobot, "a+");
       if (file == NULL) {
         printf("Error opening file of communications\n");
@@ -246,6 +229,6 @@ int speaking(int toWhom, int codeTask, int time, int cache){
       printf("\n");
       fclose(file);
     }
-  }	
+  }    
   return 1; 
 }

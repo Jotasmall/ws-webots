@@ -76,8 +76,8 @@ int main(int argc, char **argv)
     for (i = 0; i<SIDES; i++) {
       ds_value[i] = wb_distance_sensor_get_value(ds[i]);
     }
-    printf("\n Door values entrance %g exit %g", ds_value[0], ds_value[1]);
-    printf("\n");
+    //printf("\n Door values entrance %g exit %g", ds_value[0], ds_value[1]);
+    //printf("\n");
     /* Process sensor data here */
     if ((flagOpened == 0) && ((ds_value[0] > 500) || (ds_value[1] > 500))) {
       openDoor(UP);

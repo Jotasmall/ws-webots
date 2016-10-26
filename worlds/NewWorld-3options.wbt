@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.00151862 0.772253 0.635313 3.1379
-  position 0.0369808 2.6031 -0.856826
+  orientation 0.00134941 0.855947 0.517061 3.14606
+  position 0.0383865 2.39807 -1.62592
 }
 Background {
   skyColor [
@@ -1977,6 +1977,123 @@ DEF Blue DifferentialWheels {
   ]
   name "tamBlue"
   controller "TAM_Random"
+}
+DEF door1 DifferentialWheels {
+  children [
+    SliderJoint {
+      jointParameters JointParameters {
+        axis 0 -1 0
+      }
+      device [
+        LinearMotor {
+          name "motor1"
+        }
+      ]
+      endPoint Solid {
+        children [
+          Solid {
+            children [
+              Transform {
+                translation 0.255 0.05 -0.5
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 0.270588 0.270588 0.270588
+                      }
+                    }
+                    geometry Box {
+                      size 0.01 0.1 0.2
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+    DistanceSensor {
+      translation 0.255 0.03 -0.445
+      name "ds_enter"
+      lookupTable [
+        0 0 0
+        0.01 1000 0
+        0.07 0 0
+      ]
+    }
+    DistanceSensor {
+      translation 0.255 0.03 -0.56
+      rotation 0 1 0 3.14159
+      name "ds_exit"
+      lookupTable [
+        0 0 0
+        0.01 1000 0
+        0.07 0 0
+      ]
+    }
+  ]
+  name "doorRedGrey"
+  controller "DoorController"
+}
+DEF door2 DifferentialWheels {
+  translation -0.51 0 0
+  children [
+    SliderJoint {
+      jointParameters JointParameters {
+        axis 0 -1 0
+      }
+      device [
+        LinearMotor {
+          name "motor1"
+        }
+      ]
+      endPoint Solid {
+        children [
+          Solid {
+            children [
+              Transform {
+                translation 0.255 0.05 -0.5
+                children [
+                  Shape {
+                    appearance Appearance {
+                      material Material {
+                        diffuseColor 0.270588 0.270588 0.270588
+                      }
+                    }
+                    geometry Box {
+                      size 0.01 0.1 0.2
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+    DistanceSensor {
+      translation 0.255 0.03 -0.445
+      name "ds_enter"
+      lookupTable [
+        0 0 0
+        0.01 1000 0
+        0.07 0 0
+      ]
+    }
+    DistanceSensor {
+      translation 0.255 0.03 -0.56
+      rotation 0 1 0 3.14159
+      name "ds_exit"
+      lookupTable [
+        0 0 0
+        0.01 1000 0
+        0.07 0 0
+      ]
+    }
+  ]
+  name "doorGreyBlue"
+  controller "DoorController"
 }
 E-puck {
   translation 0.533116 2.50841e-15 -0.158173

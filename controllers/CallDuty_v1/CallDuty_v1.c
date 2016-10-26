@@ -216,7 +216,7 @@ void reset(){
 }
 
 void initVariables(){
-  if (bot.botNumber == 2701) { //!=
+  if (bot.botNumber != 2701) { 
     modelTest = ESSAY;
   } 
   bot.flagLoad = 0; //initializing
@@ -226,7 +226,7 @@ void initVariables(){
   output = STOP;
   switch(modelTest){
   case ESSAY:
-    bot.currentState = TRAVEL2GREY;//TRAVEL2GREY;
+    bot.currentState = EXPERIMENT;//TRAVEL2GREY;
     bot.suggestedState = EXPERIMENT;
   break;
   case NEVER:
@@ -256,8 +256,8 @@ void executeUML(){
         cronometer(1000, 0);
       break;
       case PICK_SOURCE:
-        //e printf("\n %d state PICK_SOURCE", bot.botNumber);
-        //e printf("\n");
+        printf("\n %d state PICK_SOURCE", bot.botNumber);
+        printf("\n");
         switch(bot.floorColor){
           case RED:
             colorSeeking = BLUE; break;
@@ -276,8 +276,8 @@ void executeUML(){
         }  
       break;
       case DROP_NEST:
-      //e printf("\n %d state DROP_NEST", bot.botNumber);
-      //e printf("\n");
+        printf("\n %d state DROP_NEST", bot.botNumber);
+        printf("\n");
         if (bot.flagCommanded == 1) {
           printf("\n %d from DROPPING cannot be commanded toward %d", bot.botNumber, bot.suggestedState);
           printf("\n");

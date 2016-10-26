@@ -185,7 +185,7 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra){
 }
 
 int enter2Destination(double *speed, WbDeviceTag *displayExtra){
-  int endTask = 0, i;
+  int endTask = 0;
   resetDisplay(displayExtra);
   printf("\n %d getting in position destination %d by line of color %d", bot.botNumber, bot.colorDestination, bot.lineColor);
   printf("\n");
@@ -209,17 +209,17 @@ int enter2Destination(double *speed, WbDeviceTag *displayExtra){
       forward(-20, speed);
       return 0;
     } else {
-	  int aux = check4Robot(displayExtra);
-	  if (aux) {
-		aux = check4Robot(displayExtra);
-		waiting(10); 
-		printf("\n %d waiting for robot move out", bot.botNumber);
-	  }
+      int aux = check4Robot(displayExtra);
+      if (aux) {
+	    aux = check4Robot(displayExtra);
+        waiting(10); 
+        printf("\n %d waiting for robot move out", bot.botNumber);
+      }
+	  speaking(M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
+      speaking(    -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
       whereArrive(speed);
       run(10, speed);
       if (bot.floorColor == bot.colorDestination) {
-		speaking(M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
-        speaking(    -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
         printf("\n Excellent entrance, %d is on desired region", bot.botNumber);
         printf("\n");
         return 1;
