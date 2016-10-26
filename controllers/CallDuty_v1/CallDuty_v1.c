@@ -119,6 +119,7 @@ char fileRobot[] = "DIRPATH\\dd-hh-mm\\e-puck0000-OPTION.txt";
 #define LOST 3
 #define STOP 4
 #define STOP_LEVY 5
+#define STOP_BY_CALL 128
 // UML states
 #define PICK_SOURCE 100
 #define DROP_NEST 103
@@ -129,7 +130,7 @@ char fileRobot[] = "DIRPATH\\dd-hh-mm\\e-puck0000-OPTION.txt";
 #define EXPERIMENT 666
 #define WAITING 777
 #define TALK_NEST 999
-#define STOP_BY_CALL 128
+
 int statePrevious;
 int output = STOP;
 // Main functions
@@ -160,7 +161,7 @@ int main(int argc, char **argv) {
   //printf("\n");
 
   reset(); 
-  wb_robot_step(TIME_STEP);
+  wb_robot_step(TIME_STEP); // reset step
   
   initVariables();   
   //printf("\n Robot %s is ready to begin with state %d", robotName,bot.currentState);
@@ -170,7 +171,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 
-void reset(){ //ok-
+void reset(){ 
   resetDevices();
   // Parameters
   bot.alpha = 60;       //in percentage
@@ -208,7 +209,7 @@ void reset(){ //ok-
   strcpy(robotName, wb_robot_get_name());
   bot.botNumber = atoi(&robotName[6]);
   srand(bot.botNumber*100+timeinfo->tm_mday+timeinfo->tm_hour+timeinfo->tm_min);
-  wb_robot_step(TIME_STEP);
+  wb_robot_step(TIME_STEP); // initialize random seed
   // Adjust sensor noise by offset
   calibrateSensors();
   speaking(M2NEST, ROBOT_ARRIVING, 0, 0);
@@ -218,8 +219,8 @@ void initVariables(){
   if (bot.botNumber != 2701) {
     modelTest = ESSAY;
   } 
-  bot.flagLoad = 0;
-  bot.flagBusy = 0;
+  bot.flagLoad = 0; //initializing
+  bot.flagBusy = 0; //initializing
   bot.colorDestination = NONE;
   bot.colorSeeking = NONE;
   output = STOP;
@@ -238,7 +239,7 @@ void initVariables(){
     bot.suggestedState = PICK_SOURCE;
   break;
   }
-  wb_robot_step(32);  
+  wb_robot_step(32); // init states 
 }
 
 void executeUML(){
@@ -278,37 +279,36 @@ void executeUML(){
       //e printf("\n %d state DROP_NEST", bot.botNumber);
       //e printf("\n");
         if (bot.flagCommanded == 1) {
-          printf("\n %d from DROPPING was commanded toward %d", bot.botNumber, bot.suggestedState);
+          printf("\n %d from DROPPING cannot be commanded toward %d", bot.botNumber, bot.suggestedState);
           printf("\n");
           bot.flagCommanded = 0;
-          bot.currentState = bot.suggestedState;
+          bot.suggestedState = bot.currentState;
+		  speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
         } else {
-          bot.currentState = moduleUML(MAGENTA, BOX, PICKING, DROP_NEST, 1);
+          bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, 1);
         }  
       break;
       case TRAVEL2RED:
         printf("\n %d state TRAVEL2RED", bot.botNumber);
         printf("\n");
-        if (bot.flagCommanded == -1) {
+        if (bot.flagCommanded == 1) {
           printf("\n %d from REDING was commanded toward %d", bot.botNumber, bot.suggestedState);
           printf("\n");
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
         } else {
-          bot.colorDestination = RED;
           bot.currentState = moduleTravel();
         }         
       break;
       case TRAVEL2GREY:
         printf("\n %d state TRAVEL2GREY", bot.botNumber);
         printf("\n");
-        if (bot.flagCommanded == -1) {
+        if (bot.flagCommanded == 1) {
           printf("\n %d from GREYING was commanded toward %d", bot.botNumber, bot.suggestedState);
           printf("\n");
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
         } else {
-          bot.colorDestination = GREY;
           bot.currentState = moduleTravel();
         }  
       break;
@@ -321,7 +321,6 @@ void executeUML(){
           bot.flagCommanded = 0;
           bot.currentState = bot.suggestedState;
         } else {
-          bot.colorDestination = BLUE;
           bot.currentState = moduleTravel();
         }  
       break;
@@ -332,7 +331,7 @@ void executeUML(){
   }  
 }
 
-int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int flag) {
+int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int flag){
   bot.colorSeeking = shapeColor;
   bot.shapeLooking = shape;
   statePrevious = bot.currentState;
@@ -341,16 +340,15 @@ int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int 
   else { wb_led_set(bot.leds[8], 1);}
   int nextState = stateRemain;
   int flagWait = 1;
-  bot.flagLoad = flag;
+  bot.flagLoad = flag; // PICK_CACHE 0 - DROP_NEST 1
   
   output = moduleFSM();
   if (output == STOP_BY_CALL) {
-    bot.flagCommanded = 0;
-    //wb_robot_step(32);
+    //bot.flagCommanded = 0;
     return bot.suggestedState;
   } else if (output == STOP) {
     while(flagWait){
-      bot.flagBusy = 1;
+      bot.flagBusy = 1; // while waiting inside a TAM
       flagWait = waitingColor();
     }    
     // Count only works with UCB
@@ -358,39 +356,45 @@ int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int 
     forward(-100, speed);   
     turnSteps(TURN_CACHE, speed);
     updateEstimations(statePrevious, auxShapeSeen);
-    bot.flagLoad = !flag;
-    bot.flagBusy = 0;
+    bot.flagLoad = !flag; // PICK_CACHE 1 - DROP_NEST 0
+    bot.flagBusy = 0;  // after leaving a TAM
     if (pick_or_drop == DROPPING) { pickingIndication(0);}
     else { wb_led_set(bot.leds[8], 0);}	
   } else if (output == STOP_LEVY) {
     /*
-    float p = ((float)rand())/RAND_MAX;
-    if (bot.flagLoad == 0) {
-      if (p > 0.5) {
-        bot.colorDestination = bot.floorColor - 1;
-        if (bot.colorDestination < 0) {
-          bot.colorDestination = 2; // BLUE
+	if (bot.currentState == DROP_NEST) {
+	  nextState = DROP_NEST;	
+	} else {
+      float p = ((float)rand())/RAND_MAX;
+      if (bot.flagLoad == 0) {
+        if (p > 0.5) {
+          bot.colorDestination = bot.floorColor - 1;
+          if (bot.colorDestination < 0) {
+            bot.colorDestination = 2; // BLUE
+          }
+        } else {
+          bot.colorDestination = bot.floorColor + 1;
+          if (bot.colorDestination > 2) {
+            bot.colorDestination = 0; // RED
+          }
         }
+        if (bot.colorDestination != bot.floorColor) {
+          switch(bot.colorDestination) {
+            case RED:
+              nextState = TRAVEL2RED;
+              break;
+            case GREY:
+              nextState = TRAVEL2GREY;
+              break;
+            case BLUE:
+              nextState = TRAVEL2BLUE;
+              break;
+          }
+        }  
       } else {
-        bot.colorDestination = bot.floorColor + 1;
-        if (bot.colorDestination > 2) {
-          bot.colorDestination = 0; // RED
-        }
-      }
-      if (bot.colorDestination != bot.floorColor) {
-        switch(bot.colorDestination) {
-          case RED:
-            nextState = TRAVEL2RED;
-            break;
-          case GREY:
-            nextState = TRAVEL2GREY;
-            break;
-          case BLUE:
-            nextState = TRAVEL2BLUE;
-            break;
-        }
-      }  
-    }
+		nextState = DROP_NEST;  
+	  }
+	}  
     */  
   }  
   //wb_robot_step(32);
@@ -403,8 +407,17 @@ int moduleTravel(){
   bot.colorSeeking = CYAN;
   bot.shapeLooking = ALL;
   if (bot.floorColor == GREY) { bot.colorSeeking = WHITE;}
+  // Defining groundcolor in origin and destination 
   int currentFloor = whereIam(0, speed);
-  
+  switch(auxUML){
+    case TRAVEL2RED:
+	  bot.colorDestination = RED; break;
+	case TRAVEL2GREY:
+	  bot.colorDestination = GREY; break;
+    case TRAVEL2BLUE:
+      bot.colorDestination = BLUE; break;	  
+  }
+  // This case can occur, so avoid this endless travel  
   if ((bot.colorDestination == currentFloor) && (bot.flagCommanded == 0)){
     bot.suggestedState = PICK_SOURCE;
     return PICK_SOURCE;
@@ -412,11 +425,10 @@ int moduleTravel(){
   
   output = moduleFSM();
   if (output == STOP_BY_CALL) {
-    bot.flagCommanded = 0;
-    //wb_robot_step(32);
+    //bot.flagCommanded = 0;
     return bot.suggestedState;    
   } else if (output == STOP) {
-    bot.flagBusy = 1;
+    bot.flagBusy = 1; // After reach a landmark
     switch (auxUML) {
       case TRAVEL2RED:
         bot.colorDestination = RED;
@@ -429,8 +441,7 @@ int moduleTravel(){
         } else if (bot.floorColor == BLUE) {
           bot.lineColor = RED;
           flagReady = enter2Destination(speed, &displayExtra);
-        } 
-		
+        } 		
       break;
       case TRAVEL2GREY:
         bot.colorDestination = GREY;
@@ -460,7 +471,7 @@ int moduleTravel(){
       break;
     }
     if (flagReady) {
-      bot.flagBusy = 0;
+      bot.flagBusy = 0; // A sucessful travel
       updateEstimations(auxUML, 0);
       auxUML = PICK_SOURCE;
       /*
@@ -497,19 +508,7 @@ int moduleTravel(){
     }
   } else if (output == STOP_LEVY) {
     /*
-     flagTravel = computeTraveling(1);
-     if (flagTravel) { // Change of mind
-       switch(floorColor) {
-       case BLUE:
-         auxUML = TRAVEL2GREY; break;
-       case RED:
-         auxUML = TRAVEL2GREY; break;
-       case GREY:
-         auxUML = TRAVEL2BLUE; break;
-       }
-     } else {
-       auxUML = PICK_SOURCE;
-     } 
+	   auxUML = PICK_SOURCE;
     */ 
   }
   //wb_robot_step(32);
@@ -536,11 +535,11 @@ int moduleFSM(){
     switch(stateFSM) {   
       case LEVY:
         index = levyFlight(speed, &displayExtra);
-        if (bot.flagCommanded == 1) { 
+        if (bot.flagCommanded == 1) { //only with no load and free to change
           printf("\n E-PUCK%d was on LEVY when commanded to %d", bot.botNumber, bot.suggestedState);
           printf("\n");
-          bot.flagCommanded = 0;
-          bot.currentState = bot.suggestedState;
+          //bot.flagCommanded = 0;
+          //bot.currentState = bot.suggestedState;
           //wb_robot_step(32);
           return STOP_BY_CALL;
         } else if (index == -1) {
@@ -565,33 +564,33 @@ int moduleFSM(){
           pickingIndication(0);
           wb_led_set(bot.leds[0], 0);
         } 
-        wb_robot_step(32);
+        wb_robot_step(32); // Turn leds indications
         break;  
       case GO2IT:
         //printf("\n %s found something and goes to get it", robotName);
         //printf("\n");
         flagProximity = going2it(index, speed, &displayExtra);
-        if ((bot.flagCommanded == 1) && (flagProximity == 0)) {
-            printf("\n E-PUCK%d was GO2IT when commanded toward %d", bot.botNumber, bot.suggestedState);
+        if ((bot.flagCommanded == 1) && ((flagProximity == 0) || (flagProximity == STOP_BY_CALL))) {
+            printf("\n E-PUCK%d was GO2IT in %d when commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
             printf("\n");
-            bot.flagCommanded = 0;
-            bot.currentState = bot.suggestedState;
+            //bot.flagCommanded = 0;
+            //bot.currentState = bot.suggestedState;
             //wb_robot_step(32);
             return STOP_BY_CALL;
         } else if (flagProximity) {
           if (bot.flagCommanded == 1) {
-            printf("\n %d respond with negative to tam %d", bot.botNumber, bot.floorColor);
+            printf("\n %d respond from GO2IT with negative to TAM %d", bot.botNumber, bot.floorColor);
             printf("\n");
             bot.flagCommanded = 0;
             bot.suggestedState = bot.currentState;
             speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	  }
+	      }
           flagProximity = 0;
           flagSureSeen = 0;      
           if ((bot.currentState == TRAVEL2BLUE) || (bot.currentState == TRAVEL2RED) || (bot.currentState == TRAVEL2GREY)) {
             flagInside = 1;
           } else {
-            bot.flagBusy = 1;
+            bot.flagBusy = 1; // Entering a TAM
             flagInside = enterTam(speed);
           }
           if (flagInside == 1) { //sucessful enter TAM or hit wall
@@ -600,7 +599,6 @@ int moduleFSM(){
             forward(-50, speed);
             stateFSM = LOST;
           }
-          bot.flagBusy = 0;
           updateBitacora(GO2IT, FSM, 0);
         } else { //it is yet far
           newIndex = detectImage(&displayExtra);
@@ -634,10 +632,10 @@ int moduleFSM(){
       case LOST:
         //printf("\n %s is lost", robotName);      
         if (bot.flagCommanded == 1) {
-          printf("\n %d from %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
+          printf("\n %d from LOST in %d was commanded toward %d", bot.botNumber, bot.currentState, bot.suggestedState);
           printf("\n");
-          bot.flagCommanded = 0;
-          bot.currentState = bot.suggestedState;
+          //bot.flagCommanded = 0;
+          //bot.currentState = bot.suggestedState;
           //wb_robot_step(32);
           return STOP_BY_CALL;
         } else {
@@ -654,8 +652,7 @@ int moduleFSM(){
                 //-- printf("\n %s cancel travel", robotName);
                 // when the travel is finished
                 updateBitacora(STOP_LEVY, FSM, 0);
-                //bot.timeMeasured = 0;
-                wb_robot_step(32);
+                bot.timeMeasured = 0;
                 return STOP_LEVY;
               }
               break; 
@@ -668,7 +665,6 @@ int moduleFSM(){
                 // when abandon a task
                 updateBitacora(STOP_LEVY, FSM, 0);
                 bot.timeMeasured = 0;
-                wb_robot_step(32);
                 return STOP_LEVY;
               } else {
                 printf("\n %s decide to go on in this region", robotName);      
@@ -684,26 +680,24 @@ int moduleFSM(){
         //printf("\n %s succesfully ended the module FSM with shapeseen %d", robotName, shapeSeen);
         //printf("\n");
         updateBitacora(STOP, FSM, 0);
-        //wb_robot_step(32); 
         return STOP;
         break;
       default:
         printf("\n %s is with mistakes in FSM module", robotName);
-        //wb_robot_step(32);
         return 0;  
     }
   }  
   return STOP;
 }
 
-void pickingIndication(int on){ //ok
+void pickingIndication(int on){ 
   wb_led_set(bot.leds[1], on);
   wb_led_set(bot.leds[2], on);
   wb_led_set(bot.leds[6], on);
   wb_led_set(bot.leds[7], on);
 }
 
-double angle(double x, double z){ //ok
+double angle(double x, double z){ 
   double theta = atan(z/x);
   return 180*theta/PI;
 }

@@ -57,16 +57,16 @@
 #define ROBOT 306
 #define STOP_BY_CALL 128
 
-int followingLine(double *speed, WbDeviceTag *displayExtra){//ok-
+int followingLine(double *speed, WbDeviceTag *displayExtra){
   int delta = 0;
   int entering = 0;
   int flagRobot = 0;
   readSensors(0);
   entering = bot.ps_value[5] > 50;
-  while(entering) { 
+  while(entering){ 
     readSensors(0);
     if ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7] > THRESHOLD_DIST)){ 
-      waiting(20);  
+      waiting(10);  
       //f printf("\n %d something is in front of me", bot.botNumber);
       //f printf("\n");
     } else {
@@ -77,7 +77,7 @@ int followingLine(double *speed, WbDeviceTag *displayExtra){//ok-
         speed[LEFT] = 220 - K_TURN*abs(delta);
         speed[RIGHT] = 220 - K_TURN*abs(delta);
         wb_differential_wheels_set_speed(speed[LEFT]+K_TURN*delta,speed[RIGHT]-K_TURN*delta);
-        wb_robot_step(TIME_STEP);
+        wb_robot_step(TIME_STEP); // step on followingLine
         cronometer(-1, 0); 
       } else {
         flagRobot = check4Robot(displayExtra);
@@ -97,20 +97,16 @@ int followingLine(double *speed, WbDeviceTag *displayExtra){//ok-
 int doorEntrance(double *speed, int steps){
   forward(10, speed);
   turnSteps(TURN_M90, speed);
-  waiting(1);
+  waiting(20); // until door opens
   readSensors(0);
-  if ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7]> THRESHOLD_DIST)) {
+  if ((whereIam(0, speed) == bot.floorColor) ||
+     (bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7]> THRESHOLD_DIST)) {
      printf("\n %d wrong turn", bot.botNumber);
      printf("\n");
      return 0;
   }
   forward(steps, speed);
-  speaking(M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
-  speaking(    -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
-  bot.flagBusy = 0;
-  waiting(1);
-  //turnSteps(-10, speed);
-  printf("\n robot %d is traveling to %d with floorColor %d", bot.botNumber, bot.currentState, bot.floorColor);
+  //printf("\n robot %d is traveling to %d with floorColor %d", bot.botNumber, bot.currentState, bot.floorColor);
   if (((bot.currentState == TRAVEL2GREY) && (bot.floorColor == BLUE)) ||
      ((bot.currentState == TRAVEL2RED)  && (bot.floorColor == GREY))){ 
      turnSteps(TURN_90, speed); 
@@ -127,35 +123,35 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra){
   if (flagRobot) {
     //printf("\n False Cyan landmark, %s", bot.botNumber);
     forward(-20, speed);
-    return 0;
+    return -1;
   }
   readSensors(0);
   // hit by sensor 1, turn almost 20 degrees
   if ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[1] > THRESHOLD_DIST)) { 
     turnSteps(10, speed);
   } 
-    speed[LEFT] = 100;
-    speed[RIGHT] = -100;
-    int notReady = 1;
-    int wrongDoor = 0;
-    int counter = 0, aux;
-    //printf("\n %s is looking for line of color %d", bot.botNumber, bot.lineColor);
-    //printf("\n");
-    while(notReady) { 
-      wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);  
-      readSensors(0);
-      counter++;
-      if (bot.ps_value[5]> 300) {
-        notReady = findMiddle(0) < 0; // returns the index -1 if not
-        wrongDoor = findMiddle(1) > 0; // return 100 if it found it
+  speed[LEFT] = 100;
+  speed[RIGHT] = -100;
+  int notReady = 1;
+  int wrongDoor = 0;
+  int counter = 0, aux;
+  //printf("\n %s is looking for line of color %d", bot.botNumber, bot.lineColor);
+  //printf("\n");
+  while(notReady) { 
+    wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);  
+    readSensors(0);
+    counter++;
+    if (bot.ps_value[5]> 300) {
+      notReady = findMiddle(0) < 0; // returns the index -1 if not
+      wrongDoor = findMiddle(1) > 0; // returns 100 if it found it
+      flagRobot = check4Robot(displayExtra);
+      aux = counter;
+      while (flagRobot) {
         flagRobot = check4Robot(displayExtra);
-        aux = counter;
-        while (flagRobot) {
-          flagRobot = check4Robot(displayExtra);
-          printf("\n %d waiting for another robot to leave", bot.botNumber);
-          printf("\n");
-          waiting(20);
-          counter++;
+        printf("\n %d waiting for another robot to leave", bot.botNumber);
+        printf("\n");
+        waiting(20);
+        counter++;
         if (counter > 90) {
           printf("\n %d wait for an entire turn and no free way", bot.botNumber);
           printf("\n");
@@ -164,6 +160,7 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra){
           counter = aux;
           // printf("\n %d has a clear way", bot.botNumber);
           // printf("\n");
+          break;
         }
       }
       if (wrongDoor) {
@@ -180,33 +177,25 @@ int setRobotPosition(double *speed, WbDeviceTag *displayExtra){
         printf("\n %d gave a entire turn and no line", bot.botNumber);
         printf("\n");
         return -1;
-      }
+      } 
     }
     cronometer(-1, 0); 
   } 
-  return 0;
+  return 1;
 }
 
-int enter2Destination(double *speed, WbDeviceTag *displayExtra){ //ok
+int enter2Destination(double *speed, WbDeviceTag *displayExtra){
   int endTask = 0, i;
   resetDisplay(displayExtra);
   printf("\n %d getting in position destination %d by line of color %d", bot.botNumber, bot.colorDestination, bot.lineColor);
   printf("\n");
   endTask = setRobotPosition(speed, displayExtra);
   if (endTask == -1) { // found no line
-    //while(!run(flagLoad, 50)); //60
-	for (i = 0; i<10; i++) {
-	  run(5, speed);
-	  whereIam(1, speed);
-	}
+	run(50, speed); //avoiding obstacles move +/- 2*sizeBody
     return 0;
   } else if (endTask == -2) { //found another color
-    turnSteps(15, speed);
-    //while(!run(flagLoad, 60));
-	for (i = 0; i<12; i++) {
-	  run(5, speed);
-	  whereIam(1, speed);
-	}
+    turnSteps(15, speed); // Almost 45 degrees
+	run(60, speed); //avoiding obstacles move +/- 2.5*sizeRobot
     return 0;
   }
   endTask = followingLine(speed, displayExtra);
@@ -215,39 +204,43 @@ int enter2Destination(double *speed, WbDeviceTag *displayExtra){ //ok
     //printf("\n Robot %s going inside", bot.botNumber);
     //printf("\n");
     endTask = doorEntrance(speed, 60); 
+	bot.flagBusy = 0; // whether or not entered ok
     if (endTask == 0) {
       forward(-20, speed);
       return 0;
-    }
-	int aux = check4Robot(displayExtra);
-	if (aux) {
+    } else {
+	  int aux = check4Robot(displayExtra);
+	  if (aux) {
 		aux = check4Robot(displayExtra);
 		waiting(10); 
 		printf("\n %d waiting for robot move out", bot.botNumber);
-	}
-    whereArrive(speed);
-    run(10, speed);
-    if (bot.floorColor == bot.colorDestination) {
-      printf("\n Excellent entrance, %d is on desired region", bot.botNumber);
-      printf("\n");
-      return 1;
-    } else {
-      printf("\n Something went wrong, please %d recheck color destination %d", bot.botNumber, bot.colorDestination);
-      printf("\n");
-      return 0;
-    } 
-  }
+	  }
+      whereArrive(speed);
+      run(10, speed);
+      if (bot.floorColor == bot.colorDestination) {
+		speaking(M2NEST, ROBOT_LEAVING, 0, 0); // To indicate home-nest 
+        speaking(    -1, ROBOT_LEAVING, 0, 0); // To indicate friends 
+        printf("\n Excellent entrance, %d is on desired region", bot.botNumber);
+        printf("\n");
+        return 1;
+      } else {
+        printf("\n Something went wrong, please %d recheck color destination %d", bot.botNumber, bot.colorDestination);
+        printf("\n");
+        return 0;
+      } 
+    }
+  }	
   return 1000;  
 }
 
-int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
+int going2it(int index, double *speed, WbDeviceTag *displayExtra){
   int intensity[bot.width]; //int *intensity = (int *)malloc(sizeof(int)*width);
   int i = 0, index2 = 0, delta = 0;
   int count = 0;
   int flagRobot = 0;
 
   bot.image = wb_camera_get_image(bot.cam);
-  wb_robot_step(TIME_STEP);
+  wb_robot_step(TIME_STEP); // taking picture going2it
   cronometer(IMAGE, 0);
   
   if (index == 100) {
@@ -290,11 +283,10 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
   speed[LEFT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/bot.height;
   speed[RIGHT] = MAX_SPEED-(MAX_SPEED+BACKWARD_SPEED)*iter/bot.height;
   if (count > PROXIMITY_COLOR) {
-	// The robot is close enough to the object, i.e., > 75% 
-	bot.flagBusy = 1;
+	bot.flagBusy = 1; // The robot is close enough, i.e., > 75% 
     resetDisplay(displayExtra);
     flagRobot = check4Robot(displayExtra);
-    if ((bot.colorSeeking == CYAN) || (bot.colorSeeking == WHITE)){ 
+    if ((bot.currentState != PICK_SOURCE) && (bot.currentState != DROP_NEST)){ 
       if (flagRobot) { 
         forward(-15, speed);
         // printf("\n %d found a robot when going to Landmark", bot.botNumber); //-- JUAN EDIT
@@ -315,11 +307,9 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       } else { 
         hitWall(0, speed);
         forward(5, speed);
-      }
- 
-      printf("\n %d reached cyan landmark!", bot.botNumber);
-      printf("\n");
-      waiting(1);  
+      } 
+      //printf("\n %d reached cyan landmark!", bot.botNumber);
+      //printf("\n");
       return 1;
     } else {
       printf("\n Robot %d is near but...", bot.botNumber);
@@ -339,8 +329,8 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       waiting(1);
       return 1;
     } 
-  } else { //before being close enough
-    bot.flagBusy = 0;
+  } else { 
+    bot.flagBusy = 0; //before being close enough
     // printf("\n %d saw shape with height %d", bot.botNumber, count);
     if (readSensors(0) && ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[1] > THRESHOLD_DIST) 
         || (bot.ps_value[7] > THRESHOLD_DIST) || (bot.ps_value[6] > THRESHOLD_DIST))) { // 1 for obstacle
@@ -354,7 +344,7 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
       // rand() % (max_n - min_n + 1) + min_n;
       if (rand()%100 > 50) { waiting(10);}
       else { turnSteps(6, speed);}
-      return 0;  
+	  return 0;  		
     }
     speed[LEFT] = speed[LEFT]+K_TURN*delta;
     speed[RIGHT] = speed[RIGHT]-K_TURN*delta;
@@ -364,13 +354,16 @@ int going2it(int index, double *speed, WbDeviceTag *displayExtra){//ok
     }
     wb_differential_wheels_set_speed(speed[LEFT]+K_TURN*delta,
                                      speed[RIGHT]-K_TURN*delta);
-    wb_robot_step(TIME_STEP); 
+    wb_robot_step(TIME_STEP); // step on going2it
     cronometer(-1, 0); //-1 for movements
+	if (bot.flagCommanded == 1) {
+	  return STOP_BY_CALL;
+	}
   }
   return 0;
 } 
 
-int levyFlight(double *speed, WbDeviceTag *displayExtra){
+int levyFlight(double *speed, WbDeviceTag *displayExtra){ 
 
   int index = -1;
   // rand() % (max_n - min_n + 1) + min_n;
@@ -383,16 +376,17 @@ int levyFlight(double *speed, WbDeviceTag *displayExtra){
 		return STOP_BY_CALL;
 	}
     bot.image = wb_camera_get_image(bot.cam);
-    wb_robot_step(TIME_STEP);   
+    wb_robot_step(TIME_STEP); // taking picture in turnLevy 
     if (cont_height_figure(-10, bot.colorSeeking) > 15) {//18
-      //printf("\n Backward %d invading useful region on turn", bot.botNumber);
+      //printf("\n Backward %d invading TAM region on turn", bot.botNumber);
       //printf("\n");
-      forward(-30, speed); //70
+      forward(-20, speed); //30
     }
-    if ((bot.colorSeeking == CYAN) && (cont_height_figure(-11, bot.colorSeeking) > 22)) { //25
+    if (((bot.colorSeeking == CYAN) || (bot.colorSeeking == WHITE)) 
+      && (cont_height_figure(-11, bot.colorSeeking) > 22)) { //25
       //printf("\n Backward %d invading on turn when CYAN", bot.botNumber);
       //printf("\n");
-      forward(-30, speed); //70
+      forward(-20, speed); //30
     }
     index = detectImage(displayExtra); // Open her eyes
     if (index != -1) {
@@ -408,24 +402,24 @@ int levyFlight(double *speed, WbDeviceTag *displayExtra){
   r = rand()%(100-40)+41; // walk forward between 100 to 40 steps
   wb_differential_wheels_set_encoders(0,0);
   while (r > 0) {
-    run(5, speed); // Blind walk
-    r -= 5;
+    run(6, speed); // Blind walk
+    r -= 6;
     if (bot.flagCommanded == 1) {
 		return STOP_BY_CALL;
 	}
-	whereIam(1, speed);
     bot.image = wb_camera_get_image(bot.cam);
-    wb_robot_step(TIME_STEP);     
+    wb_robot_step(TIME_STEP); // taking picture in runLevy    
     if (cont_height_figure(-10, bot.colorSeeking) > 15) { //18
       //printf("\n Backward %d invading useful region on walk", bot.botNumber);
       //printf("\n");
       forward(-20, speed); //30
       turnSteps(TURN_CACHE, speed);
     } 
-    if ((bot.colorSeeking == CYAN) && (cont_height_figure(-11, bot.colorSeeking) > 22)) {
+    if (((bot.colorSeeking == CYAN) || (bot.colorSeeking == WHITE))
+      && (cont_height_figure(-11, bot.colorSeeking) > 22)) {
       //printf("\n Backward %d invading on walk by CYAN", bot_>botNumber);
       //printf("\n");
-      forward(-20, speed); //70
+      forward(-20, speed); //30
       turnSteps(TURN_CACHE/2, speed);
     } 
     index = detectImage(displayExtra); // Open her eyes

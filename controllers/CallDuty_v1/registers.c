@@ -19,7 +19,7 @@
 #define COMMUNICATION 5
 #define M2ROBOT 1
 
-void updateEstimations(int task, int cache){ //ok-
+void updateEstimations(int task, int cache){ 
   int value = bot.timeMeasured;
   int codeTask = bot.currentState; 
   if (bot.flagMomento != 1) { bot.beta = 0;}
@@ -63,10 +63,10 @@ void updateEstimations(int task, int cache){ //ok-
   bot.timeImage = 0;  
   bot.timeMeasured = 0;
   bot.timeListened = 0;
-  wb_robot_step(32);
+  //wb_robot_step(32);
 }
 
-void updateBitacora(int codeTask, int estimations, int cache){ //ok-
+void updateBitacora(int codeTask, int estimations, int cache){ 
   if (estimations == ESTIMATIONS) { 
     if (bot.flagFilesEST) { 
       createDir(ESTIMATIONS, 0); 
@@ -125,7 +125,7 @@ void updateBitacora(int codeTask, int estimations, int cache){ //ok-
   } 
 }
 
-void cronometer(int task, int cache){//ok-
+void cronometer(int task, int cache){
   
   if (task == IMAGE) { 
     bot.timeImage++;

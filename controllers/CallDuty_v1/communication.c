@@ -9,6 +9,9 @@
 #define BLUE 2
 #define TRAVEL2BLUE 106
 
+#define PICK_SOURCE 100
+#define DROP_NEST 103
+
 #define LEAVE 11
 #define COME 12
 #define ROBOT_LEAVING 31
@@ -25,7 +28,7 @@
 #define M2ROBOT 1
 #define M2NEST 2
 
-int listening(){ //ok-
+int listening(){ 
   int i;
   int flagWrite = 0;
   const char *data;
@@ -51,34 +54,33 @@ int listening(){ //ok-
         if (newFriend == LEAVE) {
           //l printf("\n Nest %d is asking for %d to leave and go %d", place, bot.botNumber, suggestedDestination);
           //l printf("\n");
-        if ((bot.flagLoad == 0) && (bot.flagBusy == 0)) {    
+        if ((bot.flagLoad == 0) && ((bot.flagBusy == 0) || (bot.currentState == DROP_NEST))) {    
           switch(suggestedDestination){
           case RED:
-		    if (bot.floorColor != RED) {
+	    if (bot.floorColor != RED) {
               printf("\n %d commanded toward RED", bot.botNumber);
               bot.suggestedState = TRAVEL2RED;
-			}  
+            }  
             break;
           case GREY:
             if (bot.floorColor != GREY) {
-			  printf("\n %d commanded toward GREY", bot.botNumber);
+	      printf("\n %d commanded toward GREY", bot.botNumber);
               bot.suggestedState = TRAVEL2GREY;
-			}  
+            }  
             break;
           case BLUE:
             if (bot.floorColor != BLUE) {
-			  printf("\n %d commanded toward BLUE", bot.botNumber);
+              printf("\n %d commanded toward BLUE", bot.botNumber);
               bot.suggestedState = TRAVEL2BLUE;
-			}  
+            }  
             break;
           }
-		  speaking(M2NEST, ROBOT_AFFIRMATIVE, 0, 0);
-		  bot.flagCommanded = 1;
+	  flagWrite = ROBOT_AFFIRMATIVE;
+	  bot.flagCommanded = 1;
           printf("\n");  
-		  //wb_robot_step(32);
         } else {
-	      flagWrite = ROBOT_NEGATIVE;          
-		}
+	  flagWrite = ROBOT_NEGATIVE;          
+	}
       } else if (newFriend == COME) {
         //s printf("\n Nest %d is asking for %d to arrive", place, bot.botNumber);
         //s printf("\n");
@@ -155,16 +157,35 @@ int listening(){ //ok-
     }
   }	
   if (flagWrite == 1) {
-    writeMessage(data);
-  }	else if (flagWrite == ROBOT_NEGATIVE) {
-	speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+    if (bot.flagFilesCOM) {
+      // File for decisions
+      createDir(COMMUNICATION, 0);
+      //printf("\n %d is registering its messages in %s", bot.botNumber, msg);
+      //printf("\n");	
+      FILE *file = fopen(bot.fileRobot, "a+");
+      if (file == NULL) {
+        printf("Error opening file of communications\n");
+        printf("\n");
+        exit(1);
+      }
+      fprintf(file, "\n listening, %s", data);
+      printf("\n %d is updating with %s by listening", bot.botNumber, data);
+      printf("\n");
+      fclose(file);
+    }
+  } else if (flagWrite == ROBOT_NEGATIVE) {
+    speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
     printf("\n %d is saying not because Busy %d or load %d", bot.botNumber, bot.flagBusy, bot.flagLoad);
-	printf("\n");  
+    printf("\n");  
+  } else if (flagWrite == ROBOT_AFFIRMATIVE) {
+    speaking(M2NEST, ROBOT_AFFIRMATIVE, 0, 0);
+    printf("\n %d is saying YES SIR I go ", bot.botNumber);
+    printf("\n");
   }
   return 1;
 }
 
-int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
+int speaking(int toWhom, int codeTask, int time, int cache){ 
   if (bot.flagCom == 0) { return 0;}
   char message[30]="";
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
@@ -196,7 +217,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
         printf(" message %s", message);    
         printf("\n");
       } else if (codeTask == ROBOT_NEGATIVE) {
-	sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_NEGATIVE, bot.floorColor);
+	    sprintf(message,"R2T%dT%dX%d",bot.botNumber, ROBOT_NEGATIVE, bot.floorColor);
         printf("\n %d said *negative sir* to nest %d commands", bot.botNumber, bot.floorColor);
         printf(" message %s", message);    
         printf("\n"); 
@@ -208,7 +229,7 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
   }  
   wb_emitter_send(bot.emitter, message, strlen(message)+1);
   //wb_robot_step(32); 
-  if (message[0] == 'R'){
+  if ((message[0] == 'R') && (message[1] == '2')){
     if (bot.flagFilesCOM) {
       // File for decisions
       createDir(COMMUNICATION, 0);
@@ -220,9 +241,9 @@ int speaking(int toWhom, int codeTask, int time, int cache){ //ok-
         printf("\n");
         exit(1);
       }
-      //printf("\n %s is updating with %s", robotName, msg);
       fprintf(file, "\n speaking, %s", message);
-      //printf("\n %s is updating with %s by speaking", robotName, msg);
+      printf("\n %d is updating with %s by speaking", bot.botNumber, message);
+      printf("\n");
       fclose(file);
     }
   }	

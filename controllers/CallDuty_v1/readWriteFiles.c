@@ -75,7 +75,7 @@ void createDir(int option, int flagBuild){
   }  
 }
 
-void createFiles(){ //ok
+void createFiles(){ 
   // File for each cycle of FSM
   if (bot.flagFilesFSM) {
     createDir(FSM, 1); 
@@ -152,7 +152,7 @@ void createFiles(){ //ok
   }
 }
 
-void writeDecision(float boundP, float realP, int mechanism, int flagTravel){ //ok-
+void writeDecision(float boundP, float realP, int mechanism, int flagTravel){ 
   if (bot.flagFilesDM) {
     // File for decisions
     createDir(DECISIONS, 0);

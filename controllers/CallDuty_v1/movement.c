@@ -12,7 +12,7 @@
 #define TURN_M90 -27
 #define SPEEDCARGO 1
 
-void forward(int steps, double *speed){ //ok-
+void forward(int steps, double *speed){ 
   int k = 1;
   if (steps < 0) {
     k = -1;
@@ -24,7 +24,7 @@ void forward(int steps, double *speed){ //ok-
   wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
   while (k < steps) {
     k++;
-    wb_robot_step(TIME_STEP);
+    wb_robot_step(TIME_STEP); //forward
     cronometer(-1, 0); 
   }
   waiting(1);
@@ -44,16 +44,15 @@ void turnSteps(int steps, double *speed){
   wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
   while (steps > 0) {
     steps--;
-    wb_robot_step(TIME_STEP);  
+    wb_robot_step(TIME_STEP); //turnSteps  
     cronometer(-1, 0);
   }
   waiting(1);
 }
 
-void avoidance(double *speed){ //ok
+void avoidance(double *speed){ 
   int sense = 1;
-  wb_differential_wheels_set_speed(0, 0);
-  wb_robot_step(TIME_STEP); 
+  waiting(1); 
   readSensors(0);
   if ((bot.ps_value[7] + bot.ps_value[6]) < (bot.ps_value[0] + bot.ps_value[1])) {
     sense = -1;
@@ -72,7 +71,7 @@ int readSensors(int print){
     for (i=0; i<NB_DIST_SENS; i++) {
       bot.ps_value[i] += (int)wb_distance_sensor_get_value(bot.sensors[i]) - bot.ps_offset[i];
     }
-    wb_robot_step(TIME_STEP); 
+    wb_robot_step(TIME_STEP); //readSensors
   }  
   for (i=0; i<NB_DIST_SENS; i++){
     bot.ps_value[i] /= SAMPLES;
@@ -87,7 +86,7 @@ int readSensors(int print){
   return flag;
 }
 
-int run(int steps, double *speed){ //ok-
+int run(int steps, double *speed){ 
   int i, j;
   int matrix[8][2] = {{150,-35},{100, -15},{80, -10},{-10,-10},{-10,-10},{-10,80},{-30,100},{-20,150}};
   while(steps > 0) {  
@@ -110,7 +109,7 @@ int run(int steps, double *speed){ //ok-
     }
     steps--;
 	wb_differential_wheels_set_speed(speed[LEFT],speed[RIGHT]);
-    wb_robot_step(TIME_STEP);
+    wb_robot_step(TIME_STEP); //run
     cronometer(-1, 0); 
     //Every 5 steps check ground color
 	if(steps%5 == 0){ whereIam(1, speed);}
@@ -119,7 +118,7 @@ int run(int steps, double *speed){ //ok-
   return 1;
 }
 
-int hitWall(int front, double *speed){ //ok
+int hitWall(int front, double *speed){ 
   int hit_thres = 300, flag = 1;//200
   int question;
   speed[LEFT] = 300;
@@ -136,33 +135,32 @@ int hitWall(int front, double *speed){ //ok
       question = (bot.ps_value[0] > hit_thres) || (bot.ps_value[7] > hit_thres) || (bot.ps_value[6] > hit_thres) || (bot.ps_value[1] > hit_thres);
     } else {
       question = (bot.ps_value[0] > hit_thres) || (bot.ps_value[7] > hit_thres);
-  }  
-  if (question) {
-    if (front == 5) {
-      speed[LEFT] = -speed[LEFT];
-      wb_robot_step(TIME_STEP);
-      wb_robot_step(TIME_STEP);
-    } else if (front == -5) {
-      speed[RIGHT] = -speed[RIGHT];
-      wb_robot_step(TIME_STEP);
-      wb_robot_step(TIME_STEP);
-    }
-    //c waiting(2);
-    readSensors(0);
-    if (question || (bot.ps_value[6] > hit_thres) || (bot.ps_value[1] > hit_thres)){
-      forward(5, speed);
-      flag = 0;
-    }
-  }  
-  wb_differential_wheels_set_speed(speed[LEFT], speed[RIGHT]);
-  wb_robot_step(TIME_STEP);
-  cronometer(-1, 0); 
+    }  
+    if (question) {
+      if (front == 5) {
+        speed[LEFT] = -speed[LEFT];
+        wb_robot_step(TIME_STEP); //hitWall adjustment1right	
+        wb_robot_step(TIME_STEP); //hitWall adjustment2right
+      } else if (front == -5) {
+        speed[RIGHT] = -speed[RIGHT];
+        wb_robot_step(TIME_STEP); //hitWall adjustment1left
+        wb_robot_step(TIME_STEP); //hitWall adjustment2left
+      }
+      readSensors(0);
+      if (question || (bot.ps_value[6] > hit_thres) || (bot.ps_value[1] > hit_thres)){
+        forward(5, speed);
+        flag = 0;
+      }
+    }  
+    wb_differential_wheels_set_speed(speed[LEFT], speed[RIGHT]);
+    wb_robot_step(TIME_STEP); // hitWall
+    cronometer(-1, 0); 
   }
   waiting(1);
   return 1;
 } 
 
-int enterTam(double *speed){ //ok
+int enterTam(double *speed){ 
   int flag1stCheck = 1; 
   int dir = 0;
   
@@ -197,11 +195,11 @@ int enterTam(double *speed){ //ok
   return -1;  
 }
 
-int waiting(int n){ //ok
+int waiting(int n){ 
   wb_differential_wheels_set_speed(0,0);
   while (n > 0) {
     n--;
-    wb_robot_step(TIME_STEP);
+    wb_robot_step(TIME_STEP); //waiting
     cronometer(-1, 0);
   } 
   return 1;  

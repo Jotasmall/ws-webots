@@ -52,7 +52,7 @@
 #define ROBOT_LEAVING 31
 #define ROBOT_ARRIVING 32
 
-int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
+int compareColorPixel(int pixelX, int pixelY, int foreground){ 
   int auxColor = 0;
   //int width = bot.width;
   int pixelR = wb_camera_image_get_red(bot.image, bot.width, pixelX, pixelY);
@@ -104,7 +104,7 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){ //ok-
   return auxColor;
 }
 
-int cont_height_figure(int indexP, int color){ //ok
+int cont_height_figure(int indexP, int color){ 
   int count=0;
   int maxCount = 0;
   int beginY = 0;
@@ -124,12 +124,12 @@ int cont_height_figure(int indexP, int color){ //ok
   case -11: // looking for landmark
     foreground = MAGENTA; // nest TAM
     break; 
-  case -10: // On levy avoid colors 18 
-    foreground = MAGENTA;
-    if (bot.currentState == DROP_NEST) { 
-      foreground = RED; // source TAM
-      if (bot.floorColor == RED) { foreground = BLUE;} // source TAM
-    } break; 
+  case -10: // On levy avoid TAMs 
+    if (bot.currentState == PICK_SOURCE) { foreground = MAGENTA;}
+    else if (bot.floorColor == RED) { foreground = BLUE;}
+	else if (bot.floorColor == GREY) { foreground = DARK_RED;}
+	else if (bot.floorColor == BLUE) { foreground = RED;}
+    break; 
   case 100: // checking tam_wall color
     foreground = TAM_WALL; break;
   case 101: // waiting on TAM 
@@ -139,12 +139,6 @@ int cont_height_figure(int indexP, int color){ //ok
       if (foreground != BLACK) { foreground = WHITE;}
     } break;
   case 102: // checking for sources 
-    /*if (bot.currentState == PICK_SOURCE) {
-      foreground = RED;
-      if (bot.floorColor == RED) {
-        foreground = BLUE;
-      }
-    }*/
 	foreground = bot.colorSeeking;
 	break;
   default:  // Normal processing
@@ -163,9 +157,9 @@ int cont_height_figure(int indexP, int color){ //ok
   return maxCount;
 }
 
-int detectTam(){ //ok
+int detectTam(){ 
   bot.image  = wb_camera_get_image(bot.cam);
-  wb_robot_step(TIME_STEP);  
+  wb_robot_step(TIME_STEP); // detect TAM 
   if ((cont_height_figure(101, bot.colorSeeking) < 35) && (cont_height_figure(102, bot.colorSeeking) < 35)){ //30 checking wall tam
     printf("\n Something went wrong entering");
     printf("\n");
@@ -177,7 +171,7 @@ int detectTam(){ //ok
 
 int whereIam(int avoiding, double *speed){ 
   bot.image = wb_camera_get_image(bot.cam);
-  wb_robot_step(TIME_STEP);
+  wb_robot_step(TIME_STEP); // detect groundColor
   int groundDetected = GREY;
   // cronometer(IMAGE, 0); //This is a fast operation
   
@@ -217,8 +211,7 @@ int whereArrive(double *speed){
   return 1;
 }
 
-
-int findMiddle(int wrongLine){ //ok 
+int findMiddle(int wrongLine){  
   int i;
   int aux, index1 = -1, index2 = -1;
   int foreground = bot.lineColor;
@@ -240,7 +233,7 @@ int findMiddle(int wrongLine){ //ok
       }  
     }
   }  
-  if (index1 == -1) { return -1;} // followLine
+  if (index1 == -1) { return -1;} 
   aux = (index2-index1)/2+index1;
   if (wrongLine) {
     aux = 100;
@@ -250,7 +243,7 @@ int findMiddle(int wrongLine){ //ok
   return aux;  
 }
 
-int waitingColor() {//ok
+int waitingColor() {
   bot.image = wb_camera_get_image(bot.cam);
   waiting(1);
   int count = 0;
@@ -269,8 +262,9 @@ int waitingColor() {//ok
   if ((count > 26) || (countArriving > 26)) {
     if (bot.currentState == PICK_SOURCE) {
       cronometer(WAITING, 0); //shapeSeen); //when using different shapes
-    } 
-    cronometer(-1, 0);
+    } else {
+      cronometer(-1, 0);
+	}  
     return 1; //keep waiting
   }  
   //printf("\n Intensity gets down");
@@ -360,7 +354,7 @@ int doubleCheck(double *speed, WbDeviceTag *displayExtra){
   return index; 
 }
 
-int check4Robot(WbDeviceTag *displayExtra){ //ok
+int check4Robot(WbDeviceTag *displayExtra){ 
   int sizeRobot = 0;
   int auxColor = bot.colorSeeking;
   int auxShape = bot.shapeLooking;
@@ -376,8 +370,7 @@ int check4Robot(WbDeviceTag *displayExtra){ //ok
   return 0;
 }
 
-
-int detectImage(WbDeviceTag *displayExtra){ //ok
+int detectImage(WbDeviceTag *displayExtra){ 
   int flagSeen = -1;
   int middleH = -1;
   int aux = 0;
@@ -404,7 +397,7 @@ int detectImage(WbDeviceTag *displayExtra){ //ok
   memset(check, 0, 20*sizeof(int));
   
   bot.image = wb_camera_get_image(bot.cam);
-  wb_robot_step(TIME_STEP);
+  wb_robot_step(TIME_STEP); // take picture for detectImage
   cronometer(IMAGE, 0); // for image processing
   // Segmentation process
   for (i = 0; i < bot.width; i++) {
@@ -475,93 +468,92 @@ int detectImage(WbDeviceTag *displayExtra){ //ok
         } 
       }
     }
-    if ((bot.shapeLooking == 255) && ((bot.colorSeeking == CYAN) || (bot.colorSeeking = WHITE))) {
-      bot.pointA = cont_height_figure(minH+1, CYAN); 
-      bot.pointB = cont_height_figure(maxH-1, CYAN);
+    if (bot.shapeLooking == 255) {
+      bot.pointA = cont_height_figure(minH+1, bot.colorSeeking); 
+      bot.pointB = cont_height_figure(maxH-1, bot.colorSeeking);
       //printf("\n %s really close and sure it is not a robot, go for the center", robotName);
       //printf("\n");
-    return 100; //100
-  }
-  if (((area > 10) && (bot.colorSeeking != CYAN)) || ((bot.colorSeeking == CYAN) && (area > 25))) { 
-    int squarewidth = maxH-minH+1;
-    int squareHeight = maxV-minV+1;  
-    // Middle axis width within the square
-    int middleAxisH = 0;
-    aux = (int)squareHeight/2+minV;
-    for (i = minH; i <= maxH; i++) {
-      if (imaComp[i][aux] > 0) {
-        middleAxisH++;  
-      } 
+      return 100; //100
     }
-    wb_display_set_color((WbDeviceTag)*displayExtra, HEXRED);
-    wb_display_draw_line((WbDeviceTag)*displayExtra, minH, aux, maxH, aux); 
-    // Middle axis height within the square
-    int middleAxisV = 0;
-    aux = (int)squarewidth/2+minH;
-    for (i = minV; i <= maxV; i++) {
-      if (imaComp[aux][i] > 0) {
-        middleAxisV++;
+    if (((area > 10) && (bot.colorSeeking != CYAN)) || ((bot.colorSeeking == CYAN) && (area > 25))) { 
+      int squarewidth = maxH-minH+1;
+      int squareHeight = maxV-minV+1;  
+      // Middle axis width within the square
+      int middleAxisH = 0;
+      aux = (int)squareHeight/2+minV;
+      for (i = minH; i <= maxH; i++) {
+        if (imaComp[i][aux] > 0) { middleAxisH++;}  
       }
-    }
-    wb_display_set_color((WbDeviceTag)*displayExtra, HEXRED);
-    wb_display_draw_line((WbDeviceTag)*displayExtra, aux, minV, aux, maxV); 
-    int x = aux; //middle index horizontal 
-    int areaSquare = squarewidth * squareHeight; 
-    float extent = (float) area/areaSquare;
-    float eccentricity = (float) middleAxisV/middleAxisH;
-    // Increase padding of 1 for window of component
-    if (minV > 0) { minV--;}
-    if (minH > 0) { minH--;}
-    wb_display_set_color((WbDeviceTag)*displayExtra, HEXYELLOW);
-    wb_display_draw_rectangle((WbDeviceTag)*displayExtra, minH, minV, squarewidth+1, squareHeight+1);
-    // return the horizontal position as delta value
-    distMiddle = abs(bot.width/2-x);
-    realComp++;
-    bot.nComp = realComp;
-    // A great enough region
-    if ((squarewidth >= 4) && (squareHeight >= 4)) {
-      //1 Triangle, 2 Box, 3 Circle, 4 Nothing, 0 ReallyNothing, 5 All, 6 Robot
-      newShapeSeen = whatIsee(bot.colorSeeking, eccentricity, extent, squarewidth, middleAxisH, middleAxisV);
-      if (bot.shapeLooking == ROBOT){
-        if (newShapeSeen == ROBOT) {
-          if ((x > 23) && (x < 29) && (areaSquare > 600)) { waiting(15);} 
-            return squareHeight; //only returned when checkRobot is used  
-          } 
-        } else {
+      wb_display_set_color((WbDeviceTag)*displayExtra, HEXRED);
+      wb_display_draw_line((WbDeviceTag)*displayExtra, minH, aux, maxH, aux); 
+      // Middle axis height within the square
+      int middleAxisV = 0;
+      aux = (int)squarewidth/2+minH;
+      for (i = minV; i <= maxV; i++) {
+        if (imaComp[aux][i] > 0) { middleAxisV++;}
+      }
+      wb_display_set_color((WbDeviceTag)*displayExtra, HEXRED);
+      wb_display_draw_line((WbDeviceTag)*displayExtra, aux, minV, aux, maxV); 
+      int x = aux; //middle index horizontal 
+      int areaSquare = squarewidth * squareHeight; 
+      float extent = (float) area/areaSquare;
+      float eccentricity = (float) middleAxisV/middleAxisH;
+      // Increase padding of 1 for window of component
+      if (minV > 0) { minV--;}
+      if (minH > 0) { minH--;}
+      wb_display_set_color((WbDeviceTag)*displayExtra, HEXYELLOW);
+      wb_display_draw_rectangle((WbDeviceTag)*displayExtra, minH, minV, squarewidth+1, squareHeight+1);
+      // return the horizontal position as delta value
+      distMiddle = abs(bot.width/2-x);
+      realComp++;
+      bot.nComp = realComp;
+      // A great enough region
+      if ((squarewidth >= 4) && (squareHeight >= 4)) {
+        //1 Triangle, 2 Box, 3 Circle, 4 Nothing, 0 ReallyNothing, 5 All, 6 Robot
+        newShapeSeen = whatIsee(bot.colorSeeking, eccentricity, extent, squarewidth, middleAxisH, middleAxisV);
+        if (bot.shapeLooking == ROBOT) {
+          if (newShapeSeen == ROBOT) {
+            if ((x > 23) && (x < 29) && (areaSquare > 600)) { 
+			  waiting(15); 
+              return squareHeight; //only returned when checkRobot is used  
+            } 
+          }
+		} else {
           switch(newShapeSeen){
-          case NOTHING:
-            //last value to check and nothing was seen clearly
-            if ((flagSeen == -1) && (k == comp-1) && (squareHeight < 15)) { 
-              bot.nComp = 1; 
-              return 100;
-            } break;
-          case TRIANGLE:
-          case CIRCLE:
-          case BOX:
-            if ((bot.shapeLooking == ALL) || (bot.shapeLooking == newShapeSeen)) { 
-              flagSeen = 1;
-            } else if (k == comp-1){
-              return 100;
-            }
-            //if in k component was seen, then check if it is better
-            if (flagSeen == 1) { 
-			  if (tallest < squareHeight){
+            case NOTHING:
+              //last value to check and nothing was seen clearly
+              if ((flagSeen == -1) && (k == comp-1) && (squareHeight < 15)) { 
+                bot.nComp = 1; 
+                return 100;
+              }
+	        break;
+            case TRIANGLE:
+            case CIRCLE:
+            case BOX:
+              if ((bot.shapeLooking == ALL) || (bot.shapeLooking == newShapeSeen)) { 
+                flagSeen = 1;
+              } else if (k == comp-1){
+                return 100;
+              }
+              //if in k component was seen, then check if it is better
+              if (flagSeen == 1) { 
+                if (tallest < squareHeight){
 				  tallest = squareHeight;
 				  middlest = distMiddle;
 				  middleH = x;
 				  bot.shapeSeen = newShapeSeen;
 				  //printf("\n Robot %d found a new shape %d taller %d and closer to the middle %d", bot.botNumber, newShapeSeen, tallest, middlest);          
-              } else if (tallest == squareHeight) {
-                if (middlest > distMiddle) {
-                  middlest = distMiddle;
-				  middleH = x;
-                  bot.shapeSeen = newShapeSeen;
-                  //printf("\n Robot %d found a new shape %d just closer to the middle %d", bot.botNumber, newShapeSeen, middlest);
+                } else if (tallest == squareHeight) {
+                  if (middlest > distMiddle) {
+                    middlest = distMiddle;
+				    middleH = x;
+                    bot.shapeSeen = newShapeSeen;
+                    //printf("\n Robot %d found a new shape %d just closer to the middle %d", bot.botNumber, newShapeSeen, middlest);
+                  }
                 }
-              }
-              flagSeen = 0;
-            }      
-            bot.nComp = realComp; 
+                flagSeen = 0;
+              }      
+              bot.nComp = realComp; 
             break;
           }  
         }
