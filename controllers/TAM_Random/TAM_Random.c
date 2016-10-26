@@ -180,19 +180,20 @@ void excuteProcess(){
     W_listening();
     // W_printStates();
     if (timeCycle == 78) {//448 -> 1 min
-      if (codeTam == RED) {
-        printf("\n Cycle complete");
-        printf("\n");
-      }  
       timeCycle = 0;
       timeMinute++;
       W_fireWorkers();
+      printf("\n %s cycle complete with ", robotName);
+      for (i = 0; i < NEIGHBORS; i++) {
+        printf("%d utility %g", i, utility[i]);
+      }
+      printf("\n");
       if (timeMinute > MINUTES_EMPTY) {
     // cleaning Busy registers
         for (i = 0; i < nRobots; i++){
           listBusy[i] = 0; 
         }
-    lastVisitor = 0;
+        lastVisitor = 0;
         timeMinute = 0;
         W_speaking(M2NEST); //Synchronize with neighbors
       }
@@ -873,7 +874,7 @@ int W_fireWorkers(){
   //Rounding values
   if ((flagWaitingDeparture == 1) && (flagOnebyOne == 1)){
     return 0;
-  } else if (maxDif > 1) {//>=
+  } else if (maxDif > 1.0) {//>=
     if (flagOnebyOne == 1) {
       maxDif = 1;
     } else {
