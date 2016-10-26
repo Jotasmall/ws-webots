@@ -99,14 +99,13 @@ int doorEntrance(double *speed, int steps){
   turnSteps(TURN_M90, speed);
   waiting(20); // until door opens
   readSensors(0);
-  if ((whereIam(0, speed) == bot.floorColor) ||
-     (bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7]> THRESHOLD_DIST)) {
+  if ((bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7]> THRESHOLD_DIST)) {
      printf("\n %d wrong turn in %d", bot.botNumber, whereIam(0, speed));
      printf("\n");
      return 0;
   }
   forward(steps, speed);
-  //printf("\n robot %d is traveling to %d with floorColor %d", bot.botNumber, bot.currentState, bot.floorColor);
+  printf("\n robot %d is traveling to %d with floorColor %d", bot.botNumber, bot.currentState, bot.floorColor);
   if (((bot.currentState == TRAVEL2GREY) && (bot.floorColor == BLUE)) ||
      ((bot.currentState == TRAVEL2RED)  && (bot.floorColor == GREY))){ 
      turnSteps(TURN_90, speed); 

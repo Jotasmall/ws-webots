@@ -2096,7 +2096,7 @@ DEF door2 DifferentialWheels {
   controller "DoorController"
 }
 E-puck {
-  translation -0.0464405 2.50841e-15 -0.313461
+  translation -0.6229 2.50841e-15 -0.364391
   rotation 0 1 0 2.8798
   controller "CallDuty_v1"
   name "e-puck2701"
@@ -2113,7 +2113,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.14727 2.36855e-15 -0.222397
+  translation -0.41273 2.36855e-15 -0.222395
   rotation 0 1 0 1.5708
   controller "CallDuty_v1"
   name "e-puck2801"
@@ -2130,7 +2130,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation -0.00865629 1.88304e-15 -0.596549
+  translation -0.645052 1.88304e-15 -0.55412
   rotation 0 -1 0 2.35619
   controller "CallDuty_v1"
   name "e-puck2901"

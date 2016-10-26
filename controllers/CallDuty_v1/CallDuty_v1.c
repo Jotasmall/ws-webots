@@ -283,7 +283,7 @@ void executeUML(){
           printf("\n");
           bot.flagCommanded = 0;
           bot.suggestedState = bot.currentState;
-		  speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
+          speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
         } else {
           bot.currentState = moduleUML(MAGENTA, BOX, DROPPING, PICK_SOURCE, 1);
         }  
@@ -359,12 +359,12 @@ int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int 
     bot.flagLoad = !flag; // PICK_CACHE 1 - DROP_NEST 0
     bot.flagBusy = 0;  // after leaving a TAM
     if (pick_or_drop == DROPPING) { pickingIndication(0);}
-    else { wb_led_set(bot.leds[8], 0);}	
+    else { wb_led_set(bot.leds[8], 0);}    
   } else if (output == STOP_LEVY) {
     /*
-	if (bot.currentState == DROP_NEST) {
-	  nextState = DROP_NEST;	
-	} else {
+    if (bot.currentState == DROP_NEST) {
+      nextState = DROP_NEST;    
+    } else {
       float p = ((float)rand())/RAND_MAX;
       if (bot.flagLoad == 0) {
         if (p > 0.5) {
@@ -392,9 +392,9 @@ int moduleUML(int shapeColor, int shape, int pick_or_drop, int stateRemain, int 
           }
         }  
       } else {
-		nextState = DROP_NEST;  
-	  }
-	}  
+        nextState = DROP_NEST;  
+      }
+    }  
     */  
   }  
   //wb_robot_step(32);
@@ -411,11 +411,11 @@ int moduleTravel(){
   int currentFloor = whereIam(0, speed);
   switch(auxUML){
     case TRAVEL2RED:
-	  bot.colorDestination = RED; break;
-	case TRAVEL2GREY:
-	  bot.colorDestination = GREY; break;
+      bot.colorDestination = RED; break;
+    case TRAVEL2GREY:
+      bot.colorDestination = GREY; break;
     case TRAVEL2BLUE:
-      bot.colorDestination = BLUE; break;	  
+      bot.colorDestination = BLUE; break;      
   }
   // This case can occur, so avoid this endless travel  
   if ((bot.colorDestination == currentFloor) && (bot.flagCommanded == 0)){
@@ -441,7 +441,7 @@ int moduleTravel(){
         } else if (bot.floorColor == BLUE) {
           bot.lineColor = RED;
           flagReady = enter2Destination(speed, &displayExtra);
-        } 		
+        }         
       break;
       case TRAVEL2GREY:
         bot.colorDestination = GREY;
@@ -449,7 +449,6 @@ int moduleTravel(){
           bot.lineColor = BLUE;
           flagReady = enter2Destination(speed, &displayExtra);
         } else if (bot.floorColor == GREY){
-          bot.lineColor = GREY;
           flagReady = 1;
         } else if (bot.floorColor == BLUE) {
           bot.lineColor = RED;
@@ -497,7 +496,7 @@ int moduleTravel(){
           if (auxUML != PICK_SOURCE){
             printf("\n By luck %s is traveling to %d region", robotName, auxUML);
             printf("\n");
-    	  }	  
+          }      
         } else {
           printf("\n By luck %s is staying here", robotName);
           printf("\n");
@@ -508,7 +507,7 @@ int moduleTravel(){
     }
   } else if (output == STOP_LEVY) {
     /*
-	   auxUML = PICK_SOURCE;
+       auxUML = PICK_SOURCE;
     */ 
   }
   //wb_robot_step(32);
@@ -584,7 +583,7 @@ int moduleFSM(){
             bot.flagCommanded = 0;
             bot.suggestedState = bot.currentState;
             speaking(M2NEST, ROBOT_NEGATIVE, 0, 0);
-	      }
+          }
           flagProximity = 0;
           flagSureSeen = 0;      
           if ((bot.currentState == TRAVEL2BLUE) || (bot.currentState == TRAVEL2RED) || (bot.currentState == TRAVEL2GREY)) {

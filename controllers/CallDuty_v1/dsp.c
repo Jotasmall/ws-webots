@@ -334,7 +334,7 @@ int whatIsee(int color, float Eccentricity, float Extent, int squarewidth, int m
     } else {
       //printf("\n No circle (105.0)");
       shapeFound = NOTHING;
-      if (color == CYAN ){ shapeFound = BOX;}
+      if ((color == CYAN) || (color == WHITE)){ shapeFound = BOX;}
     }  
   }  
   return shapeFound;

@@ -873,7 +873,7 @@ int W_fireWorkers(){
   //Rounding values
   if ((flagWaitingDeparture == 1) && (flagOnebyOne == 1)){
     return 0;
-  } else if (maxDif >= 0.5) {
+  } else if (maxDif > 1) {//>=
     if (flagOnebyOne == 1) {
       maxDif = 1;
     } else {
