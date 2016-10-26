@@ -723,17 +723,16 @@ int W_listening() {
   int i, j;
   int robot;
   int value;
-  int flagWrite = 0;
   const char *data;
   //printf("\n %s is receiving a message %s", robotName);
   while(wb_receiver_get_queue_length(receiver)>0){  
     //printf("\n %s has received a message", robotName);
     data = wb_receiver_get_data(receiver);
     if ((data[0] == 'T') && (data[2] == 'T')) {
-      flagWrite = M2NEST; 
       robot = atoi(&data[3]); //Maximum 9 senders (NEST)
       value = atoi(&data[5]); //utility value
       utility[robot] = value;
+      W_updateUtility(0);
       //printf("\n %s received a message from %d Nest", robotName, robot);
       //printf("\n %s update neighbor %d utility %d", robotName, robot, value);
       wb_receiver_next_packet(receiver);
@@ -746,73 +745,72 @@ int W_listening() {
       value = atoi(&data[11]); 
       // The message is for this TAM
       if (value == codeTam){
-        // printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
-        // printf("\n");
-    switch(action){
-        case ROBOT_LEAVING: 
-          for (i = 0; i < nRobots; i++){
-            if (robot == listWorkers[i]){
-              flagWrite = ROBOT_LEAVING; 
-              W_writeMessage(0, data);                            
-              listWorkers[i] = 0;
-              W_sortWorkers();
-              if (flagOnebyOne == 1) { flagWaitingDeparture = 0;} // flag deactivated, call other
-              printf("\n %s removed from its list %d", robotName, robot);
-              printf("\n");               
-              break;
-            }
-          }
-        break;          
-        case ROBOT_ARRIVING:
-          for (i = 0; i < nRobots; i++) {
-            if (listWorkers[i] == 0) {
-              flagWrite = ROBOT_ARRIVING;
-              W_writeMessage(0, data);
-              listWorkers[i] = robot;
-              lastVisitor = robot;
-              //printf("\n %s add to its list %d", robotName, robot);
-              //printf("\n");
-              break; //only add it once
-            }
-          }
-        break;
-        case ROBOT_AFFIRMATIVE:
-          for (i = 0; i < nRobots; i++) {
-            if (listWorkers[i] == robot) {
-              flagWrite = ROBOT_AFFIRMATIVE;
-              W_writeMessage(0, data);
-              if (flagOnebyOne == 1) { flagWaitingDeparture = 1;} // flag activated by acceptation
-              break;
-            }
-          }
-          break;
-        case ROBOT_NEGATIVE:
-          for (i = 0; i < nRobots; i++) {
-            if (listWorkers[i] == robot) {
-              flagWrite = ROBOT_NEGATIVE;
-              W_writeMessage(0, data);
-              flagWaitingDeparture = 0; // flag deactivate by negative
-              printf("\n %s received from %d a negative answer", robotName, robot);
-              printf("\n");
-              for (j = 0; j < nRobots; j++) {
-                if (listBusy[j] == 0) {
-                  listBusy[j] = robot;
-                  break;
-                }
+        //printf("\n %s receive %s as message from %d robot doing %d with value %d", robotName, data, robot, action, value);
+        //printf("\n");
+        switch(action){
+          case ROBOT_LEAVING: 
+            for (i = 0; i < nRobots; i++){
+              if (robot == listWorkers[i]){
+                W_writeMessage(0, data);
+                W_updateUtility(-1);                            
+                listWorkers[i] = 0;
+                W_sortWorkers();
+                if (flagOnebyOne == 1) { flagWaitingDeparture = 0;} // flag deactivated, call other
+                printf("\n %s removed from its list %d", robotName, robot);
+                printf("\n");               
+                break;
               }
-              W_fireWorkers();
-              break;              
-            }            
-          }
-          break;
-        case ROBOT_UPDATING:          
-          for (i = 0; i < nRobots; i++){
-            if (robot == listWorkers[i]){
-              //printf("\n %s has received a time of %d from %d", robotName, value, robot);
-              //printf("\n");
             }
-          } 
+          break;          
+          case ROBOT_ARRIVING:
+            for (i = 0; i < nRobots; i++) {
+              if (listWorkers[i] == 0) {
+                W_writeMessage(0, data);
+                W_updateUtility(1);
+                listWorkers[i] = robot;
+                lastVisitor = robot;
+                printf("\n %s add to its list %d", robotName, robot);
+                printf("\n");
+                W_speaking(M2WORKERS); 
+                break; //only add it once
+              }
+            }
           break;
+          case ROBOT_AFFIRMATIVE:
+            for (i = 0; i < nRobots; i++) {
+              if (listWorkers[i] == robot) {
+                W_writeMessage(0, data);
+                if (flagOnebyOne == 1) { flagWaitingDeparture = 1;} // flag activated by acceptation
+                break;
+              }
+            }
+            break;
+          case ROBOT_NEGATIVE:
+            for (i = 0; i < nRobots; i++) {
+              if (listWorkers[i] == robot) {
+                W_writeMessage(0, data);
+                flagWaitingDeparture = 0; // flag deactivate by negative
+                printf("\n %s received from %d a negative answer", robotName, robot);
+                printf("\n");
+                for (j = 0; j < nRobots; j++) {
+                  if (listBusy[j] == 0) {
+                    listBusy[j] = robot;
+                    break;
+                  }
+                }
+                W_fireWorkers();
+                break;              
+              }            
+            }
+            break;
+          case ROBOT_UPDATING:          
+            for (i = 0; i < nRobots; i++){
+              if (robot == listWorkers[i]){
+                //printf("\n %s has received a time of %d from %d", robotName, value, robot);
+                //printf("\n");
+              }
+            } 
+            break;
         }   
       }  
       wb_receiver_next_packet(receiver);
@@ -820,14 +818,6 @@ int W_listening() {
       //printf("\n %s receive %s message for other", robotName, data);
       wb_receiver_next_packet(receiver);
     }  
-  }
-  switch (flagWrite){
-    case M2NEST:  W_updateUtility(0); break;
-    case ROBOT_LEAVING: W_updateUtility(-1); break;
-    case ROBOT_ARRIVING: 
-      W_updateUtility(1); 
-      W_speaking(M2WORKERS); //to introduce new friends}
-      break;    
   }
   return 1;
 }
@@ -913,14 +903,14 @@ int W_fireWorkers(){
           // This workers is registered and free
         if (flagBusy == 0) {
           robotLeaving = listWorkers[i];
-      j++; // increase fired workers
+          j++; // increase fired workers
           //all printf("\n %s has chosen %d to leave toward %d", robotName, robotLeaving, place2Go);
           //all printf("\n %s also known as %d utilities values %g, %g, %g", robotName, codeTam, utility[0], utility[1], utility[2]);
           //all printf("\n");
           if (flagOnebyOne == 1) { flagWaitingDeparture = 1;} // changes only when worker says NEGATIVE
-         sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
-             wb_emitter_send(emitter, message, strlen(message)+1);
-             W_writeMessage(1, message);
+            sprintf(message, "T2R%dR%dT%dX%d", codeTam, robotLeaving, LEAVE, place2Go);
+            wb_emitter_send(emitter, message, strlen(message)+1);
+            W_writeMessage(1, message);
           }          
         }  
       }

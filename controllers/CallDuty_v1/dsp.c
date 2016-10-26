@@ -59,7 +59,7 @@ int compareColorPixel(int pixelX, int pixelY, int foreground){
   int pixelG = wb_camera_image_get_green(bot.image, bot.width, pixelX, pixelY);
   int pixelB = wb_camera_image_get_blue(bot.image, bot.width, pixelX, pixelY);
   
-  if ((foreground == CYAN) && (bot.floorColor == GREY) && (bot.currentState != PICK_SOURCE)) { foreground = WHITE;}
+  //if ((foreground == CYAN) && (bot.floorColor == GREY) && (bot.currentState != PICK_SOURCE)) { foreground = WHITE;}
   
   switch(foreground){
   case RED:
@@ -475,7 +475,7 @@ int detectImage(WbDeviceTag *displayExtra){
       //printf("\n");
       return 100; //100
     }
-    if (((area > 10) && (bot.colorSeeking != CYAN)) || ((bot.colorSeeking == CYAN) && (area > 25))) { 
+    if (((area > 10) && (bot.colorSeeking != CYAN) && (bot.colorSeeking != WHITE)) || (((bot.colorSeeking == CYAN) || (bot.colorSeeking == WHITE)) && (area > 25))) { 
       int squarewidth = maxH-minH+1;
       int squareHeight = maxV-minV+1;  
       // Middle axis width within the square

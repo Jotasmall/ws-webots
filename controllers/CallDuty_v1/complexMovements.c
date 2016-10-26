@@ -101,7 +101,7 @@ int doorEntrance(double *speed, int steps){
   readSensors(0);
   if ((whereIam(0, speed) == bot.floorColor) ||
      (bot.ps_value[0] > THRESHOLD_DIST) || (bot.ps_value[7]> THRESHOLD_DIST)) {
-     printf("\n %d wrong turn", bot.botNumber);
+     printf("\n %d wrong turn in %d", bot.botNumber, whereIam(0, speed));
      printf("\n");
      return 0;
   }

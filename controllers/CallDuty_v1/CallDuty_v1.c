@@ -197,7 +197,7 @@ void reset(){
   if (flagFiles) { 
     bot.flagFilesFSM = 0;
     bot.flagFilesEST = 0;
-    bot.flagFilesLIFE = 1;
+    bot.flagFilesLIFE = 0;
     bot.flagFilesDM = 0;
     bot.flagFilesPER = 0;
     bot.flagFilesCOM = 1;

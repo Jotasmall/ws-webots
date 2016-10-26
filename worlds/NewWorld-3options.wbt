@@ -2019,7 +2019,7 @@ DEF door1 DifferentialWheels {
       lookupTable [
         0 0 0
         0.01 1000 0
-        0.07 0 0
+        0.02 0 0
       ]
     }
     DistanceSensor {
@@ -2029,7 +2029,7 @@ DEF door1 DifferentialWheels {
       lookupTable [
         0 0 0
         0.01 1000 0
-        0.07 0 0
+        0.02 0 0
       ]
     }
   ]
@@ -2078,7 +2078,7 @@ DEF door2 DifferentialWheels {
       lookupTable [
         0 0 0
         0.01 1000 0
-        0.07 0 0
+        0.02 0 0
       ]
     }
     DistanceSensor {
@@ -2088,7 +2088,7 @@ DEF door2 DifferentialWheels {
       lookupTable [
         0 0 0
         0.01 1000 0
-        0.07 0 0
+        0.02 0 0
       ]
     }
   ]
@@ -2096,7 +2096,7 @@ DEF door2 DifferentialWheels {
   controller "DoorController"
 }
 E-puck {
-  translation 0.533116 2.50841e-15 -0.158173
+  translation -0.0464405 2.50841e-15 -0.313461
   rotation 0 1 0 2.8798
   controller "CallDuty_v1"
   name "e-puck2701"
@@ -2113,7 +2113,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.66727 2.36855e-15 -0.222399
+  translation 0.14727 2.36855e-15 -0.222397
   rotation 0 1 0 1.5708
   controller "CallDuty_v1"
   name "e-puck2801"
@@ -2130,7 +2130,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation 0.564101 1.88304e-15 -0.419775
+  translation -0.00865629 1.88304e-15 -0.596549
   rotation 0 -1 0 2.35619
   controller "CallDuty_v1"
   name "e-puck2901"

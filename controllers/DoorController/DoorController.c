@@ -108,7 +108,7 @@ int openDoor(float upDown){
 //  wb_motor_set_position(door, 10);
   wb_motor_set_velocity(door, upDown);
   for (i = 0; i < 3; i++) {
-    printf("\n Door opening");
+    //printf("\n Door opening");
     wb_robot_step(TIME_STEP);
   }
   wb_motor_set_velocity(door, 0.0);
