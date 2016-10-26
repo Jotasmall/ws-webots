@@ -1,0 +1,1 @@
+extern robot bot; // Declaration of the variable
