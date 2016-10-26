@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.00134941 0.855947 0.517061 3.14606
-  position 0.0383865 2.39807 -1.62592
+  orientation 0.00133823 0.858522 0.512775 3.14607
+  position 0.0382637 2.38407 -1.64945
 }
 Background {
   skyColor [
@@ -2096,7 +2096,7 @@ DEF door2 DifferentialWheels {
   controller "DoorController"
 }
 E-puck {
-  translation -0.6229 2.50841e-15 -0.364391
+  translation 0.437402 2.50841e-15 -0.380522
   rotation 0 1 0 2.8798
   controller "CallDuty_v1"
   name "e-puck2701"
@@ -2113,7 +2113,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation -0.41273 2.36855e-15 -0.222395
+  translation 0.56727 2.36855e-15 -0.222399
   rotation 0 1 0 1.5708
   controller "CallDuty_v1"
   name "e-puck2801"
@@ -2130,7 +2130,7 @@ E-puck {
   ]
 }
 E-puck {
-  translation -0.645052 1.88304e-15 -0.55412
+  translation 0.543013 7.05163e-16 -0.604867
   rotation 0 -1 0 2.35619
   controller "CallDuty_v1"
   name "e-puck2901"

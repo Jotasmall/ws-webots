@@ -185,7 +185,7 @@ void excuteProcess(){
       W_fireWorkers();
       printf("\n %s cycle complete with ", robotName);
       for (i = 0; i < NEIGHBORS; i++) {
-        printf("%d utility %g", i, utility[i]);
+        printf("%d utility %.1f", i, utility[i]);
       }
       printf("\n");
       if (timeMinute > MINUTES_EMPTY) {
@@ -698,7 +698,7 @@ int W_speaking(int toWhom){ //ok-
   // wb_emitter_set_channel(emitter, WB_CHANNEL_BROADCAST);
   if (toWhom == M2NEST) { 
     // reporting just to have the same number of lines
-    sprintf(message, "T2T%dX%d", codeTam, (int) utility[codeTam]);
+    sprintf(message, "T2T%dX%.1fZ", codeTam, utility[codeTam]);
     wb_emitter_send(emitter, message, strlen(message)+1);
     W_writeMessage(1, message);
    //printf("\n %s communicates its utility %d, info nests %d, %d, %d", robotName, utility[codeTam], utility[0], utility[1], utility[2]);
@@ -731,7 +731,7 @@ int W_listening() {
     data = wb_receiver_get_data(receiver);
     if ((data[0] == 'T') && (data[2] == 'T')) {
       robot = atoi(&data[3]); //Maximum 9 senders (NEST)
-      value = atoi(&data[5]); //utility value
+      value = atof(&data[5]); //utility value
       utility[robot] = value;
       W_updateUtility(0);
       //printf("\n %s received a message from %d Nest", robotName, robot);
@@ -825,15 +825,17 @@ int W_listening() {
 
 void W_sortWorkers(){ 
   int j;
-  printf("\n %s changing the list of workers from", robotName);
   for (j = 0; j < nRobots-1; j++) {
-    printf("%d ", listWorkers[j]);
     if (listWorkers[j] == 0) {
       listWorkers[j] = listWorkers[j+1];
       listWorkers[j+1] = 0;
     }  
   }
-  printf("%d", listWorkers[nRobots-1]);
+  printf("\n %s changing the list of workers from", robotName);
+  for (j = 0; j < nRobots; j++) {
+    printf("%d ", listWorkers[j]);
+  }
+  printf("\n");
   W_recordWorkers();
 } 
 
