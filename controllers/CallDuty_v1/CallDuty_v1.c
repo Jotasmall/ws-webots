@@ -44,9 +44,9 @@
 #define MODEL 3
 #define GREEDY 4
 // for different models
-int modelTest = NEVER;
+int modelTest = MODEL;
 // Flags of control
-int flagFiles = 1;
+int flagFiles = 0;
 int flagMasterRecruiting = 0; //1 RANDOMLY, -1 never, 0 whatever
 int flagCom = 1;      //to enable or disable communications
 int flagMomento = 0;
@@ -216,9 +216,9 @@ void reset(){
 }
 
 void initVariables(){
-  if (bot.botNumber != 2701) { 
-    modelTest = ESSAY;
-  } 
+  //if (bot.botNumber != 2701) { 
+  //  modelTest = ESSAY;
+  //} 
   bot.flagLoad = 0; //initializing
   bot.flagBusy = 0; //initializing
   bot.colorDestination = NONE;

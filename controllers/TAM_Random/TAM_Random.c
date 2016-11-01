@@ -35,14 +35,14 @@ float pDisableNestRed  = 0.0;
 float pDisableNestGrey = 0.2;
 float pDisableNestBlue = 0.6;
 float pDisable = 0.0;
-#define nRobots 4
-int listWorkers[] = {0, 0, 0, 0}; // number of robots
-int listBusy[] = {0, 0, 0, 0};
+#define nRobots 7
+int listWorkers[nRobots] = {0}; // number of robots
+int listBusy[nRobots] = {0};
 int lastVisitor = 0;
 int flagOnebyOne = 1;
 int flagWaitingDeparture = 0;
 // Communication flags
-int flagFiles = 1;
+int flagFiles = 0;
 int flagCom = 1;                //to enable or disable communications 
 WbDeviceTag receiver;
 WbDeviceTag emitter;

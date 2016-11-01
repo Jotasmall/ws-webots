@@ -2145,3 +2145,51 @@ E-puck {
     }
   ]
 }
+E-puck {
+  translation -0.0640927 7.05163e-16 -0.264448
+  rotation 0 -1 0 2.35619
+  controller "CallDuty_v1"
+  name "e-puck3001"
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.183766 0.0584046
+      pixelSize 2
+    }
+  ]
+}
+E-puck {
+  translation 0.134902 7.05163e-16 -0.263443
+  rotation 0 -1 0 2.35619
+  controller "CallDuty_v1"
+  name "e-puck3101"
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.183766 0.0584046
+      pixelSize 2
+    }
+  ]
+}
+E-puck {
+  translation -0.549989 7.05163e-16 -0.637201
+  rotation 0 -1 0 2.35619
+  controller "CallDuty_v1"
+  name "e-puck3201"
+  camera_pixelSize 2
+  turretSlot [
+    Display {
+      name "displayExtra"
+      width 52
+      height 39
+      windowPosition 0.183766 0.0584046
+      pixelSize 2
+    }
+  ]
+}
